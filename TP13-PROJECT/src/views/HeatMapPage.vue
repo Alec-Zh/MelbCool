@@ -4,7 +4,7 @@ import NavBar from '../components/NavBar.vue'
 import SuburbSearch from '../components/SuburbSearch.vue'
 import SuburbCard from '../components/SuburbCard.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
-import MapPlaceholder from '../components/MapPlaceholder.vue'
+import SuburbMap from '../components/SuburbMap.vue'
 import HeatLevelGuide from '../components/HeatLevelGuide.vue'
 
 // ── Mock data (replace with API call once Lambda is ready) ──
@@ -121,7 +121,7 @@ function selectSuburb(suburb) {
 
       <SuburbSearch v-model="search" />
 
-      <MapPlaceholder />
+      <SuburbMap :suburbs="suburbs" :selectedSuburb="selectedSuburb" @select="selectSuburb" />
 
       <div class="suburb-list">
         <SuburbCard

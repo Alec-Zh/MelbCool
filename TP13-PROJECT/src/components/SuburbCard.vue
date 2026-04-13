@@ -5,7 +5,6 @@ defineProps({
   suburb: {
     type: Object,
     required: true,
-    // { suburb_name, temperature, tree_canopy_percent, heat_level }
   },
   selected: {
     type: Boolean,
@@ -14,6 +13,12 @@ defineProps({
 })
 
 defineEmits(['select'])
+
+const riskConfig = {
+  high: { label: 'High Risk', bg: '#FEE2E2', color: '#991B1B' },
+  moderate: { label: 'Moderate Risk', bg: '#FEF3C7', color: '#92400E' },
+  low: { label: 'Low Risk', bg: '#DCFCE7', color: '#166534' },
+}
 </script>
 
 <template>
@@ -38,6 +43,18 @@ defineEmits(['select'])
         {{ suburb.tree_canopy_percent }}% trees
       </span>
     </div>
+    <div class="card-footer">
+      <span
+        v-if="suburb.risk_level"
+        class="risk-tag"
+        :style="{
+          backgroundColor: riskConfig[suburb.risk_level]?.bg,
+          color: riskConfig[suburb.risk_level]?.color,
+        }"
+      >
+        {{ riskConfig[suburb.risk_level]?.label ?? suburb.risk_level }}
+      </span>
+    </div>
   </div>
 </template>
 
@@ -49,6 +66,9 @@ defineEmits(['select'])
   background-color: var(--color-white);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .card:hover {
@@ -66,7 +86,6 @@ defineEmits(['select'])
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.6rem;
 }
 
 .suburb-name {
@@ -90,5 +109,17 @@ defineEmits(['select'])
 
 .meta-icon {
   font-size: 0.9rem;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+}
+
+.risk-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 50px;
 }
 </style>

@@ -58,7 +58,7 @@ defineEmits(['close']);
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease;
+  /* animation: fadeIn 0.3s ease; */
 }
 
 .modal-content {

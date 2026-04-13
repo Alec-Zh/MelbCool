@@ -1,30 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import NavBar from '../components/NavBar.vue';
-import EmergencyAlertModal from '../components/AlertModal.vue';
-import Footer from '../components/Footer.vue';
+import { ref } from 'vue'
+import NavBar from '../components/NavBar.vue'
+import EmergencyAlertModal from '../components/AlertModal.vue'
+import Footer from '../components/Footer.vue'
 
-const showBackToTop = ref(false);
-const showAlertModal = ref(false);
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-};
-
-const handleScroll = () => {
-  showBackToTop.value = window.scrollY > 300;
-};
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-});
+const showAlertModal = ref(false)
 </script>
 
 <template>
@@ -32,60 +12,67 @@ onUnmounted(() => {
     <NavBar @alertClick="showAlertModal = true" />
 
     <main class="main-content">
-      <div class="hero">
+      <div class="heroWrip">
+         <div class="hero">
         <div class="hero-left">
-          <h1 class="hero-title">
+          <h1 class="hero-title" v-hover-scale="1.2">
             Stay Safe and<br />
             <span class="highlight">Cool in Melbourne</span>
           </h1>
-          <p class="hero-description">
+          <p class="hero-description" v-hover-scale="1.5">
             Comprehensive resources and real-time guidance to navigate Melbourne's rising
             temperatures with confidence and care.
           </p>
           <div class="hero-buttons">
-            <button class="btn-primary"><span class="icon">❄️</span> Find Cool Refuges</button>
-            <button class="btn-secondary"><span class="icon">🧾</span> View Heat Map</button>
+            <button class="btn-primary"><span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span></button>
+            <button class="btn-secondary"><span class="icon" v-hover-scale="1.2">🧾 View Heat Map</span></button>
           </div>
         </div>
       </div>
+      </div>
+     
 
       <section class="heat-impact-section">
-        <h2 class="heat-impact-title">Heat Impact in Numbers</h2>
+        <h2 class="heat-impact-title" v-hover-scale="1.5">Heat Impact in Numbers</h2>
         <div class="heat-impact-grid">
-          <div class="impact-card blue">
-            <div class="impact-icon">🏠</div>
-            <div class="impact-number">120k+</div>
-            <div class="impact-label">residents live in high-risk zones</div>
+          <div class="impact-card blue" >
+            <div class="impact-icon">👴</div>
+            <div class="impact-number" v-hover-scale="1.2">120k+</div>
+            <div class="impact-label" v-hover-scale="1.2">residents live in high-risk zones</div>
           </div>
-          <div class="impact-card red">
+          <div class="impact-card red" >
             <div class="impact-icon">🔥</div>
-            <div class="impact-number">40%</div>
-            <div class="impact-label">of heat-related deaths are older adults</div>
+            <div class="impact-number" v-hover-scale="1.2">40%</div>
+            <div class="impact-label" v-hover-scale="1.2">of heat-related deaths are older adults</div>
           </div>
-          <div class="impact-card orange">
+          <div class="impact-card orange" >
             <div class="impact-icon">🌡️</div>
-            <div class="impact-number">38°C</div>
-            <div class="impact-label">during peak heatwaves in urban areas</div>
+            <div class="impact-number" v-hover-scale="1.2">38°C</div>
+            <div class="impact-label" v-hover-scale="1.2">during peak heatwaves in urban areas</div>
           </div>
-          <div class="impact-card green">
+          <div class="impact-card green" >
             <div class="impact-icon">🌳</div>
-            <div class="impact-number">+7°C</div>
-            <div class="impact-label">hotter in areas without sufficient shade</div>
+            <div class="impact-number" v-hover-scale="1.2">+7°C</div>
+            <div class="impact-label" v-hover-scale="1.2">hotter in areas without sufficient shade</div>
           </div>
         </div>
       </section>
 
       <section class="why-matters-section">
-        <h2 class="why-matters-title">Why Heat Protection Matters</h2>
-        <p class="why-matters-subtitle">
-          Simple facts about how our bodies change and why we need to stay alert during summer months.
+        <h2 class="why-matters-title" v-hover-scale="1.2">Why Heat Protection Matters</h2>
+        <p class="why-matters-subtitle" v-hover-scale="1.2">
+          Simple facts about how our bodies change and why we need to stay alert during summer
+          months.
         </p>
         <div class="why-matters-grid">
-          <div class="matter-card">
-            <div class="matter-number blue">80%</div>
+          <div class="matter-card" >
+            <div class="matter-number blue" v-hover-scale="1.2">80%</div>
             <div class="matter-content">
-              <h3>of heat-related hospital stays are for adults over 65.</h3>
-              <p>Older bodies hold heat longer, making it harder to recover from a hot afternoon without help.</p>
+              <h3 v-hover-scale="1.2">of heat-related hospital stays are for adults over 65.</h3>
+              <p v-hover-scale="1.2">
+                Older bodies hold heat longer, making it harder to recover from a hot afternoon
+                without help.
+              </p>
               <div class="matter-visual people">
                 <span class="person filled">👤</span>
                 <span class="person filled">👤</span>
@@ -101,15 +88,18 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="matter-card">
-            <div class="matter-number red">30%</div>
+          <div class="matter-card" >
+            <div class="matter-number red" v-hover-scale="1.2">30%</div>
             <div class="matter-content">
-              <h3>reduction in the body's natural ability to cool down.</h3>
-              <p>As we age, our sweat glands are less active. This means we feel the heat more intensely than we used to.</p>
+              <h3 v-hover-scale="1.2">reduction in the body's natural ability to cool down.</h3>
+              <p v-hover-scale="1.2">
+                As we age, our sweat glands are less active. This means we feel the heat more
+                intensely than we used to.
+              </p>
               <div class="matter-visual bar-chart">
                 <div class="bar-labels">
-                  <span class="bar-label">Cooling Power</span>
-                  <span class="bar-value">30% Decrease</span>
+                  <span class="bar-label" v-hover-scale="1.2">Cooling Power</span>
+                  <span class="bar-value" v-hover-scale="1.2">30% Decrease</span>
                 </div>
                 <div class="progress-bar">
                   <div class="progress-fill" style="width: 70%"></div>
@@ -119,36 +109,42 @@ onUnmounted(() => {
           </div>
 
           <div class="matter-card">
-            <div class="matter-number blue">+10°F</div>
+            <div class="matter-number blue" v-hover-scale="1.2">+10°F</div>
             <div class="matter-content">
-              <h3>Night temperatures in cities can be significantly higher.</h3>
-              <p>Urban heat islands give senior bodies less time to recover from daytime stress, leading to cumulative fatigue.</p>
+              <h3 v-hover-scale="1.2">Night temperatures in cities can be significantly higher.</h3>
+              <p v-hover-scale="1.2">
+                Urban heat islands give senior bodies less time to recover from daytime stress,
+                leading to cumulative fatigue.
+              </p>
               <div class="matter-visual temp-slider">
                 <div class="temp-labels">
-                  <span class="temp-icon">🌙</span>
-                  <span class="temp-label">CITY</span>
+                  <span class="temp-icon" v-hover-scale="1.2">🌙</span>
+                  <span class="temp-label" v-hover-scale="1.2">CITY</span>
                 </div>
                 <div class="slider-bar">
                   <div class="slider-fill" style="width: 80%"></div>
                 </div>
-                <span class="temp-high">+10°F Higher Risk</span>
+                <span class="temp-high" v-hover-scale="1.2">+10°F Higher Risk</span>
               </div>
             </div>
           </div>
 
-          <div class="matter-card">
-            <div class="matter-number green">2X</div>
+          <div class="matter-card" >
+            <div class="matter-number green" v-hover-scale="1.2">2X</div>
             <div class="matter-content">
-              <h3>Faster hydration loss during dangerous heatwaves.</h3>
-              <p>Seniors lose hydration twice as fast as younger adults, often without even feeling thirsty until it's critical.</p>
+              <h3 v-hover-scale="1.2">Faster hydration loss during dangerous heatwaves.</h3>
+              <p v-hover-scale="1.2">
+                Seniors lose hydration twice as fast as younger adults, often without even feeling
+                thirsty until it's critical.
+              </p>
               <div class="matter-visual hydration">
                 <div class="hydration-box normal">
-                  <span class="drop-icon">💧</span>
-                  <span class="hydration-label">NORMAL</span>
+                  <span class="drop-icon" v-hover-scale="1.2">💧</span>
+                  <span class="hydration-label" v-hover-scale="1.2">NORMAL</span>
                 </div>
                 <div class="hydration-box senior">
-                  <span class="drop-icon">💧💧</span>
-                  <span class="hydration-label">SENIOR (2X RATE)</span>
+                  <span class="drop-icon" v-hover-scale="1.2">💧💧</span>
+                  <span class="hydration-label" v-hover-scale="1.2">SENIOR (2X RATE)</span>
                 </div>
               </div>
             </div>
@@ -159,9 +155,9 @@ onUnmounted(() => {
       <section class="info-section">
         <div class="info-grid">
           <div class="info-left">
-            <span class="tag vulnerability">VULNERABILITY AWARENESS</span>
-            <h2 class="section-title">Heat Vulnerability Map</h2>
-            <p class="section-description">
+            <span class="tag vulnerability" v-hover-scale="1.2">VULNERABILITY AWARENESS</span>
+            <h2 class="section-title" v-hover-scale="1.2">Heat Vulnerability Map</h2>
+            <p class="section-description" v-hover-scale="1.2">
               This map highlights heat levels across Melbourne suburbs. We specifically track areas
               with high elderly population density to ensure our guardians have the support they
               need where it's needed most.
@@ -169,46 +165,46 @@ onUnmounted(() => {
             <div class="map-image">
               <img src="/reli.jpg" alt="Heat Vulnerability Map of Melbourne" />
             </div>
-            <a class="explore-link">Explore Heat Map →</a>
+            <a class="explore-link" v-hover-scale="1.2">Explore Heat Map →</a>
           </div>
 
           <div class="info-right">
             <div class="risk-level-card">
-              <h3 class="risk-level-title">Risk Level</h3>
+              <h3 class="risk-level-title" v-hover-scale="1.2">Risk Level</h3>
               <div class="risk-levels">
                 <div class="risk-level-item">
                   <span class="risk-dot green"></span>
-                  <span class="risk-label">Low</span>
+                  <span class="risk-label" v-hover-scale="1.2">Low</span>
                 </div>
                 <div class="risk-level-item">
                   <span class="risk-dot yellow"></span>
-                  <span class="risk-label">Moderate</span>
+                  <span class="risk-label" v-hover-scale="1.2">Moderate</span>
                 </div>
                 <div class="risk-level-item">
                   <span class="risk-dot orange"></span>
-                  <span class="risk-label">High</span>
+                  <span class="risk-label" v-hover-scale="1.2">High</span>
                 </div>
                 <div class="risk-level-item">
                   <span class="risk-dot red"></span>
-                  <span class="risk-label">Very High</span>
+                  <span class="risk-label" v-hover-scale="1.2">Very High</span>
                 </div>
               </div>
             </div>
 
             <div class="high-risk-stats">
-              <h3 class="stats-title">In High/Very<br>High Risk Areas:</h3>
+              <h3 class="stats-title" v-hover-scale="1.2">Risk Areas:</h3>
               <div class="stat-item">
-                <span class="stat-icon">👤</span>
+                <span class="stat-icon" v-hover-scale="1.2">👤</span>
                 <div class="stat-content">
-                  <span class="stat-number">29%</span>
-                  <span class="stat-label">average elderly<br>population</span>
+                  <span class="stat-number" v-hover-scale="1.2">29%</span>
+                  <span class="stat-label" v-hover-scale="1.2">average elderly<br />population</span>
                 </div>
               </div>
               <div class="stat-item">
-                <span class="stat-icon">🌡️</span>
+                <span class="stat-icon" v-hover-scale="1.2">🌡️</span>
                 <div class="stat-content">
-                  <span class="stat-number">36°C</span>
-                  <span class="stat-label">avg surface<br>temperature</span>
+                  <span class="stat-number" v-hover-scale="1.2">36°C</span>
+                  <span class="stat-label" v-hover-scale="1.2">avg surface<br />temperature</span>
                 </div>
               </div>
             </div>
@@ -218,52 +214,52 @@ onUnmounted(() => {
 
       <section class="cool-refuges-section">
         <div class="cool-refuges-container">
-          <span class="tag safe">SAFE SPACES</span>
-          <h2 class="cool-refuges-title">Find Your Local Cool Refuges</h2>
-          <p class="cool-refuges-description">
-            Looking for a cool place to go? Cool spaces like libraries, community centers,
-            and shopping malls are free, close by, and air-conditioned.
+          <span class="tag safe" v-hover-scale="1.2">SAFE SPACES</span>
+          <h2 class="cool-refuges-title" v-hover-scale="1.2">Find Your Local Cool Refuges</h2>
+          <p class="cool-refuges-description" v-hover-scale="1.2">
+            Looking for a cool place to go? Cool spaces like libraries, community centers, and
+            shopping malls are free, close by, and air-conditioned.
           </p>
 
           <div class="cool-refuges-content">
             <div class="refuges-left">
               <div class="refuge-stats">
                 <div class="refuge-stat-card blue">
-                  <span class="stat-icon-large">🌡️</span>
+                  <span class="stat-icon-large" v-hover-scale="1.2">🌡️</span>
                   <div class="stat-text">
-                    <span class="stat-value">20°F</span>
-                    <span class="stat-desc">Cooler<br>than outside</span>
+                    <span class="stat-value" v-hover-scale="1.2">20°F</span>
+                    <span class="stat-desc" v-hover-scale="1.2">Cooler<br />than outside</span>
                   </div>
                 </div>
                 <div class="refuge-stat-card green">
-                  <span class="stat-icon-large">📍</span>
+                  <span class="stat-icon-large" v-hover-scale="1.2">📍</span>
                   <div class="stat-text">
-                    <span class="stat-value">Nearby</span>
-                    <span class="stat-desc">Many easy-<br>to-reach places</span>
+                    <span class="stat-value" v-hover-scale="1.2">Nearby</span>
+                    <span class="stat-desc" v-hover-scale="1.2">Many easy-<br />to-reach places</span>
                   </div>
                 </div>
               </div>
 
               <div class="refuge-types">
                 <div class="refuge-type-item">
-                  <span class="type-icon">📚</span>
+                  <span class="type-icon" v-hover-scale="1.2">📚</span>
                   <div class="type-info">
-                    <h4>Public Libraries</h4>
-                    <p>Quiet, air-conditioned spaces and free books.</p>
+                    <h4 v-hover-scale="1.2">Public Libraries</h4>
+                    <p v-hover-scale="1.2">Quiet, air-conditioned spaces and free books.</p>
                   </div>
                 </div>
                 <div class="refuge-type-item">
-                  <span class="type-icon">🏘️</span>
+                  <span class="type-icon" v-hover-scale="1.2">🏘️</span>
                   <div class="type-info">
-                    <h4>Community Hubs</h4>
-                    <p>Meet others in an air-conditioned place.</p>
+                    <h4 v-hover-scale="1.2">Community Hubs</h4>
+                    <p v-hover-scale="1.2">Meet others in an air-conditioned place.</p>
                   </div>
                 </div>
                 <div class="refuge-type-item">
-                  <span class="type-icon">🛍️</span>
+                  <span class="type-icon" v-hover-scale="1.2">🛍️</span>
                   <div class="type-info">
-                    <h4>Shopping Malls</h4>
-                    <p>Large, air-conditioned places to walk around.</p>
+                    <h4 v-hover-scale="1.2">Shopping Malls</h4>
+                    <p v-hover-scale="1.2">Large, air-conditioned places to walk around.</p>
                   </div>
                 </div>
               </div>
@@ -271,136 +267,128 @@ onUnmounted(() => {
 
             <div class="refuges-right">
               <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Senior reading in library" />
+                <img src="/pic2.webp" alt="Senior reading in library" />
               </div>
             </div>
           </div>
 
           <div class="refuge-action">
-            <p class="action-hint">👉 Tap to quickly find a nearby cool refuge</p>
+            <p class="action-hint" v-hover-scale="1.2">👉 Tap to quickly find a nearby cool refuge</p>
             <button class="btn-find-refuge">
-              <span class="btn-icon">❄️</span>
-              Find Cool Refuges Near Me
+              <span class="btn-icon" v-hover-scale="1.2">❄️  Find Cool Refuges Near Me</span>
             </button>
           </div>
         </div>
       </section>
 
       <section class="risk-section">
-        <h2 class="risk-title">How We Calculate Risk</h2>
-        <p class="risk-description">
-          We combine three key factors to determine the heat safety level for every suburb in Melbourne.
+        <h2 class="risk-title" v-hover-scale="1.2">How We Calculate Risk</h2>
+        <p class="risk-description" v-hover-scale="1.2">
+          We combine three key factors to determine the heat safety level for every suburb in
+          Melbourne.
         </p>
         <div class="risk-calculate-cards">
           <div class="risk-calc-card temp">
             <div class="calc-header">
-              <span class="calc-icon">🌡️</span>
+              <span class="calc-icon" v-hover-scale="1.2">🌡️</span>
               <div class="calc-title-group">
-                <span class="calc-label">Temperature</span>
-                <span class="calc-value">36-40°C</span>
+                <span class="calc-label" v-hover-scale="1.2">Temperature</span>
+                <span class="calc-value green" v-hover-scale="1.2">36-40°C</span>
               </div>
             </div>
             <ul class="calc-list">
-              <li><span class="check">✓</span> 10-15 extreme heat days/year</li>
-              <li><span class="check">✓</span> Higher night temperatures increase health risk</li>
+              <li v-hover-scale="1.2"><span class="check">✓</span> 10-15 extreme heat days/year</li>
+              <li v-hover-scale="1.2"><span class="check">✓</span> Higher night temperatures increase health risk</li>
             </ul>
           </div>
           <div class="risk-calc-card tree">
             <div class="calc-header">
-              <span class="calc-icon">🌳</span>
+              <span class="calc-icon" v-hover-scale="1.2">🌳</span>
               <div class="calc-title-group">
-                <span class="calc-label">Tree Coverage</span>
-                <span class="calc-value green">&lt; 15%</span>
+                <span class="calc-label" v-hover-scale="1.2">Tree Coverage</span>
+                <span class="calc-value green" v-hover-scale="1.2">&lt; 15%</span>
               </div>
             </div>
             <ul class="calc-list">
-              <li><span class="check">✓</span> Low canopy = 5-7°C hotter</li>
-              <li><span class="check">✓</span> Less shade means higher body heat and dehydration risk</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Low canopy = 5-7°C hotter</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Less shade means higher body heat and dehydration risk</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Less shade means higher body heat and dehydration risk
+              </li>
             </ul>
           </div>
           <div class="risk-calc-card elderly">
             <div class="calc-header">
-              <span class="calc-icon">👴</span>
+              <span class="calc-icon" v-hover-scale="1.2">👴</span>
               <div class="calc-title-group">
-                <span class="calc-label">Elderly Population</span>
-                <span class="calc-value purple">Up to 30%</span>
+                <span class="calc-label" v-hover-scale="1.2">Elderly Population</span>
+                <span class="calc-value purple" v-hover-scale="1.2">Up to 30%</span>
               </div>
             </div>
             <ul class="calc-list">
-              <li><span class="check">✓</span> More sensitive to heat</li>
-              <li><span class="check">✓</span> May need extra support to stay safe and cool</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> More sensitive to heat</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> May need extra support to stay safe and cool</li>
             </ul>
           </div>
         </div>
       </section>
 
       <section class="stay-healthy-section">
-        <h2 class="stay-healthy-title">Stay Cool, Stay Healthy</h2>
-        <p class="stay-healthy-subtitle">
+        <h2 class="stay-healthy-title" v-hover-scale="1.2">Stay Cool, Stay Healthy</h2>
+        <p class="stay-healthy-subtitle" v-hover-scale="1.2">
           Simple actions can make a big difference. Protect yourself and check on others.
         </p>
         <div class="healthy-cards">
           <div class="healthy-card">
             <div class="healthy-card-header">
-              <span class="healthy-icon blue">🏠</span>
-              <h3>Stay Indoors</h3>
+              <span class="healthy-icon blue" v-hover-scale="1.2">🏠</span>
+              <h3 v-hover-scale="1.2">Stay Indoors</h3>
             </div>
             <ul class="healthy-list">
-              <li><span class="check">✓</span> Close curtains or blinds</li>
-              <li><span class="check">✓</span> Stay inside between 12-4 PM</li>
-              <li><span class="check">✓</span> Use fans or air conditioning</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Close curtains or blinds</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Stay inside between 12-4 PM</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Use fans or air conditioning</li>
             </ul>
           </div>
 
           <div class="healthy-card">
             <div class="healthy-card-header">
-              <span class="healthy-icon cyan">💧</span>
-              <h3>Drink Water</h3>
+              <span class="healthy-icon cyan" v-hover-scale="1.2">💧</span>
+              <h3 v-hover-scale="1.2">Drink Water</h3>
             </div>
             <ul class="healthy-list">
-              <li><span class="check">✓</span> Drink a glass every hour</li>
-              <li><span class="check">✓</span> Avoid alcohol and caffeine</li>
-              <li><span class="check">✓</span> Eat light meals, fruits and vegetables</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Drink a glass every hour</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Avoid alcohol and caffeine</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Eat light meals, fruits and vegetables</li>
             </ul>
           </div>
 
           <div class="healthy-card">
             <div class="healthy-card-header">
-              <span class="healthy-icon green">🌳</span>
-              <h3>Find Cool Places</h3>
+              <span class="healthy-icon green" v-hover-scale="1.2">🌳</span>
+              <h3 v-hover-scale="1.2">Find Cool Places</h3>
             </div>
             <ul class="healthy-list">
-              <li><span class="check">✓</span> Visit a cool refuge nearby</li>
-              <li><span class="check">✓</span> Spend time in shaded areas</li>
-              <li><span class="check">✓</span> Check on family, friends and neighbours</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Visit a cool refuge nearby</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Spend time in shaded areas</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Check on family, friends and neighbours</li>
             </ul>
           </div>
 
           <div class="healthy-card help-card">
             <div class="healthy-card-header">
-              <span class="healthy-icon red">📞</span>
-              <h3>Need Help?</h3>
+              <span class="healthy-icon red" v-hover-scale="1.2">📞</span>
+              <h3 v-hover-scale="1.2">Need Help?</h3>
             </div>
             <ul class="help-list">
-              <li><span class="help-icon">🚨</span> Call 000 in an emergency</li>
-              <li><span class="help-icon">👨‍⚕️</span> Nurse-on-Call: 1300 60 60 24</li>
-              <li><span class="help-icon">🌐</span> Translation: 131 450</li>
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🚨</span> Call 000 in an emergency</li>
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">👨‍⚕️</span> Nurse-on-Call: 1300 60 60 24</li>
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🌐</span> Translation: 131 450</li>
             </ul>
           </div>
         </div>
       </section>
 
       <Footer />
-
-      <!-- Back to Top Button -->
-      <button
-        v-if="showBackToTop"
-        class="back-to-top"
-        @click="scrollToTop"
-        aria-label="Back to top"
-      >
-        ↑
-      </button>
     </main>
 
     <!-- Emergency Alert Modal -->
@@ -422,12 +410,16 @@ onUnmounted(() => {
 
 .main-content {
   min-height: calc(100vh - 80px);
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+ 
+  /* background-size: cover; */
+  /* background-position: center; */
+  /* background-attachment: fixed; */
 }
-
+.heroWrip{
+   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/bg.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
 .hero {
   max-width: 1200px;
   margin: 0 auto;
@@ -435,6 +427,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   gap: 4rem;
+
   min-height: calc(100vh - 160px);
 }
 
@@ -509,15 +502,20 @@ onUnmounted(() => {
 }
 
 .info-section {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-  padding: 5rem 2rem;
+  background-color: #ffffff;
+  /* border-radius: 16px; */
+  padding: 2rem;
+  text-align: left;
+  display: flex;
+  gap: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .info-grid {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 4rem;
 }
 
@@ -591,11 +589,11 @@ onUnmounted(() => {
 }
 
 .stats-title {
-  font-size: 1rem;
-  font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 1.5rem;
   line-height: 1.3;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .stat-item {
@@ -732,7 +730,7 @@ onUnmounted(() => {
 }
 
 .cool-refuges-section {
-  background-color: #f8f9ff;
+  background-color: #f0f7ff;
   padding: 5rem 2rem;
 }
 
@@ -850,6 +848,8 @@ onUnmounted(() => {
 .refuges-right {
   display: flex;
   align-items: stretch;
+  width: 100%;
+  height: 400px;
 }
 
 .refuge-image {
@@ -890,7 +890,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .btn-find-refuge:hover {
@@ -1576,39 +1578,5 @@ onUnmounted(() => {
   color: #16a34a;
   font-weight: bold;
   flex-shrink: 0;
-}
-
-
-
-/* Back to Top Button */
-.back-to-top {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background-color: #0d3a8f;
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(13, 58, 143, 0.3);
-  transition: all 0.3s ease;
-  z-index: 99;
-  border: none;
-}
-
-.back-to-top:hover {
-  background-color: #1a4bb8;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(13, 58, 143, 0.4);
-}
-
-.back-to-top:active {
-  transform: translateY(0);
 }
 </style>

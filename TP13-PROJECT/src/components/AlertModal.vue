@@ -23,19 +23,19 @@ defineEmits(['close']);
       <div class="modal-body">
         <h2 class="alert-title">Severe Heat Alert: Melbourne Metropolitan Area</h2>
         
-        <div class="risk-level">
+        <!-- <div class="risk-level">
           <span class="risk-icon">!</span>
           Level 4: Extreme Risk
-        </div>
+        </div> -->
         
         <p class="alert-description">
           Avoid outdoor activities between 11 AM and 6 PM. Stay hydrated and check on vulnerable neighbors. Use cooling centers if your home temperature exceeds 30°C.
         </p>
         
         <div class="modal-buttons">
-          <button class="btn-guidelines" @click="$emit('close')">
+          <!-- <button class="btn-guidelines" @click="$emit('close')">
             View Safety Guidelines
-          </button>
+          </button> -->
           <button class="btn-dismiss" @click="$emit('close')">
             Dismiss
           </button>
@@ -58,7 +58,7 @@ defineEmits(['close']);
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease;
+  /* animation: fadeIn 0.3s ease; */
 }
 
 .modal-content {

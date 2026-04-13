@@ -1,30 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import NavBar from '../components/NavBar.vue';
-import EmergencyAlertModal from '../components/EmergencyAlertModal.vue';
-import Footer from '../components/Footer.vue';
+import { ref } from 'vue'
+import NavBar from '../components/NavBar.vue'
+import EmergencyAlertModal from '../components/AlertModal.vue'
+import Footer from '../components/Footer.vue'
 
-const showBackToTop = ref(false);
-const showAlertModal = ref(false);
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
-};
-
-const handleScroll = () => {
-  showBackToTop.value = window.scrollY > 300;
-};
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-});
+const showAlertModal = ref(false)
 </script>
 
 <template>
@@ -32,29 +12,152 @@ onUnmounted(() => {
     <NavBar @alertClick="showAlertModal = true" />
 
     <main class="main-content">
-      <div class="hero">
+      <div class="heroWrip">
+         <div class="hero">
         <div class="hero-left">
-          <h1 class="hero-title">
+          <h1 class="hero-title" v-hover-scale="1.2">
             Stay Safe and<br />
             <span class="highlight">Cool in Melbourne</span>
           </h1>
-          <p class="hero-description">
+          <p class="hero-description" v-hover-scale="1.5">
             Comprehensive resources and real-time guidance to navigate Melbourne's rising
             temperatures with confidence and care.
           </p>
           <div class="hero-buttons">
-            <button class="btn-primary"><span class="icon">❄️</span> Find Cool Refuges</button>
-            <button class="btn-secondary"><span class="icon">🧾</span> View Heat Map</button>
+            <button class="btn-primary"><span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span></button>
+            <button class="btn-secondary"><span class="icon" v-hover-scale="1.2"> 📃 View Heat Map</span></button>
           </div>
         </div>
       </div>
+      </div>
+     
+
+      <section class="heat-impact-section">
+        <h2 class="heat-impact-title" v-hover-scale="1.5">Heat Impact in Numbers</h2>
+        <div class="heat-impact-grid">
+          <div class="impact-card blue" >
+            <div class="impact-icon">👴</div>
+            <div class="impact-number" v-hover-scale="1.2">120k+</div>
+            <div class="impact-label" v-hover-scale="1.2">residents live in high-risk zones</div>
+          </div>
+          <div class="impact-card red" >
+            <div class="impact-icon">🔥</div>
+            <div class="impact-number" v-hover-scale="1.2">40%</div>
+            <div class="impact-label" v-hover-scale="1.2">of heat-related deaths are older adults</div>
+          </div>
+          <div class="impact-card orange" >
+            <div class="impact-icon">🌡️</div>
+            <div class="impact-number" v-hover-scale="1.2">38°C</div>
+            <div class="impact-label" v-hover-scale="1.2">during peak heatwaves in urban areas</div>
+          </div>
+          <div class="impact-card green" >
+            <div class="impact-icon">🌳</div>
+            <div class="impact-number" v-hover-scale="1.2">+7°C</div>
+            <div class="impact-label" v-hover-scale="1.2">hotter in areas without sufficient shade</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="why-matters-section">
+        <h2 class="why-matters-title" v-hover-scale="1.2">Why Heat Protection Matters</h2>
+        <p class="why-matters-subtitle" v-hover-scale="1.2">
+          Simple facts about how our bodies change and why we need to stay alert during summer
+          months.
+        </p>
+        <div class="why-matters-grid">
+          <div class="matter-card" >
+            <div class="matter-number blue" v-hover-scale="1.2">80%</div>
+            <div class="matter-content">
+              <h3 v-hover-scale="1.2">of heat-related hospital stays are for adults over 65.</h3>
+              <p v-hover-scale="1.2">
+                Older bodies hold heat longer, making it harder to recover from a hot afternoon
+                without help.
+              </p>
+              <div class="matter-visual people">
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person filled">👤</span>
+                <span class="person empty">👤</span>
+                <span class="person empty">👤</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="matter-card" >
+            <div class="matter-number red" v-hover-scale="1.2">30%</div>
+            <div class="matter-content">
+              <h3 v-hover-scale="1.2">reduction in the body's natural ability to cool down.</h3>
+              <p v-hover-scale="1.2">
+                As we age, our sweat glands are less active. This means we feel the heat more
+                intensely than we used to.
+              </p>
+              <div class="matter-visual bar-chart">
+                <div class="bar-labels">
+                  <span class="bar-label" v-hover-scale="1.2">Cooling Power</span>
+                  <span class="bar-value" v-hover-scale="1.2">30% Decrease</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 70%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="matter-card">
+            <div class="matter-number blue" v-hover-scale="1.2">+10°F</div>
+            <div class="matter-content">
+              <h3 v-hover-scale="1.2">Night temperatures in cities can be significantly higher.</h3>
+              <p v-hover-scale="1.2">
+                Urban heat islands give senior bodies less time to recover from daytime stress,
+                leading to cumulative fatigue.
+              </p>
+              <div class="matter-visual temp-slider">
+                <div class="temp-labels">
+                  <span class="temp-icon" v-hover-scale="1.2">🌙</span>
+                  <span class="temp-label" v-hover-scale="1.2">CITY</span>
+                </div>
+                <div class="slider-bar">
+                  <div class="slider-fill" style="width: 80%"></div>
+                </div>
+                <span class="temp-high" v-hover-scale="1.2">+10°F Higher Risk</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="matter-card" >
+            <div class="matter-number green" v-hover-scale="1.2">2X</div>
+            <div class="matter-content">
+              <h3 v-hover-scale="1.2">Faster hydration loss during dangerous heatwaves.</h3>
+              <p v-hover-scale="1.2">
+                Seniors lose hydration twice as fast as younger adults, often without even feeling
+                thirsty until it's critical.
+              </p>
+              <div class="matter-visual hydration">
+                <div class="hydration-box normal">
+                  <span class="drop-icon" v-hover-scale="1.2">💧</span>
+                  <span class="hydration-label" v-hover-scale="1.2">NORMAL</span>
+                </div>
+                <div class="hydration-box senior">
+                  <span class="drop-icon" v-hover-scale="1.2">💧💧</span>
+                  <span class="hydration-label" v-hover-scale="1.2">SENIOR (2X RATE)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section class="info-section">
         <div class="info-grid">
           <div class="info-left">
-            <span class="tag vulnerability">VULNERABILITY AWARENESS</span>
-            <h2 class="section-title">Heat Vulnerability Map</h2>
-            <p class="section-description">
+            <span class="tag vulnerability" v-hover-scale="1.2">VULNERABILITY AWARENESS</span>
+            <h2 class="section-title" v-hover-scale="1.2">Heat Vulnerability Map</h2>
+            <p class="section-description" v-hover-scale="1.2">
               This map highlights heat levels across Melbourne suburbs. We specifically track areas
               with high elderly population density to ensure our guardians have the support they
               need where it's needed most.
@@ -62,136 +165,230 @@ onUnmounted(() => {
             <div class="map-image">
               <img src="/reli.jpg" alt="Heat Vulnerability Map of Melbourne" />
             </div>
-            <a class="explore-link">Explore Heat Map →</a>
+            <a class="explore-link" v-hover-scale="1.2">Explore Heat Map →</a>
           </div>
 
           <div class="info-right">
-            <span class="tag safe">SAFE SPACES</span>
-            <h2 class="section-title">Find Your Local Cool Refuge</h2>
-            <p class="section-description">
-              Looking for a place to rest? We list all accessible libraries, community centers, and
-              shopping malls with high-quality air conditioning and comfortable seating.
-            </p>
-            <div class="refuge-options">
-              <div class="refuge-item">
-                <span class="refuge-icon">📚</span>
-                <div class="refuge-info">
-                  <h4>Public Libraries</h4>
-                  <p>Quiet, air-conditioned, and free books.</p>
+            <div class="risk-level-card">
+              <h3 class="risk-level-title" v-hover-scale="1.2">Risk Level</h3>
+              <div class="risk-levels">
+                <div class="risk-level-item">
+                  <span class="risk-dot green"></span>
+                  <span class="risk-label" v-hover-scale="1.2">Low</span>
                 </div>
-              </div>
-              <div class="refuge-item">
-                <span class="refuge-icon">🏘️</span>
-                <div class="refuge-info">
-                  <h4>Community Hubs</h4>
-                  <p>Meet others while staying safe from the heat.</p>
+                <div class="risk-level-item">
+                  <span class="risk-dot yellow"></span>
+                  <span class="risk-label" v-hover-scale="1.2">Moderate</span>
+                </div>
+                <div class="risk-level-item">
+                  <span class="risk-dot orange"></span>
+                  <span class="risk-label" v-hover-scale="1.2">High</span>
+                </div>
+                <div class="risk-level-item">
+                  <span class="risk-dot red"></span>
+                  <span class="risk-label" v-hover-scale="1.2">Very High</span>
                 </div>
               </div>
             </div>
-            <button class="btn-primary" style="justify-content: center">
-              <span class="icon">❄️</span> Find Cool Refuges
+
+            <div class="high-risk-stats">
+              <h3 class="stats-title" v-hover-scale="1.2">Risk Areas:</h3>
+              <div class="stat-item">
+                <span class="stat-icon" v-hover-scale="1.2">👤</span>
+                <div class="stat-content">
+                  <span class="stat-number" v-hover-scale="1.2">29%</span>
+                  <span class="stat-label" v-hover-scale="1.2">average elderly<br />population</span>
+                </div>
+              </div>
+              <div class="stat-item">
+                <span class="stat-icon" v-hover-scale="1.2">🌡️</span>
+                <div class="stat-content">
+                  <span class="stat-number" v-hover-scale="1.2">36°C</span>
+                  <span class="stat-label" v-hover-scale="1.2">avg surface<br />temperature</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cool-refuges-section">
+        <div class="cool-refuges-container">
+          <span class="tag safe" v-hover-scale="1.2">SAFE SPACES</span>
+          <h2 class="cool-refuges-title" v-hover-scale="1.2">Find Your Local Cool Refuges</h2>
+          <p class="cool-refuges-description" v-hover-scale="1.2">
+            Looking for a cool place to go? Cool spaces like libraries, community centers, and
+            shopping malls are free, close by, and air-conditioned.
+          </p>
+
+          <div class="cool-refuges-content">
+            <div class="refuges-left">
+              <div class="refuge-stats">
+                <div class="refuge-stat-card blue">
+                  <span class="stat-icon-large" v-hover-scale="1.2">🌡️</span>
+                  <div class="stat-text">
+                    <span class="stat-value" v-hover-scale="1.2">20°F</span>
+                    <span class="stat-desc" v-hover-scale="1.2">Cooler<br />than outside</span>
+                  </div>
+                </div>
+                <div class="refuge-stat-card green">
+                  <span class="stat-icon-large" v-hover-scale="1.2">📍</span>
+                  <div class="stat-text">
+                    <span class="stat-value" v-hover-scale="1.2">Nearby</span>
+                    <span class="stat-desc" v-hover-scale="1.2">Many easy-<br />to-reach places</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="refuge-types">
+                <div class="refuge-type-item">
+                  <span class="type-icon" v-hover-scale="1.2">📚</span>
+                  <div class="type-info">
+                    <h4 v-hover-scale="1.2">Public Libraries</h4>
+                    <p v-hover-scale="1.2">Quiet, air-conditioned spaces and free books.</p>
+                  </div>
+                </div>
+                <div class="refuge-type-item">
+                  <span class="type-icon" v-hover-scale="1.2">🏘️</span>
+                  <div class="type-info">
+                    <h4 v-hover-scale="1.2">Community Hubs</h4>
+                    <p v-hover-scale="1.2">Meet others in an air-conditioned place.</p>
+                  </div>
+                </div>
+                <div class="refuge-type-item">
+                  <span class="type-icon" v-hover-scale="1.2">🛍️</span>
+                  <div class="type-info">
+                    <h4 v-hover-scale="1.2">Shopping Malls</h4>
+                    <p v-hover-scale="1.2">Large, air-conditioned places to walk around.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="refuges-right">
+              <div class="refuge-image">
+                <img src="/pic2.webp" alt="Senior reading in library" />
+              </div>
+            </div>
+          </div>
+
+          <div class="refuge-action">
+            <p class="action-hint" v-hover-scale="1.2">👉 Tap to quickly find a nearby cool refuge</p>
+            <button class="btn-find-refuge">
+              <span class="btn-icon" v-hover-scale="1.2">❄️  Find Cool Refuges Near Me</span>
             </button>
           </div>
         </div>
       </section>
 
       <section class="risk-section">
-        <h2 class="risk-title">How We Calculate Risk</h2>
-        <p class="risk-description">
-          We combine three simple factors to determine the heat safety level for every suburb in
+        <h2 class="risk-title" v-hover-scale="1.2">How We Calculate Risk</h2>
+        <p class="risk-description" v-hover-scale="1.2">
+          We combine three key factors to determine the heat safety level for every suburb in
           Melbourne.
         </p>
-        <div class="risk-cards">
-          <div class="risk-card temperature">
-            <span class="risk-icon">🌡️</span>
-            <h3>Temperature Data</h3>
-            <p>
-              We use live weather station data to track exact ground temperatures throughout the day
-              and night.
-            </p>
+        <div class="risk-calculate-cards">
+          <div class="risk-calc-card temp">
+            <div class="calc-header">
+              <span class="calc-icon" v-hover-scale="1.2">🌡️</span>
+              <div class="calc-title-group">
+                <span class="calc-label" v-hover-scale="1.2">Temperature</span>
+                <span class="calc-value green" v-hover-scale="1.2">36-40°C</span>
+              </div>
+            </div>
+            <ul class="calc-list">
+              <li v-hover-scale="1.2"><span class="check">✓</span> 10-15 extreme heat days/year</li>
+              <li v-hover-scale="1.2"><span class="check">✓</span> Higher night temperatures increase health risk</li>
+            </ul>
           </div>
-          <div class="risk-card tree">
-            <span class="risk-icon">🌳</span>
-            <h3>Tree Coverage</h3>
-            <p>
-              Areas with more trees and green spaces stay significantly cooler than concrete urban
-              centers.
-            </p>
+          <div class="risk-calc-card tree">
+            <div class="calc-header">
+              <span class="calc-icon" v-hover-scale="1.2">🌳</span>
+              <div class="calc-title-group">
+                <span class="calc-label" v-hover-scale="1.2">Tree Coverage</span>
+                <span class="calc-value green" v-hover-scale="1.2">&lt; 15%</span>
+              </div>
+            </div>
+            <ul class="calc-list">
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Low canopy = 5-7°C hotter</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Less shade means higher body heat and dehydration risk</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Less shade means higher body heat and dehydration risk
+              </li>
+            </ul>
           </div>
-          <div class="risk-card elderly">
-            <span class="risk-icon">👴</span>
-            <h3>Elderly Population</h3>
-            <p>
-              We prioritize neighborhoods where many older residents live to ensure resources are
-              properly allocated.
-            </p>
+          <div class="risk-calc-card elderly">
+            <div class="calc-header">
+              <span class="calc-icon" v-hover-scale="1.2">👴</span>
+              <div class="calc-title-group">
+                <span class="calc-label" v-hover-scale="1.2">Elderly Population</span>
+                <span class="calc-value purple" v-hover-scale="1.2">Up to 30%</span>
+              </div>
+            </div>
+            <ul class="calc-list">
+              <li v-hover-scale="1.2"><span class="check" >✓</span> More sensitive to heat</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> May need extra support to stay safe and cool</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section class="health-section">
-        <div class="health-container">
-          <div class="health-left">
-            <h2 class="health-title">Stay Cool, Stay Healthy</h2>
-            <p class="health-description">
-              Simple, effective actions to manage extreme heat conditions safely.
-            </p>
+      <section class="stay-healthy-section">
+        <h2 class="stay-healthy-title" v-hover-scale="1.2">Stay Cool, Stay Healthy</h2>
+        <p class="stay-healthy-subtitle" v-hover-scale="1.2">
+          Simple actions can make a big difference. Protect yourself and check on others.
+        </p>
+        <div class="healthy-cards">
+          <div class="healthy-card">
+            <div class="healthy-card-header">
+              <span class="healthy-icon blue" v-hover-scale="1.2">🏠</span>
+              <h3 v-hover-scale="1.2">Stay Indoors</h3>
+            </div>
+            <ul class="healthy-list">
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Close curtains or blinds</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Stay inside between 12-4 PM</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Use fans or air conditioning</li>
+            </ul>
           </div>
 
-          <div class="health-cards">
-            <div class="health-card">
-              <span class="card-icon">🏠</span>
-              <h3>Stay Cool Indoors</h3>
-              <ul class="tips-list">
-                <li>
-                  <span class="check">✓</span>
-                  Close blinds and curtains during the peak of the day.
-                </li>
-                <li>
-                  <span class="check">✓</span>
-                  Use fans to circulate air, but avoid pointing them directly at the body if over
-                  35°C.
-                </li>
-                <li>
-                  <span class="check">✓</span>
-                  Open windows for cross-ventilation only once the sun has set.
-                </li>
-              </ul>
+          <div class="healthy-card">
+            <div class="healthy-card-header">
+              <span class="healthy-icon cyan" v-hover-scale="1.2">💧</span>
+              <h3 v-hover-scale="1.2">Drink Water</h3>
             </div>
+            <ul class="healthy-list">
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Drink a glass every hour</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Avoid alcohol and caffeine</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Eat light meals, fruits and vegetables</li>
+            </ul>
+          </div>
 
-            <div class="health-card">
-              <span class="card-icon">💧</span>
-              <h3>Stay Hydrated & Alert</h3>
-              <ul class="tips-list">
-                <li>
-                  <span class="check">✓</span>
-                  Drink water regularly, even if you do not feel thirsty.
-                </li>
-                <li>
-                  <span class="check">✓</span>
-                  Opt for light meals like salads or fruit to avoid generating internal heat.
-                </li>
-                <li>
-                  <span class="check">✓</span>
-                  Limit alcohol and caffeine which can increase dehydration.
-                </li>
-              </ul>
+          <div class="healthy-card">
+            <div class="healthy-card-header">
+              <span class="healthy-icon green" v-hover-scale="1.2">🌳</span>
+              <h3 v-hover-scale="1.2">Find Cool Places</h3>
             </div>
+            <ul class="healthy-list">
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Visit a cool refuge nearby</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Spend time in shaded areas</li>
+              <li v-hover-scale="1.2"><span class="check" >✓</span> Check on family, friends and neighbours</li>
+            </ul>
+          </div>
+
+          <div class="healthy-card help-card">
+            <div class="healthy-card-header">
+              <span class="healthy-icon red" v-hover-scale="1.2">📞</span>
+              <h3 v-hover-scale="1.2">Need Help?</h3>
+            </div>
+            <ul class="help-list">
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🚨</span> Call 000 in an emergency</li>
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">👨‍⚕️</span> Nurse-on-Call: 1300 60 60 24</li>
+              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🌐</span> Translation: 131 450</li>
+            </ul>
           </div>
         </div>
       </section>
 
       <Footer />
-
-      <!-- Back to Top Button -->
-      <button
-        v-if="showBackToTop"
-        class="back-to-top"
-        @click="scrollToTop"
-        aria-label="Back to top"
-      >
-        ↑
-      </button>
     </main>
 
     <!-- Emergency Alert Modal -->
@@ -213,12 +410,16 @@ onUnmounted(() => {
 
 .main-content {
   min-height: calc(100vh - 80px);
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+ 
+  /* background-size: cover; */
+  /* background-position: center; */
+  /* background-attachment: fixed; */
 }
-
+.heroWrip{
+   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/bg.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
 .hero {
   max-width: 1200px;
   margin: 0 auto;
@@ -226,6 +427,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   gap: 4rem;
+
   min-height: calc(100vh - 160px);
 }
 
@@ -300,15 +502,20 @@ onUnmounted(() => {
 }
 
 .info-section {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-  padding: 5rem 2rem;
+  background-color: #ffffff;
+  /* border-radius: 16px; */
+  padding: 2rem;
+  text-align: left;
+  display: flex;
+  gap: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .info-grid {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 4rem;
 }
 
@@ -316,6 +523,112 @@ onUnmounted(() => {
 .info-right {
   display: flex;
   flex-direction: column;
+}
+
+.risk-level-card {
+  background-color: #f8f9ff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e0e7ff;
+}
+
+.risk-level-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.risk-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.risk-level-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.risk-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.risk-dot.green {
+  background-color: #22c55e;
+}
+
+.risk-dot.yellow {
+  background-color: #eab308;
+}
+
+.risk-dot.orange {
+  background-color: #f97316;
+}
+
+.risk-dot.red {
+  background-color: #dc2626;
+}
+
+.risk-label {
+  font-size: 1rem;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.high-risk-stats {
+  background-color: #f8f9ff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #e0e7ff;
+}
+
+.stats-title {
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  color: #dc2626;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.3;
+  margin-top: 0.25rem;
 }
 
 .tag {
@@ -416,6 +729,521 @@ onUnmounted(() => {
   margin: 0;
 }
 
+.cool-refuges-section {
+  background-color: #f0f7ff;
+  padding: 5rem 2rem;
+}
+
+.cool-refuges-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cool-refuges-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 1rem 0 1rem;
+}
+
+.cool-refuges-description {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 700px;
+}
+
+.cool-refuges-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.refuges-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.refuge-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.refuge-stat-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.refuge-stat-card.blue {
+  border: 2px solid #dbeafe;
+}
+
+.refuge-stat-card.green {
+  border: 2px solid #bbf7d0;
+}
+
+.stat-icon-large {
+  font-size: 2rem;
+}
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.stat-desc {
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.3;
+}
+
+.refuge-types {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.refuge-type-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.type-icon {
+  font-size: 1.75rem;
+}
+
+.type-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.type-info p {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+.refuges-right {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 400px;
+}
+
+.refuge-image {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.refuge-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.refuge-action {
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.action-hint {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.btn-find-refuge {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.btn-find-refuge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+.btn-icon {
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .cool-refuges-content {
+    grid-template-columns: 1fr;
+  }
+
+  .refuges-right {
+    order: -1;
+  }
+
+  .refuge-image {
+    height: 250px;
+  }
+}
+
+.why-matters-section {
+  background-color: #f0f7ff;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.why-matters-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+}
+
+.why-matters-subtitle {
+  font-size: 1rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  line-height: 1.5;
+}
+
+.why-matters-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.matter-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: left;
+  display: flex;
+  gap: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.matter-number {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.matter-number.blue {
+  color: #1e40af;
+}
+
+.matter-number.red {
+  color: #dc2626;
+}
+
+.matter-number.green {
+  color: #16a34a;
+}
+
+.matter-content h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.matter-content p {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.matter-visual {
+  margin-top: 1rem;
+}
+
+.matter-visual.people {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.person {
+  font-size: 1.25rem;
+}
+
+.person.filled {
+  opacity: 1;
+}
+
+.person.empty {
+  opacity: 0.3;
+}
+
+.bar-chart {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.bar-label {
+  background-color: #dc2626;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.bar-value {
+  color: #666;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #dc2626;
+  border-radius: 4px;
+}
+
+.temp-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.temp-labels {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.temp-icon {
+  font-size: 1.25rem;
+}
+
+.temp-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.slider-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #dbeafe;
+  border-radius: 4px;
+  position: relative;
+}
+
+.slider-fill {
+  height: 100%;
+  background-color: #1e40af;
+  border-radius: 4px;
+}
+
+.temp-high {
+  font-size: 0.75rem;
+  color: #1e40af;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hydration {
+  display: flex;
+  gap: 1rem;
+}
+
+.hydration-box {
+  flex: 1;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  border: 2px solid #e5e7eb;
+}
+
+.hydration-box.normal {
+  background-color: #f9fafb;
+}
+
+.hydration-box.senior {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+.hydration-box.senior .hydration-label {
+  color: white;
+}
+
+.drop-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.hydration-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .why-matters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matter-card {
+    flex-direction: column;
+  }
+
+  .matter-number {
+    font-size: 2.5rem;
+  }
+}
+
+.heat-impact-section {
+  background-color: #ffffff;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.heat-impact-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 2rem;
+}
+
+.heat-impact-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.impact-card {
+  background-color: #f8f9ff;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.impact-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+.impact-card.blue {
+  background-color: #eff6ff;
+}
+
+.impact-card.red {
+  background-color: #fef2f2;
+}
+
+.impact-card.orange {
+  background-color: #fff7ed;
+}
+
+.impact-card.green {
+  background-color: #f0fdf4;
+}
+
+.impact-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.impact-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.impact-card.blue .impact-number {
+  color: #2563eb;
+}
+
+.impact-card.red .impact-number {
+  color: #dc2626;
+}
+
+.impact-card.orange .impact-number {
+  color: #ea580c;
+}
+
+.impact-card.green .impact-number {
+  color: #16a34a;
+}
+
+.impact-label {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+@media (max-width: 1024px) {
+  .heat-impact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .heat-impact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .risk-section {
   background-color: #ffffff;
   padding: 5rem 2rem;
@@ -436,66 +1264,241 @@ onUnmounted(() => {
   margin: 0 auto 3rem;
 }
 
-.risk-cards {
+.risk-calculate-cards {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
-.risk-card {
-  background-color: #f8f9ff;
+.risk-calc-card {
+  background-color: #ffffff;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: left;
+  border: 2px solid #e5e7eb;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
 }
 
-.risk-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+.risk-calc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.risk-card.temperature {
-  border-bottom: 4px solid #2563eb;
+.risk-calc-card.temp {
+  border-color: #fed7aa;
+  background-color: #fff7ed;
 }
 
-.risk-card.tree {
-  border-bottom: 4px solid #16a34a;
+.risk-calc-card.tree {
+  border-color: #bbf7d0;
+  background-color: #f0fdf4;
 }
 
-.risk-card.elderly {
-  border-bottom: 4px solid #92400e;
+.risk-calc-card.elderly {
+  border-color: #ddd6fe;
+  background-color: #faf5ff;
 }
 
-.risk-icon {
-  font-size: 2.5rem;
-  display: block;
+.calc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.risk-card h3 {
-  font-size: 1.25rem;
+.calc-icon {
+  font-size: 2rem;
+}
+
+.calc-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.calc-label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.calc-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ea580c;
+}
+
+.calc-value.green {
+  color: #16a34a;
+}
+
+.calc-value.purple {
+  color: #7c3aed;
+}
+
+.calc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calc-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.calc-list .check {
+  color: #16a34a;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stay-healthy-section {
+  background-color: #f0f7ff;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.stay-healthy-title {
+  font-size: 2rem;
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 0.75rem;
 }
 
-.risk-card p {
-  font-size: 0.95rem;
+.stay-healthy-subtitle {
+  font-size: 1rem;
   color: #666;
-  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.healthy-cards {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.healthy-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: left;
+  border: 2px solid #e5e7eb;
+}
+
+.healthy-card.help-card {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.healthy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.healthy-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.healthy-icon.blue {
+  background-color: #dbeafe;
+}
+
+.healthy-icon.cyan {
+  background-color: #cffafe;
+}
+
+.healthy-icon.green {
+  background-color: #bbf7d0;
+}
+
+.healthy-icon.red {
+  background-color: #fecaca;
+}
+
+.healthy-card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
   margin: 0;
 }
 
+.healthy-list,
+.help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.healthy-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.healthy-list .check {
+  color: #16a34a;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.help-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.help-icon {
+  font-size: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .risk-calculate-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .healthy-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .risk-calculate-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .healthy-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 .health-section {
-  background: linear-gradient(135deg, #0c2d6e 0%, #1e4a9e 100%);
-  padding: 5rem 2rem;
+  display: none;
 }
 
 .health-container {
@@ -575,39 +1578,5 @@ onUnmounted(() => {
   color: #16a34a;
   font-weight: bold;
   flex-shrink: 0;
-}
-
-
-
-/* Back to Top Button */
-.back-to-top {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background-color: #0d3a8f;
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(13, 58, 143, 0.3);
-  transition: all 0.3s ease;
-  z-index: 99;
-  border: none;
-}
-
-.back-to-top:hover {
-  background-color: #1a4bb8;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(13, 58, 143, 0.4);
-}
-
-.back-to-top:active {
-  transform: translateY(0);
 }
 </style>

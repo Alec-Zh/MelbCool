@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-
+import AlertModal from './AlertModal.vue';
+const showAlertModal = ref(false);
 const menuOpen = ref(false)
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
@@ -12,6 +13,7 @@ const closeMenu = () => {
 
 <template>
   <header class="header">
+    <AlertModal :show="showAlertModal" @close="showAlertModal = false" />
     <div class="header-container">
       <!-- Logo → 主页 -->
       <RouterLink to="/" class="brand" @click="closeMenu">
@@ -26,7 +28,7 @@ const closeMenu = () => {
         <RouterLink to="/cool-refuges" class="nav-link">Cool Refuges</RouterLink>
       </nav>
 
-      <button class="btn-alerts desktop-only">Get Alerts</button>
+      <button class="btn-alerts desktop-only" @click="showAlertModal = true">Get Alerts</button>
 
       <!-- 汉堡按钮（移动端） -->
       <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
@@ -43,7 +45,7 @@ const closeMenu = () => {
       <RouterLink to="/cool-refuges" class="mobile-link" @click="closeMenu"
         >Cool Refuges</RouterLink
       >
-      <button class="btn-alerts mobile-btn">Get Alerts</button>
+      <button class="btn-alerts mobile-btn" @click="showAlertModal = true">Get Alerts</button>
     </div>
   </header>
 </template>

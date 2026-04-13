@@ -1,5 +1,0 @@
-name = "fit5120project-tp13"
-pages_build_output_dir = "./dist"
-
-[build]
-command = "pnpm install --no-frozen-lockfile && pnpm run build"

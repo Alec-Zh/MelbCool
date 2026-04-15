@@ -83,15 +83,15 @@ async function initMap() {
   map = L.map(mapContainer.value, {
     center: DEFAULT_CENTER,
     zoom: DEFAULT_ZOOM,
-    minZoom: 11,                 // prevent zooming out beyond Greater Melbourne
+    minZoom: 11, // prevent zooming out beyond Greater Melbourne
     maxZoom: 18,
     zoomControl: true,
     scrollWheelZoom: true,
     maxBounds: [
-      [-39.5, 140.5],            // south-west corner of Victoria
-      [-33.5, 150.5],            // north-east corner of Victoria
+      [-39.5, 140.5], // south-west corner of Victoria
+      [-33.5, 150.5], // north-east corner of Victoria
     ],
-    maxBoundsViscosity: 1.0,     // hard boundary, user cannot drag outside
+    maxBoundsViscosity: 1.0, // hard boundary, user cannot drag outside
   })
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -108,6 +108,8 @@ async function initMap() {
       style: getStyle,
       onEachFeature,
     }).addTo(map)
+
+    map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] })
   } catch (e) {
     console.error('Failed to load GeoJSON:', e)
   }
@@ -150,10 +152,13 @@ onUnmounted(() => {
 })
 
 watch(() => props.suburbs, refreshStyles, { deep: true })
-watch(() => props.selectedSuburb, (suburb) => {
-  refreshStyles()
-  flyToSuburb(suburb)
-})
+watch(
+  () => props.selectedSuburb,
+  (suburb) => {
+    refreshStyles()
+    flyToSuburb(suburb)
+  },
+)
 </script>
 
 <template>

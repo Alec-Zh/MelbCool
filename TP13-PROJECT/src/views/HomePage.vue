@@ -24,7 +24,8 @@ const showAlertModal = ref(false)
           </p>
           <div class="hero-buttons">
             <!-- <button class="btn-primary"><span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span></button> -->
-            <button class="btn-secondary"><span class="icon" v-hover-scale="1.2">🧾 View Heat Map</span></button>
+             <button class="btn-secondary" @click="$router.push('/heatmap')">
+                <span class="icon" v-hover-scale="1.2">📃 View Heat Map</span></button>
           </div>
         </div>
       </div>

@@ -70,7 +70,7 @@ function onEachFeature(feature, layer) {
   )
   if (suburb) {
     layer.bindTooltip(
-      `<strong>${suburb.suburb_name}</strong><br>${suburb.temperature}°C · ${suburb.risk_level} heat`,
+      `<strong>${suburb.suburb_name}</strong><br>🌡️ ${suburb.temperature}°C<br>⚠️ ${suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1)} Risk`,
       { sticky: true, className: 'suburb-tooltip' },
     )
   }
@@ -78,15 +78,23 @@ function onEachFeature(feature, layer) {
 
 async function initMap() {
   map = L.map(mapContainer.value, {
-    center: [-37.8136, 144.9631],
-    zoom: 11,
-    zoomControl: true,
-    scrollWheelZoom: true,
+  center: [-37.8136, 144.9631],
+  zoom: 12,                    // tighter initial zoom focused on inner Melbourne
+  minZoom: 11,                 // prevent zooming out beyond Greater Melbourne
+  maxZoom: 18,
+  zoomControl: true,
+  scrollWheelZoom: true,
+  maxBounds: [
+    [-39.5, 140.5],            // south-west corner of Victoria
+    [-33.5, 150.5],            // north-east corner of Victoria
+    ],
+  maxBoundsViscosity: 1.0,     // hard boundary, user cannot drag outside
   })
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap © CARTO',
     maxZoom: 18,
+    minZoom: 11,
   }).addTo(map)
 
   try {

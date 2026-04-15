@@ -43,7 +43,8 @@
 }
 
 .footer-logo {
-  width: 120px;
+  height: 32px;
+  width: auto;
   object-fit: contain;
 }
 
@@ -75,7 +76,7 @@
     gap: 1.5rem;
     text-align: center;
   }
-  
+
   .footer-links {
     justify-content: center;
   }

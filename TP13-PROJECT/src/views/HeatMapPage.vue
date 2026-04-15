@@ -5,6 +5,7 @@ import SuburbSearch from '../components/SuburbSearch.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
 import SuburbMap from '../components/SuburbMap.vue'
 import HeatLevelGuide from '../components/HeatLevelGuide.vue'
+import Footer from '../components/Footer.vue'
 
 const API_BASE = 'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com'
 
@@ -170,6 +171,7 @@ onMounted(fetchSuburbs)
 
       <HeatLevelGuide />
     </main>
+    <Footer />
   </div>
 </template>
 

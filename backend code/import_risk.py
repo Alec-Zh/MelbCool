@@ -4,7 +4,7 @@ DB_CONFIG = {
     "host": "heatmap.cbccg4mkeiln.ap-southeast-2.rds.amazonaws.com",
     "port": 3306,
     "user": "admin",
-    "password": not shown,
+     "password": not shown,
     "database": "heatmap",
     "charset": "utf8mb4",
 }

@@ -1,8 +1,7 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import SuburbSearch from '../components/SuburbSearch.vue'
-import SuburbList from '../components/SuburbList.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
 import SuburbMap from '../components/SuburbMap.vue'
 import HeatLevelGuide from '../components/HeatLevelGuide.vue'
@@ -10,66 +9,78 @@ import HeatLevelGuide from '../components/HeatLevelGuide.vue'
 const API_BASE = 'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com'
 
 const INNER_MELBOURNE = new Set([
-  'Abbotsford',
-  'Albert Park',
-  'Alphington - Fairfield',
-  'Armadale',
+  'Aberfeldie',
+  'Airport West',
+  'Albert Park (Vic.)',
+  'Armadale (Vic.)',
   'Ascot Vale',
-  'Brunswick - North',
-  'Brunswick - South',
+  'Avondale Heights',
+  'Balaclava (Vic.)',
+  'Brunswick (Vic.)',
   'Brunswick East',
   'Brunswick West',
-  'Carlton',
-  'Carlton North - Princes Hill',
-  'Clifton Hill - Alphington',
-  'Coburg - East',
-  'Coburg - West',
-  'Collingwood',
+  'Burnley',
+  'Carlton (Vic.)',
+  'Carlton North',
+  'Clifton Hill',
+  'Coburg',
+  'Coburg North',
+  'Collingwood (Vic.)',
+  'Cremorne (Vic.)',
   'Docklands',
   'East Melbourne',
   'Elwood',
-  'Essendon (West) - Aberfeldie',
-  'Essendon - East',
-  'Fitzroy',
+  'Essendon',
+  'Essendon Fields',
+  'Essendon North',
+  'Essendon West',
+  'Fairfield (Vic.)',
+  'Fawkner',
+  'Fitzroy (Vic.)',
   'Fitzroy North',
   'Flemington',
-  'Flemington Racecourse',
+  'Glenroy (Vic.)',
+  'Gowanbrae',
+  'Hadfield',
+  'Keilor East',
   'Kensington (Vic.)',
-  'Melbourne CBD - East',
-  'Melbourne CBD - North',
-  'Melbourne CBD - West',
+  'Kooyong',
+  'Malvern (Vic.)',
+  'Malvern East',
+  'Melbourne',
+  'Middle Park (Vic.)',
   'Moonee Ponds',
+  'Niddrie',
   'North Melbourne',
-  'Northcote - East',
-  'Northcote - West',
-  'Parkville',
+  'Oak Park',
+  'Parkville (Vic.)',
+  'Pascoe Vale',
   'Pascoe Vale South',
   'Port Melbourne',
-  'Port Melbourne Industrial',
-  'Prahran - Windsor',
-  'Richmond (South) - Cremorne',
-  'Richmond - North',
-  'Royal Botanic Gardens Victoria',
+  'Prahran',
+  'Princes Hill',
+  'Richmond (Vic.)',
+  'Ripponlea',
   'South Melbourne',
-  'South Yarra - North',
-  'South Yarra - South',
-  'South Yarra - West',
-  'Southbank (West) - South Wharf',
-  'Southbank - East',
-  'St Kilda - Central',
-  'St Kilda - West',
-  'St Kilda East',
-  'Thornbury',
+  'South Wharf',
+  'South Yarra',
+  'Southbank',
+  'St Kilda (Vic.)',
+  'St Kilda West',
+  'Strathmore (Vic.)',
+  'Strathmore Heights',
   'Toorak',
-  'West Melbourne - Industrial',
-  'West Melbourne - Residential',
+  'Travancore',
+  'West Melbourne',
+  'Windsor (Vic.)',
 ])
 
 const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
-const search = ref('')
 const selectedSuburb = ref(null)
+const detailRef = ref(null)
+const searchRef = ref(null)
 
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
@@ -90,16 +101,40 @@ async function fetchSuburbs() {
   }
 }
 
-function selectSuburb(suburb) {
-  selectedSuburb.value = selectedSuburb.value?.suburb_name === suburb.suburb_name ? null : suburb
-  if (selectedSuburb.value) search.value = ''
+async function selectSuburb(suburb) {
+  async function scrollToSearch() {
+    await nextTick()
+    const offset = searchRef.value?.getBoundingClientRect().top + window.scrollY - 64 - 16
+    window.scrollTo({ top: offset, behavior: 'smooth' })
+  }
+
+  // null means search was cleared — deselect and scroll back to search bar
+  if (!suburb) {
+    selectedSuburb.value = null
+    scrollToSearch()
+    return
+  }
+
+  const isSame = selectedSuburb.value?.suburb_name === suburb.suburb_name
+
+  // Toggle: clicking the same suburb deselects and scrolls back to search bar
+  if (isSame) {
+    selectedSuburb.value = null
+    scrollToSearch()
+    return
+  }
+
+  selectedSuburb.value = suburb
+  await nextTick()
+  const el = detailRef.value
+  if (el) {
+    // 64px sticky navbar + 100px map peek so user can click map to deselect
+    const offset = el.getBoundingClientRect().top + window.scrollY - 64 - 100
+    window.scrollTo({ top: offset, behavior: 'smooth' })
+  }
 }
 
 onMounted(fetchSuburbs)
-
-watch(search, (val) => {
-  if (val.trim()) selectedSuburb.value = null
-})
 </script>
 
 <template>
@@ -114,24 +149,23 @@ watch(search, (val) => {
         </p>
       </div>
 
-      <SuburbSearch v-model="search" />
-
       <div v-if="loading" class="status-msg">Loading suburb data...</div>
       <div v-else-if="error" class="status-msg error">{{ error }}</div>
 
       <template v-else>
+        <!-- searchRef must be inside v-else so suburbs prop is populated before search is usable -->
+        <div ref="searchRef">
+          <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
+        </div>
         <SuburbMap
           :suburbs="innerSuburbs"
           :selectedSuburb="selectedSuburb"
           @select="selectSuburb"
         />
-        <SuburbList
-          :suburbs="innerSuburbs"
-          :selectedSuburb="selectedSuburb"
-          :search="search"
-          @select="selectSuburb"
-        />
-        <SuburbDetail v-if="selectedSuburb" :suburb="selectedSuburb" />
+        <!-- Scroll target; SuburbDetail only renders when a suburb is selected -->
+        <div ref="detailRef">
+          <SuburbDetail v-if="selectedSuburb" :suburb="selectedSuburb" />
+        </div>
       </template>
 
       <HeatLevelGuide />

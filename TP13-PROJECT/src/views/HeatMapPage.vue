@@ -1,8 +1,7 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import SuburbSearch from '../components/SuburbSearch.vue'
-import SuburbList from '../components/SuburbList.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
 import SuburbMap from '../components/SuburbMap.vue'
 import HeatLevelGuide from '../components/HeatLevelGuide.vue'
@@ -68,8 +67,9 @@ const INNER_MELBOURNE = new Set([
 const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
-const search = ref('')
 const selectedSuburb = ref(null)
+const detailRef = ref(null)
+const searchRef = ref(null)
 
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
@@ -90,16 +90,40 @@ async function fetchSuburbs() {
   }
 }
 
-function selectSuburb(suburb) {
-  selectedSuburb.value = selectedSuburb.value?.suburb_name === suburb.suburb_name ? null : suburb
-  if (selectedSuburb.value) search.value = ''
+async function selectSuburb(suburb) {
+  async function scrollToSearch() {
+    await nextTick()
+    const offset = searchRef.value?.getBoundingClientRect().top + window.scrollY - 64 - 16
+    window.scrollTo({ top: offset, behavior: 'smooth' })
+  }
+
+  // null means search was cleared — deselect and scroll back to search bar
+  if (!suburb) {
+    selectedSuburb.value = null
+    scrollToSearch()
+    return
+  }
+
+  const isSame = selectedSuburb.value?.suburb_name === suburb.suburb_name
+
+  // Toggle: clicking the same suburb deselects and scrolls back to search bar
+  if (isSame) {
+    selectedSuburb.value = null
+    scrollToSearch()
+    return
+  }
+
+  selectedSuburb.value = suburb
+  await nextTick()
+  const el = detailRef.value
+  if (el) {
+    // 64px sticky navbar + 100px map peek so user can click map to deselect
+    const offset = el.getBoundingClientRect().top + window.scrollY - 64 - 100
+    window.scrollTo({ top: offset, behavior: 'smooth' })
+  }
 }
 
 onMounted(fetchSuburbs)
-
-watch(search, (val) => {
-  if (val.trim()) selectedSuburb.value = null
-})
 </script>
 
 <template>
@@ -114,7 +138,9 @@ watch(search, (val) => {
         </p>
       </div>
 
-      <SuburbSearch v-model="search" />
+      <div ref="searchRef">
+        <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
+      </div>
 
       <div v-if="loading" class="status-msg">Loading suburb data...</div>
       <div v-else-if="error" class="status-msg error">{{ error }}</div>
@@ -125,13 +151,10 @@ watch(search, (val) => {
           :selectedSuburb="selectedSuburb"
           @select="selectSuburb"
         />
-        <SuburbList
-          :suburbs="innerSuburbs"
-          :selectedSuburb="selectedSuburb"
-          :search="search"
-          @select="selectSuburb"
-        />
-        <SuburbDetail v-if="selectedSuburb" :suburb="selectedSuburb" />
+        <!-- Scroll target; SuburbDetail only renders when a suburb is selected -->
+        <div ref="detailRef">
+          <SuburbDetail v-if="selectedSuburb" :suburb="selectedSuburb" />
+        </div>
       </template>
 
       <HeatLevelGuide />

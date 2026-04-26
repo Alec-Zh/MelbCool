@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import NavBar from '../components/NavBar.vue'
 import SuburbSearch from '../components/SuburbSearch.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
@@ -80,8 +80,6 @@ const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
 const selectedSuburb = ref(null)
-const detailRef = ref(null)
-const searchRef = ref(null)
 
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
@@ -102,37 +100,17 @@ async function fetchSuburbs() {
   }
 }
 
-async function selectSuburb(suburb) {
-  async function scrollToSearch() {
-    await nextTick()
-    const offset = searchRef.value?.getBoundingClientRect().top + window.scrollY - 64 - 16
-    window.scrollTo({ top: offset, behavior: 'smooth' })
-  }
-
-  // null means search was cleared — deselect and scroll back to search bar
+function selectSuburb(suburb) {
   if (!suburb) {
     selectedSuburb.value = null
-    scrollToSearch()
     return
   }
-
   const isSame = selectedSuburb.value?.suburb_name === suburb.suburb_name
+  selectedSuburb.value = isSame ? null : suburb
+}
 
-  // Toggle: clicking the same suburb deselects and scrolls back to search bar
-  if (isSame) {
-    selectedSuburb.value = null
-    scrollToSearch()
-    return
-  }
-
-  selectedSuburb.value = suburb
-  await nextTick()
-  const el = detailRef.value
-  if (el) {
-    // 64px sticky navbar + 100px map peek so user can click map to deselect
-    const offset = el.getBoundingClientRect().top + window.scrollY - 64 - 100
-    window.scrollTo({ top: offset, behavior: 'smooth' })
-  }
+function clearSelection() {
+  selectedSuburb.value = null
 }
 
 onMounted(fetchSuburbs)
@@ -142,11 +120,12 @@ onMounted(fetchSuburbs)
   <div class="page">
     <NavBar />
     <main class="content">
+      <!-- Page header -->
       <div class="page-header">
         <h1 class="page-title">Heat Vulnerability Map</h1>
         <p class="page-desc">
-          See how hot it is across inner Melbourne and which areas may need extra care during hot
-          weather. Click on any suburb to view details.
+          Heat and vulnerability data for inner Melbourne suburbs.
+          <strong>Click any suburb</strong> on the map or use the search bar to view details.
         </p>
       </div>
 
@@ -154,22 +133,33 @@ onMounted(fetchSuburbs)
       <div v-else-if="error" class="status-msg error">{{ error }}</div>
 
       <template v-else>
-        <!-- searchRef must be inside v-else so suburbs prop is populated before search is usable -->
-        <div ref="searchRef">
-          <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
-        </div>
-        <SuburbMap
-          :suburbs="innerSuburbs"
-          :selectedSuburb="selectedSuburb"
-          @select="selectSuburb"
-        />
-        <!-- Scroll target; SuburbDetail only renders when a suburb is selected -->
-        <div ref="detailRef">
-          <SuburbDetail v-if="selectedSuburb" :suburb="selectedSuburb" />
+        <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
+
+        <!-- Map + right panel side by side -->
+        <div class="map-panel-row">
+          <!-- Map -->
+          <div class="map-col">
+            <SuburbMap
+              :suburbs="innerSuburbs"
+              :selectedSuburb="selectedSuburb"
+              @select="selectSuburb"
+            />
+          </div>
+
+          <!-- Right panel: legend by default, detail when suburb selected -->
+          <div class="right-col">
+            <Transition name="panel-switch" mode="out-in">
+              <SuburbDetail
+                v-if="selectedSuburb"
+                :key="selectedSuburb.suburb_name"
+                :suburb="selectedSuburb"
+                @close="clearSelection"
+              />
+              <HeatLevelGuide v-else />
+            </Transition>
+          </div>
         </div>
       </template>
-
-      <HeatLevelGuide />
     </main>
     <Footer />
   </div>
@@ -184,27 +174,84 @@ onMounted(fetchSuburbs)
 .content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 0 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .page-header {
-  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #0d3a8f 0%, #1a56c4 100%);
+  margin: 0 -1.5rem;
+  padding: 2.25rem 1.5rem;
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: #ffffff;
   margin-bottom: 0.4rem;
 }
 
 .page-desc {
-  font-size: 1rem;
-  color: var(--color-text-muted);
-  line-height: 1.6;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  max-width: 620px;
+}
+
+.page-desc strong {
+  color: #ffffff;
+}
+
+/* Map + right panel */
+.map-panel-row {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.map-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-col {
+  position: sticky;
+  top: 88px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  /* hide scrollbar visually but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+@media (max-width: 960px) {
+  .map-panel-row {
+    grid-template-columns: 1fr;
+  }
+  .right-col {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* Panel switch transition */
+.panel-switch-enter-active,
+.panel-switch-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.panel-switch-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+.panel-switch-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
 }
 
 .status-msg {

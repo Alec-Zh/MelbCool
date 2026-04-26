@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-// import AlertModal from './AlertModal.vue'  // Iteration 2
 const menuOpen = ref(false)
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
@@ -12,22 +11,18 @@ const closeMenu = () => {
 
 <template>
   <header class="header">
-    <!-- <AlertModal :show="showAlertModal" @close="showAlertModal = false" /> -->
     <div class="header-container">
-      <!-- Logo → home -->
+      <!-- Logo → home (left) -->
       <RouterLink to="/" class="brand" @click="closeMenu">
-        <span class="brand-name">CoolPath</span>
         <img src="/logo.png" alt="CoolPath Melbourne" class="logo" />
+        <span class="brand-name">CoolPath</span>
       </RouterLink>
 
-      <!-- Desktop nav — centred -->
+      <!-- Desktop nav — right -->
       <nav class="nav">
         <RouterLink to="/" class="nav-link">Home</RouterLink>
-        <RouterLink to="/heatmap" class="nav-link">HeatMap</RouterLink>
-        <!-- <RouterLink to="/cool-refuges" class="nav-link">Cool Refuges</RouterLink> -->
+        <RouterLink to="/heatmap" class="nav-link">Heat Map</RouterLink>
       </nav>
-
-      <!-- <button class="btn-alerts desktop-only" @click="showAlertModal = true">Get Alerts</button> -->
 
       <!-- Hamburger (mobile) -->
       <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
@@ -40,11 +35,7 @@ const closeMenu = () => {
     <!-- Mobile dropdown -->
     <div class="mobile-menu" :class="{ active: menuOpen }">
       <RouterLink to="/" class="mobile-link" @click="closeMenu">Home</RouterLink>
-      <RouterLink to="/heatmap" class="mobile-link" @click="closeMenu">HeatMap</RouterLink>
-      <!-- <RouterLink to="/cool-refuges" class="mobile-link" @click="closeMenu"
-        >Cool Refuges</RouterLink
-      > -->
-      <!-- <button class="btn-alerts mobile-btn" @click="showAlertModal = true">Get Alerts</button> -->
+      <RouterLink to="/heatmap" class="mobile-link" @click="closeMenu">Heat Map</RouterLink>
     </div>
   </header>
 </template>
@@ -61,40 +52,38 @@ const closeMenu = () => {
 .header-container {
   max-width: var(--max-width);
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 2rem;
-  height: 64px;
+  height: 72px;
 }
 
-/* Brand / Logo — left */
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.6rem;
   text-decoration: none;
-  justify-self: start;
-  min-width: 0;
+  flex-shrink: 0;
 }
 
 .brand-name {
   color: var(--color-primary);
   font-weight: bold;
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .logo {
-  height: 32px;
+  height: 48px;
   width: auto;
   object-fit: contain;
 }
 
-/* Desktop nav — centre */
+/* Desktop nav — right */
 .nav {
   display: flex;
   gap: 2rem;
-  justify-self: center;
+  align-items: center;
 }
 
 .nav-link {
@@ -115,14 +104,6 @@ const closeMenu = () => {
   border-bottom: 2px solid var(--color-primary);
 }
 
-/* Right slot — keeps grid balanced */
-.nav-right {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-}
-
-/* Hamburger button */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -132,8 +113,6 @@ const closeMenu = () => {
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  grid-column: 3;
-  justify-self: end;
 }
 
 .hamburger span {
@@ -155,7 +134,6 @@ const closeMenu = () => {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Mobile menu */
 .mobile-menu {
   display: none;
   flex-direction: column;
@@ -182,23 +160,12 @@ const closeMenu = () => {
   color: var(--color-primary);
 }
 
-/* ≤ 768px: switch to mobile layout */
 @media (max-width: 768px) {
-  .header-container {
-    grid-template-columns: 1fr auto;
-  }
-
   .nav {
     display: none;
   }
-
-  .nav-right {
-    display: none;
-  }
-
   .hamburger {
     display: flex;
-    grid-column: 2;
   }
 }
 </style>

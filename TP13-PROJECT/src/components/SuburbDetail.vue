@@ -8,34 +8,30 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const props = defineProps({
-  suburb: {
-    type: Object,
-    required: true,
-  },
+  suburb: { type: Object, required: true },
 })
+
+const emit = defineEmits(['close'])
 
 const updatedAt = computed(() => {
   if (!props.suburb.updated_at) return null
   return dayjs.utc(props.suburb.updated_at).tz('Australia/Melbourne').format('D MMM YYYY, h:mm A')
 })
 
-// ── Count-up animation ────────────────────────────────
 function useCountUp(target, duration = 800) {
   const display = ref(0)
   let frame = null
-
   function animate(from, to) {
     cancelAnimationFrame(frame)
     const start = performance.now()
     const step = (now) => {
       const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
       display.value = Math.round(from + (to - from) * eased)
       if (progress < 1) frame = requestAnimationFrame(step)
     }
     frame = requestAnimationFrame(step)
   }
-
   watch(target, (to, from) => animate(from ?? 0, to ?? 0), { immediate: true })
   return display
 }
@@ -51,7 +47,6 @@ const totalDisplay = useCountUp(
   1000,
 )
 
-// ── Progress bar animation ────────────────────────────
 const heatBarWidth = ref(0)
 const vulnBarWidth = ref(0)
 
@@ -61,65 +56,27 @@ function animateBars() {
   setTimeout(() => {
     heatBarWidth.value = Math.min(props.suburb.heat_score ?? 0, 100)
     vulnBarWidth.value = Math.min(props.suburb.vulnerability_score ?? 0, 100)
-  }, 120) // slight delay so transition kicks in after mount
+  }, 120)
 }
 
 onMounted(animateBars)
 watch(() => props.suburb.suburb_name, animateBars)
 
-// ── Risk score colour ─────────────────────────────────
 function scoreColor(score) {
   if (score >= 65) return '#EF4444'
   if (score >= 40) return '#F97316'
   return '#22C55E'
 }
 
-const heatAdvice = {
-  higher: {
-    title: '🌡️ It Is Hot Right Now',
-    text: "It's currently hot in this suburb. Stay indoors and keep cool with air conditioning. Drink plenty of water and ask someone for help if you feel unwell.",
-    bg: '#FEF2F2',
-    border: '#FECACA',
-    color: '#991B1B',
-  },
+const heatLabels = {
+  higher: { label: 'Currently hot (≥ 35°C)', bg: '#FEF2F2', border: '#FECACA', color: '#991B1B' },
   moderate: {
-    title: '🌡️ It Is Warm Right Now',
-    text: 'Temperatures are warm. Drink water regularly and rest in the shade if you go outside. Avoid being outdoors during the hottest part of the day.',
+    label: 'Currently warm (28–34°C)',
     bg: '#FFFBEB',
     border: '#FDE68A',
     color: '#92400E',
   },
-  lower: {
-    title: '🌡️ It Is Mild Right Now',
-    text: 'Temperatures are comfortable at the moment. Keep hydrated and take care on warmer days.',
-    bg: '#F0FDF4',
-    border: '#BBF7D0',
-    color: '#166534',
-  },
-}
-
-const riskAdvice = {
-  high: {
-    title: '⚠️ High Risk Area',
-    text: 'This suburb has many older residents and limited tree cover. Extra support and cooling resources may be needed during hot weather.',
-    bg: '#FEF2F2',
-    border: '#FECACA',
-    color: '#991B1B',
-  },
-  moderate: {
-    title: '⚠️ Moderate Risk Area',
-    text: 'This suburb has some heat risk due to temperature, older residents, or limited greenery. Keep an eye on conditions during hot weather.',
-    bg: '#FFFBEB',
-    border: '#FDE68A',
-    color: '#92400E',
-  },
-  low: {
-    title: '✅ Lower Risk Area',
-    text: 'Good tree coverage and cooler conditions make this suburb generally safer for older residents. Still take care on very hot days.',
-    bg: '#F0FDF4',
-    border: '#BBF7D0',
-    color: '#166534',
-  },
+  lower: { label: 'Currently mild (< 28°C)', bg: '#F0FDF4', border: '#BBF7D0', color: '#166534' },
 }
 
 const riskConfig = {
@@ -130,287 +87,258 @@ const riskConfig = {
 </script>
 
 <template>
-  <Transition name="slide-up" appear>
-    <div class="detail">
-      <!-- Header -->
-      <div class="detail-header">
-        <div class="detail-title-row">
-          <h2 class="detail-name">{{ suburb.suburb_name }}</h2>
-          <div class="detail-badges">
-            <HeatBadge :level="suburb.heat_level" />
-            <span
-              v-if="suburb.risk_level"
-              class="risk-tag"
-              :style="{
-                backgroundColor: riskConfig[suburb.risk_level]?.bg,
-                color: riskConfig[suburb.risk_level]?.color,
-              }"
-            >
-              {{ riskConfig[suburb.risk_level]?.label }}
-            </span>
-          </div>
-        </div>
-        <div v-if="updatedAt" class="updated-at">
-          🕐 Data updated {{ updatedAt }} (Melbourne time)
-        </div>
+  <div class="detail">
+    <!-- Header -->
+    <div class="detail-header">
+      <div class="detail-title-row">
+        <h2 class="detail-name">{{ suburb.suburb_name }}</h2>
+        <button class="close-btn" @click="emit('close')" aria-label="Back to legend">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
 
-      <!-- Stat cards -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-icon">🌡</span>
-          <span class="stat-label">Temperature</span>
-          <span class="stat-value">{{ tempDisplay }}°C</span>
-          <span class="stat-sub">Current reading</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon">🌳</span>
-          <span class="stat-label">Tree Coverage</span>
-          <span class="stat-value">{{ vegDisplay }}%</span>
-          <span class="stat-sub">% of area covered by trees</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon">👴</span>
-          <span class="stat-label">Older Residents</span>
-          <span class="stat-value">{{ elderlyDisplay.toLocaleString() }}</span>
-          <span class="stat-sub">Residents aged 60+</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-icon">👥</span>
-          <span class="stat-label">Total Population</span>
-          <span class="stat-value">{{ totalDisplay.toLocaleString() }}</span>
-          <span class="stat-sub">2021 Census</span>
-        </div>
-      </div>
-
-      <!-- Advice boxes -->
-      <div class="advice-row">
-        <div
-          class="advice-box"
-          :style="{
-            backgroundColor: heatAdvice[suburb.heat_level]?.bg,
-            borderColor: heatAdvice[suburb.heat_level]?.border,
-          }"
-        >
-          <div class="advice-title" :style="{ color: heatAdvice[suburb.heat_level]?.color }">
-            {{ heatAdvice[suburb.heat_level]?.title }}
-          </div>
-          <p class="advice-text" :style="{ color: heatAdvice[suburb.heat_level]?.color }">
-            {{ heatAdvice[suburb.heat_level]?.text }}
-          </p>
-        </div>
-        <div
+      <!-- Risk first, then heat -->
+      <div class="detail-badges">
+        <span
           v-if="suburb.risk_level"
-          class="advice-box"
+          class="risk-tag"
           :style="{
-            backgroundColor: riskAdvice[suburb.risk_level]?.bg,
-            borderColor: riskAdvice[suburb.risk_level]?.border,
+            backgroundColor: riskConfig[suburb.risk_level]?.bg,
+            color: riskConfig[suburb.risk_level]?.color,
           }"
         >
-          <div class="advice-title" :style="{ color: riskAdvice[suburb.risk_level]?.color }">
-            {{ riskAdvice[suburb.risk_level]?.title }}
-          </div>
-          <p class="advice-text" :style="{ color: riskAdvice[suburb.risk_level]?.color }">
-            {{ riskAdvice[suburb.risk_level]?.text }}
-          </p>
-        </div>
+          {{ riskConfig[suburb.risk_level]?.label }}
+        </span>
+        <span
+          class="heat-tag"
+          :style="{
+            backgroundColor: heatLabels[suburb.heat_level]?.bg,
+            color: heatLabels[suburb.heat_level]?.color,
+            borderColor: heatLabels[suburb.heat_level]?.border,
+          }"
+        >
+          🌡 {{ heatLabels[suburb.heat_level]?.label }}
+        </span>
       </div>
 
-      <!-- How risk is calculated -->
-      <div class="score-section">
-        <div class="score-title">How risk is calculated</div>
+      <div v-if="updatedAt" class="updated-at">Data updated {{ updatedAt }} (Melbourne time)</div>
+    </div>
 
-        <div class="score-row">
-          <div class="score-meta">
-            <span class="score-label heat-label">🌡 Heat Score</span>
-            <span class="score-note">Based on current temperature</span>
-          </div>
-          <div class="score-bar-wrap">
-            <div
-              class="score-bar heat-bar"
-              :style="{
-                width: heatBarWidth + '%',
-                backgroundColor: scoreColor(suburb.heat_score ?? 0),
-              }"
-            ></div>
-          </div>
-          <span class="score-num"
-            >{{ Math.round(suburb.heat_score ?? 0) }}<span class="score-denom">/100</span></span
-          >
-        </div>
-
-        <div class="score-row">
-          <div class="score-meta">
-            <span class="score-label vuln-label">👴 Vulnerability Score</span>
-            <span class="score-note">Based on older residents and tree cover</span>
-          </div>
-          <div class="score-bar-wrap">
-            <div
-              class="score-bar vuln-bar"
-              :style="{
-                width: vulnBarWidth + '%',
-                backgroundColor: scoreColor(suburb.vulnerability_score ?? 0),
-              }"
-            ></div>
-          </div>
-          <span class="score-num"
-            >{{ Math.round(suburb.vulnerability_score ?? 0)
-            }}<span class="score-denom">/100</span></span
-          >
-        </div>
-
-        <div class="score-note-bottom">
-          💡 Risk level combines both scores equally. Areas with more older residents and less tree
-          cover are rated higher risk.
-        </div>
+    <!-- Stat cards 2×2 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">🌡</span>
+        <span class="stat-label">Temperature</span>
+        <span class="stat-value">{{ tempDisplay }}°C</span>
+        <span class="stat-sub">Current reading</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🌳</span>
+        <span class="stat-label">Tree Coverage</span>
+        <span class="stat-value">{{ vegDisplay }}%</span>
+        <span class="stat-sub">% of area</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">👴</span>
+        <span class="stat-label">Residents 60+</span>
+        <span class="stat-value">{{ elderlyDisplay.toLocaleString() }}</span>
+        <span class="stat-sub">ABS 2021 Census</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <span class="stat-label">Total Population</span>
+        <span class="stat-value">{{ totalDisplay.toLocaleString() }}</span>
+        <span class="stat-sub">ABS 2021 Census</span>
       </div>
     </div>
-  </Transition>
+
+    <!-- Risk breakdown: vulnerability first, then heat -->
+    <div class="score-section">
+      <div class="score-title">Risk breakdown</div>
+
+      <div class="score-row">
+        <div class="score-meta">
+          <span class="score-label">👴 Vulnerability Score</span>
+          <span class="score-note">Older residents + tree cover</span>
+        </div>
+        <div class="score-bar-wrap">
+          <div
+            class="score-bar"
+            :style="{
+              width: vulnBarWidth + '%',
+              backgroundColor: scoreColor(suburb.vulnerability_score ?? 0),
+            }"
+          ></div>
+        </div>
+        <span class="score-num">
+          {{ Math.round(suburb.vulnerability_score ?? 0) }}<span class="score-denom">/100</span>
+        </span>
+      </div>
+
+      <div class="score-row">
+        <div class="score-meta">
+          <span class="score-label">🌡 Heat Score</span>
+          <span class="score-note">Based on current temperature</span>
+        </div>
+        <div class="score-bar-wrap">
+          <div
+            class="score-bar"
+            :style="{
+              width: heatBarWidth + '%',
+              backgroundColor: scoreColor(suburb.heat_score ?? 0),
+            }"
+          ></div>
+        </div>
+        <span class="score-num">
+          {{ Math.round(suburb.heat_score ?? 0) }}<span class="score-denom">/100</span>
+        </span>
+      </div>
+
+      <div class="score-note-bottom">
+        Overall risk = Vulnerability Score × 50% + Heat Score × 50%
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-/* ── Slide-up entrance animation ── */
-.slide-up-enter-active {
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
-}
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(16px);
-}
-
 .detail {
-  padding: 1.5rem;
+  padding: 1.25rem;
   background-color: var(--color-white);
   border-radius: var(--radius-card);
   border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .detail-header {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .detail-title-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.detail-badges {
-  display: flex;
-  align-items: center;
   gap: 0.5rem;
 }
 
 .detail-name {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.close-btn {
+  flex-shrink: 0;
+  background: var(--color-bg-light, #f1f5f9);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  margin-top: 2px;
+}
+
+.close-btn:hover {
+  background-color: #e2e8f0;
   color: var(--color-text);
 }
 
+.detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .risk-tag {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 50px;
 }
 
-.updated-at {
+.heat-tag {
   font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  border: 1px solid;
+}
+
+.updated-at {
+  font-size: 0.82rem;
   color: var(--color-text-muted);
 }
 
-/* ── Stat cards ── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 0.2rem;
-  padding: 1rem;
+  padding: 0.85rem;
   background-color: var(--color-bg-light);
   border-radius: var(--radius-card);
   border: 1px solid var(--color-border);
 }
 
 .stat-icon {
-  font-size: 1.3rem;
-  margin-bottom: 0.2rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.1rem;
 }
+
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
 }
+
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.1;
 }
+
 .stat-sub {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--color-text-muted);
 }
 
-/* ── Advice boxes ── */
-.advice-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .advice-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.advice-box {
-  border: 1px solid;
-  border-radius: var(--radius-card);
-  padding: 1rem 1.25rem;
-}
-.advice-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-.advice-text {
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-/* ── Score section ── */
 .score-section {
   background-color: var(--color-bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  padding: 1.1rem 1.25rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.75rem;
 }
 
 .score-title {
@@ -422,18 +350,18 @@ const riskConfig = {
 .score-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .score-meta {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  min-width: 190px;
+  min-width: 150px;
 }
 
 .score-label {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -459,24 +387,23 @@ const riskConfig = {
 }
 
 .score-num {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-text);
-  min-width: 52px;
+  min-width: 48px;
   text-align: right;
 }
 
 .score-denom {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 400;
   color: var(--color-text-muted);
 }
 
 .score-note-bottom {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--color-text-muted);
-  line-height: 1.6;
-  padding-top: 0.25rem;
+  padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);
 }
 </style>

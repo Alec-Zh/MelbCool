@@ -75,7 +75,7 @@ function onEachFeature(feature, layer) {
   )
   if (suburb) {
     layer.bindTooltip(
-      `<strong>${suburb.suburb_name}</strong><br>🌡️ ${suburb.temperature}°C<br>⚠️ ${suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1)} Risk`,
+      `<strong>${suburb.suburb_name}</strong><br>⚠️ ${suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1)} Risk<br>🌡️ ${Math.round(suburb.temperature)}°C`,
       { sticky: true, className: 'suburb-tooltip' },
     )
   }
@@ -177,15 +177,15 @@ watch(
 <style scoped>
 .map-wrap {
   width: 100%;
+  height: 100%;
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 1.5px solid var(--color-border);
-  box-shadow: var(--shadow-card);
 }
 
 .map-container {
   width: 100%;
-  height: 480px;
+  height: 100%;
+  min-height: 480px;
 }
 </style>
 

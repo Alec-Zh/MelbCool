@@ -75,7 +75,7 @@ function onEachFeature(feature, layer) {
   )
   if (suburb) {
     layer.bindTooltip(
-      `<strong>${suburb.suburb_name}</strong><br>⚠️ ${suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1)} Risk<br>🌡️ ${Math.round(suburb.temperature)}°C`,
+      `<strong>${suburb.suburb_name}</strong><br>⚠️ ${suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1)} Risk<br>🌡️ Feels like ${Math.round(suburb.apparent_temperature ?? suburb.temperature)}°C`,
       { sticky: true, className: 'suburb-tooltip' },
     )
   }

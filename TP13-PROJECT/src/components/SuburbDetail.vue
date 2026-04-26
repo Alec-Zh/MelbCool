@@ -37,46 +37,40 @@ function useCountUp(target, duration = 800) {
 }
 
 const tempDisplay = useCountUp(computed(() => Math.round(props.suburb.temperature ?? 0)))
+const apparentTempDisplay = useCountUp(
+  computed(() => Math.round(props.suburb.apparent_temperature ?? 0)),
+)
+const uvDisplay = useCountUp(computed(() => Math.round(props.suburb.uv_index ?? 0)))
 const vegDisplay = useCountUp(computed(() => Math.round(props.suburb.tree_canopy_percent ?? 0)))
-const elderlyDisplay = useCountUp(
-  computed(() => props.suburb.elderly_population ?? 0),
-  1000,
-)
-const totalDisplay = useCountUp(
-  computed(() => props.suburb.total_population ?? 0),
-  1000,
-)
 
 const heatBarWidth = ref(0)
-const vulnBarWidth = ref(0)
+const shadeBarWidth = ref(0)
 
 function animateBars() {
   heatBarWidth.value = 0
-  vulnBarWidth.value = 0
+  shadeBarWidth.value = 0
   setTimeout(() => {
     heatBarWidth.value = Math.min(props.suburb.heat_score ?? 0, 100)
-    vulnBarWidth.value = Math.min(props.suburb.vulnerability_score ?? 0, 100)
+    shadeBarWidth.value = Math.min(100 - (props.suburb.shade_score ?? 0), 100)
   }, 120)
 }
 
 onMounted(animateBars)
 watch(() => props.suburb.suburb_name, animateBars)
 
-function scoreColor(score) {
+// heat_score: higher = more dangerous = red
+function heatScoreColor(score) {
   if (score >= 65) return '#EF4444'
   if (score >= 40) return '#F97316'
   return '#22C55E'
 }
 
-const heatLabels = {
-  higher: { label: 'Currently hot (≥ 35°C)', bg: '#FEF2F2', border: '#FECACA', color: '#991B1B' },
-  moderate: {
-    label: 'Currently warm (28–34°C)',
-    bg: '#FFFBEB',
-    border: '#FDE68A',
-    color: '#92400E',
-  },
-  lower: { label: 'Currently mild (< 28°C)', bg: '#F0FDF4', border: '#BBF7D0', color: '#166534' },
+// shade bar shows coverage (inverted): higher coverage = greener
+function shadeCoverageColor(shadeScore) {
+  const coverage = 100 - shadeScore
+  if (coverage >= 65) return '#22C55E'
+  if (coverage >= 40) return '#F97316'
+  return '#EF4444'
 }
 
 const riskConfig = {
@@ -120,16 +114,6 @@ const riskConfig = {
         >
           {{ riskConfig[suburb.risk_level]?.label }}
         </span>
-        <span
-          class="heat-tag"
-          :style="{
-            backgroundColor: heatLabels[suburb.heat_level]?.bg,
-            color: heatLabels[suburb.heat_level]?.color,
-            borderColor: heatLabels[suburb.heat_level]?.border,
-          }"
-        >
-          🌡 {{ heatLabels[suburb.heat_level]?.label }}
-        </span>
       </div>
 
       <div v-if="updatedAt" class="updated-at">Data updated {{ updatedAt }} (Melbourne time)</div>
@@ -144,59 +128,59 @@ const riskConfig = {
         <span class="stat-sub">Current reading</span>
       </div>
       <div class="stat-card">
+        <span class="stat-icon">🌤</span>
+        <span class="stat-label">Feels Like</span>
+        <span class="stat-value">{{ apparentTempDisplay }}°C</span>
+        <span class="stat-sub">How hot it actually feels</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">☀️</span>
+        <span class="stat-label">UV Index</span>
+        <span class="stat-value">{{ uvDisplay }}</span>
+        <span class="stat-sub">Sun exposure level</span>
+      </div>
+      <div class="stat-card">
         <span class="stat-icon">🌳</span>
         <span class="stat-label">Tree Coverage</span>
         <span class="stat-value">{{ vegDisplay }}%</span>
-        <span class="stat-sub">% of area</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-icon">👴</span>
-        <span class="stat-label">Residents 60+</span>
-        <span class="stat-value">{{ elderlyDisplay.toLocaleString() }}</span>
-        <span class="stat-sub">ABS 2021 Census</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-icon">👥</span>
-        <span class="stat-label">Total Population</span>
-        <span class="stat-value">{{ totalDisplay.toLocaleString() }}</span>
-        <span class="stat-sub">ABS 2021 Census</span>
+        <span class="stat-sub">Shade available in area</span>
       </div>
     </div>
 
-    <!-- Risk breakdown: vulnerability first, then heat -->
+    <!-- Risk breakdown -->
     <div class="score-section">
-      <div class="score-title">Risk breakdown</div>
+      <div class="score-title">What makes this area risky?</div>
 
       <div class="score-row">
         <div class="score-meta">
-          <span class="score-label">👴 Vulnerability Score</span>
-          <span class="score-note">Older residents + tree cover</span>
+          <span class="score-label">🌳 Shade Coverage</span>
+          <span class="score-note">How much tree shade is available</span>
         </div>
         <div class="score-bar-wrap">
           <div
             class="score-bar"
             :style="{
-              width: vulnBarWidth + '%',
-              backgroundColor: scoreColor(suburb.vulnerability_score ?? 0),
+              width: shadeBarWidth + '%',
+              backgroundColor: shadeCoverageColor(suburb.shade_score ?? 0),
             }"
           ></div>
         </div>
         <span class="score-num">
-          {{ Math.round(suburb.vulnerability_score ?? 0) }}<span class="score-denom">/100</span>
+          {{ Math.round(100 - (suburb.shade_score ?? 0)) }}<span class="score-denom">/100</span>
         </span>
       </div>
 
       <div class="score-row">
         <div class="score-meta">
           <span class="score-label">🌡 Heat Score</span>
-          <span class="score-note">Based on current temperature</span>
+          <span class="score-note">Based on how hot it feels and sun exposure today</span>
         </div>
         <div class="score-bar-wrap">
           <div
             class="score-bar"
             :style="{
               width: heatBarWidth + '%',
-              backgroundColor: scoreColor(suburb.heat_score ?? 0),
+              backgroundColor: heatScoreColor(suburb.heat_score ?? 0),
             }"
           ></div>
         </div>
@@ -206,7 +190,7 @@ const riskConfig = {
       </div>
 
       <div class="score-note-bottom">
-        Overall risk = Vulnerability Score × 50% + Heat Score × 50%
+        Risk is mostly driven by today's heat conditions, with tree shade as a secondary factor.
       </div>
     </div>
   </div>
@@ -277,14 +261,6 @@ const riskConfig = {
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 50px;
-}
-
-.heat-tag {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  border: 1px solid;
 }
 
 .updated-at {

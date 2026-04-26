@@ -1,18 +1,20 @@
 <script setup>
 const riskLevels = [
-  { color: '#DC2626', label: 'High Risk', desc: 'High heat score and high vulnerability score.' },
+  {
+    color: '#DC2626',
+    label: 'High Risk',
+    desc: 'High heat and very little tree shade in this area.',
+  },
   {
     color: '#D97706',
     label: 'Moderate Risk',
-    desc: 'Moderate combined heat and vulnerability score.',
+    desc: 'Moderate heat or limited tree shade in this area.',
   },
-  { color: '#16A34A', label: 'Low Risk', desc: 'Low combined heat and vulnerability score.' },
-]
-
-const heatLevels = [
-  { color: '#EF4444', label: 'Hot', range: '≥ 35°C' },
-  { color: '#F97316', label: 'Warm', range: '28–34°C' },
-  { color: '#22C55E', label: 'Mild', range: '< 28°C' },
+  {
+    color: '#16A34A',
+    label: 'Low Risk',
+    desc: 'Cooler conditions and good tree shade in this area.',
+  },
 ]
 </script>
 
@@ -32,23 +34,22 @@ const heatLevels = [
           <span class="item-desc">{{ item.desc }}</span>
         </li>
       </ul>
-      <p class="section-note">
-        Risk = Vulnerability Score × 50% + Heat Score × 50%.<br />
-        Vulnerability is based on residents aged 60+ (ABS 2021 Census) and tree canopy coverage.
-      </p>
-    </div>
-
-    <!-- Heat Level second -->
-    <div class="section">
-      <div class="section-header">🌡 Heat Level</div>
-      <ul class="item-list">
-        <li v-for="item in heatLevels" :key="item.label" class="item">
-          <span class="dot" :style="{ backgroundColor: item.color }"></span>
-          <span class="item-label">{{ item.label }}</span>
-          <span class="item-range">{{ item.range }}</span>
-        </li>
-      </ul>
-      <p class="section-note">Based on current temperature from Open-Meteo.</p>
+      <div class="score-legend-section">
+        <div class="section-header">📊 How scores work</div>
+        <div class="score-legend">
+          <div class="score-legend-item">
+            <span>🌡 Heat Score</span>
+            <span class="score-legend-desc">How hot it feels today, including UV exposure</span>
+          </div>
+          <div class="score-legend-item">
+            <span>🌳 Shade Score</span>
+            <span class="score-legend-desc">How much tree shade is available in the area</span>
+          </div>
+          <div class="score-legend-formula">
+            Overall risk = Heat Score × 70% + Shade Score × 30%
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +63,8 @@ const heatLevels = [
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .guide-title {
@@ -148,5 +151,39 @@ const heatLevels = [
   color: var(--color-text-muted);
   line-height: 1.55;
   margin: 0;
+}
+
+.score-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.score-legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.score-legend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.score-legend-desc {
+  padding-left: 1.4rem;
+  color: var(--color-text-muted);
+}
+
+.score-legend-formula {
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
 }
 </style>

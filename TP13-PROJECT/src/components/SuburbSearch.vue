@@ -101,7 +101,10 @@ function clear() {
         @mousedown.prevent="select(suburb)"
       >
         <span class="item-name">{{ suburb.suburb_name }}</span>
-        <span class="item-meta">{{ suburb.temperature }}°C · {{ suburb.risk_level }} risk</span>
+        <span class="item-meta"
+          >Feels like {{ Math.round(suburb.apparent_temperature ?? suburb.temperature) }}°C ·
+          {{ suburb.risk_level.charAt(0).toUpperCase() + suburb.risk_level.slice(1) }} risk</span
+        >
       </li>
     </ul>
   </div>

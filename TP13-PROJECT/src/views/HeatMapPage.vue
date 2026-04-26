@@ -122,9 +122,9 @@ onMounted(fetchSuburbs)
     <main class="content">
       <!-- Page header -->
       <div class="page-header">
-        <h1 class="page-title">Heat Vulnerability Map</h1>
+        <h1 class="page-title">Heat Safety Map</h1>
         <p class="page-desc">
-          Heat and vulnerability data for inner Melbourne suburbs.
+          See how hot it feels right now across inner Melbourne suburbs.
           <strong>Click any suburb</strong> on the map or use the search bar to view details.
         </p>
       </div>

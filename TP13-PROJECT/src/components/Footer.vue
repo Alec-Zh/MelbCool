@@ -2,18 +2,15 @@
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-left">
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            color: #0d3a8f;
-            font-weight: bold;
-            font-size: 20px;
-          "
-        >
-          <div>CoolPath</div>
+        <RouterLink to="/" class="brand">
           <img src="/logo.png" alt="CoolPath Melbourne" class="footer-logo" />
-        </div>
+          <span class="brand-name">CoolPath</span>
+        </RouterLink>
+        <p class="footer-source">
+          Temperature data:
+          <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> ·
+          Population data: ABS 2021 Census · Boundaries: data.gov.au
+        </p>
       </div>
       <div class="footer-links">
         <a class="footer-link">Privacy Policy</a>
@@ -40,12 +37,49 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.brand-name {
+  color: #0d3a8f;
+  font-weight: bold;
+  font-size: 17px;
 }
 
 .footer-logo {
-  height: 32px;
+  height: 48px;
   width: auto;
   object-fit: contain;
+}
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-source {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.footer-source a {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.footer-source a:hover {
+  color: #1a3a8f;
+  text-decoration: underline;
 }
 
 .footer-links {
@@ -58,6 +92,7 @@
   color: #666;
   font-size: 1rem;
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 
 .footer-link:hover {
@@ -79,6 +114,10 @@
 
   .footer-links {
     justify-content: center;
+  }
+
+  .footer-left {
+    align-items: center;
   }
 }
 </style>

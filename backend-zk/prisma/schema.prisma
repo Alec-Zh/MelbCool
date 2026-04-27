@@ -1,0 +1,45 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // Obtain the database URL from the environment variable
+}
+
+// User model definition
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique // The email address is unique.
+  age       Int?     // Optional field
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users") // Mapped to the database table name
+}
+
+// Model Definition of Cooling-Off Locations
+model CoolRefuge {
+  id          Int      @id @default(autoincrement())
+  photo       String?  // photo
+  longitude   Float    // longitude
+  latitude    Float    // latitude
+  name        String   // name
+  type        String   @default("library") // type：library, museum, park, community, shopping
+  openingHours String? // openingHours
+  phone       String?  // phone
+  city        String   // city
+  street      String   // street
+  website     String?  // website
+  facilities  String?  // facilities
+  notes       String?  // notes
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("cool_refuges") // Mapped to the database table name
+}
+    

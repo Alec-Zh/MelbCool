@@ -1,6 +1,191 @@
 <script setup>
+import { ref, onMounted, computed } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
+const photoObj = {
+  library: '/library.png',
+  museum: '/museum.png',
+  park: '/park.png',
+  community: '/community.jpg',
+  shopping: '/shopping.png'
+}
+
+// API 基础地址
+const API_BASE_URL = 'http://localhost:3000/api'
+
+// 响应式数据
+const refuges = ref([])
+const loading = ref(false)
+const error = ref(null)
+const searchQuery = ref('')
+const selectedType = ref('all')
+const userLocation = ref(null)
+const locationError = ref(null)
+
+// 类型配置
+const typeConfig = {
+  all: { label: 'All', icon: '' },
+  library: { label: 'Library', icon: '📚' },
+  museum: { label: 'Museum', icon: '🏛️' },
+  park: { label: 'Park', icon: '🌳' },
+  community: { label: 'Community', icon: '🏘️' },
+  shopping: { label: 'Shopping', icon: '🛍️' }
+}
+
+// 获取类型标签样式
+const getTypeClass = (type) => {
+  const typeClasses = {
+    library: 'library',
+    museum: 'museum',
+    park: 'park',
+    community: 'community',
+    shopping: 'shopping'
+  }
+  return typeClasses[type] || ''
+}
+
+
+// 计算两点之间的距离（使用 Haversine 公式）
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371 // 地球半径（公里）
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+// 获取用户位置
+const getUserLocation = () => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      locationError.value = 'Geolocation is not supported by your browser'
+      reject(new Error('Geolocation not supported'))
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLocation.value = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }
+        resolve(userLocation.value)
+      },
+      (error) => {
+        let errorMessage = 'Unable to retrieve your location'
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied by user'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable'
+            break
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out'
+            break
+        }
+        locationError.value = errorMessage
+        reject(new Error(errorMessage))
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
+  })
+}
+
+// 计算距离显示文本
+const getDistanceText = (refuge) => {
+  if (!userLocation.value || !refuge.latitude || !refuge.longitude) {
+    return ''
+  }
+  
+  const distance = calculateDistance(
+    userLocation.value.latitude,
+    userLocation.value.longitude,
+    refuge.latitude,
+    refuge.longitude
+  )
+  
+  if (distance < 1) {
+    return `${Math.round(distance * 1000)} m`
+  } else {
+    return `${distance.toFixed(1)} km`
+  }
+}
+
+
+// 获取数据
+const fetchRefuges = async () => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    let url = `${API_BASE_URL}/cool-refuges`
+    const params = new URLSearchParams()
+    
+    // 添加搜索参数
+    if (searchQuery.value.trim()) {
+      params.append('name', searchQuery.value.trim())
+    }
+    
+    // 添加类型参数
+    if (selectedType.value !== 'all') {
+      params.append('type', selectedType.value)
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`
+    }
+    
+    const response = await fetch(url)
+    const result = await response.json()
+    
+    if (result.success) {
+      refuges.value = result.data
+    } else {
+      error.value = 'Failed to load refuges'
+    }
+  } catch (err) {
+    console.error('Error fetching refuges:', err)
+    error.value = 'Failed to connect to server'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索
+const handleSearch = () => {
+  fetchRefuges()
+}
+
+// 选择类型
+const selectType = (type) => {
+  selectedType.value = type
+  fetchRefuges()
+}
+
+// 计算属性：统计数量
+const refugeCount = computed(() => refuges.value.length)
+
+// 页面加载时获取用户位置和数据
+onMounted(async () => {
+  // 尝试获取用户位置
+  try {
+    await getUserLocation()
+  } catch (err) {
+    console.log('Location error:', err.message)
+    // 位置获取失败不影响数据加载
+  }
+  
+  // 获取数据
+  fetchRefuges()
+})
 </script>
 
 <template>
@@ -17,13 +202,21 @@ import Footer from '@/components/Footer.vue'
           <div class="current-location">
             <span class="location-icon">📍</span>
             <span class="location-text">CURRENT LOCATION</span>
-            <span class="location-result">8 Refuges found near Carlton</span>
+            <span class="location-result">{{ refugeCount }} Refuges found</span>
           </div>
         </div>
         
         <div class="search-container">
-          <input type="text" class="search-input" placeholder="Search by suburb or landmark..." />
-          <button class="search-button">FIND</button>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search by suburb or landmark..."
+            v-model="searchQuery"
+            @keyup.enter="handleSearch"
+          />
+          <button class="search-button" @click="handleSearch" :disabled="loading">
+            {{ loading ? 'Loading...' : 'FIND' }}
+          </button>
         </div>
         
         <div class="controls-container">
@@ -32,99 +225,72 @@ import Footer from '@/components/Footer.vue'
             <button class="view-button">🗺️ Map</button>
           </div>
           <div class="category-filters">
-            <button class="filter-button active">All</button>
-            <button class="filter-button">📚 Library</button>
-            <button class="filter-button">🏛️ Museum</button>
-            <button class="filter-button">🌳 Park</button>
-            <button class="filter-button">🏘️ Community</button>
-            <button class="filter-button">🛍️ Shopping</button>
+            <button 
+              v-for="(config, type) in typeConfig" 
+              :key="type"
+              class="filter-button"
+              :class="{ active: selectedType === type }"
+              @click="selectType(type)"
+            >
+              <span v-if="config.icon">{{ config.icon }}</span>
+              {{ config.label }}
+            </button>
           </div>
         </div>
         
-        <div class="content-container">
+        <!-- 错误提示 -->
+        <div v-if="error" class="error-message">
+          {{ error }}
+          <button @click="fetchRefuges" class="retry-button">Retry</button>
+        </div>
+        
+        <!-- 加载状态 -->
+        <div v-if="loading" class="loading-message">
+          Loading refuges...
+        </div>
+        
+        <div class="content-container" v-if="!loading && !error">
           <div class="refuges-list">
-            <!-- Carlton Public Library -->
-            <div class="refuge-card library">
-              <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Carlton Public Library" />
-              </div>
-              <div class="refuge-info">
-                <div class="refuge-header">
-                  <h3 class="refuge-name">Carlton Public Library</h3>
-                  <span class="refuge-distance">0.5 km</span>
-                </div>
-                <div class="refuge-tags">
-                  <span class="tag">Full Air-Con</span>
-                  <span class="tag">9:00 AM - 8:00 PM</span>
-                </div>
-                <div class="refuge-facilities">
-                  <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
-                </div>
-                <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
-                  <button class="btn-details">DETAILS</button>
-                </div>
-              </div>
+            <!-- 没有数据时显示 -->
+            <div v-if="refuges.length === 0" class="no-data">
+              No refuges found. Try adjusting your search or filters.
             </div>
             
-            <!-- Royal Exhibition Museum -->
-            <div class="refuge-card museum">
+            <!-- 数据列表 -->
+            <div 
+              v-for="refuge in refuges" 
+              :key="refuge.id"
+              class="refuge-card"
+              :class="getTypeClass(refuge.type)"
+            >
               <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Royal Exhibition Museum" />
+                <img 
+                  :src="photoObj[refuge.type]" 
+                  :alt="refuge.name"
+                />
               </div>
               <div class="refuge-info">
                 <div class="refuge-header">
-                  <h3 class="refuge-name">Royal Exhibition Museum</h3>
-                  <span class="refuge-distance">1.2 km</span>
+                  <h3 class="refuge-name">{{ refuge.name }}</h3>
+                  <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
+                    {{ getDistanceText(refuge) }}
+                  </span>
+                </div>
+                <div class="refuge-address">
+                  <span>📍 {{ refuge.street }}, {{ refuge.city }}</span>
                 </div>
                 <div class="refuge-tags">
-                  <span class="tag">Advanced Cooling</span>
-                  <span class="tag">10:00 AM - 5:00 PM</span>
+                  <!-- <span class="tag">{{ getTagText(refuge.type) }}</span> -->
+                  <span class="tag" v-if="refuge.openingHours">{{ refuge.openingHours }}</span>
                 </div>
-                <div class="refuge-facilities">
+                <div class="refuge-facilities" v-if="refuge.facilities">
                   <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
+                  <div class="facility-text">🙂‍↕️ </div>
                 </div>
                 <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
-                  <button class="btn-details">DETAILS</button>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Central Plaza Mall -->
-            <div class="refuge-card shopping">
-              <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Central Plaza Mall" />
-              </div>
-              <div class="refuge-info">
-                <div class="refuge-header">
-                  <h3 class="refuge-name">Central Plaza Mall</h3>
-                  <span class="refuge-distance">1.8 km</span>
-                </div>
-                <div class="refuge-tags">
-                  <span class="tag">Climate Controlled</span>
-                  <span class="tag">8:00 AM - 10:00 PM</span>
-                </div>
-                <div class="refuge-facilities">
-                  <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
-                </div>
-                <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
+                  <button class="btn-direction" @click="window.open(`https://www.google.com/maps/dir/?api=1&destination=${refuge.latitude},${refuge.longitude}`, '_blank')">
+                    GET DIRECTIONS
+                  </button>
                   <button class="btn-details">DETAILS</button>
                 </div>
               </div>
@@ -148,18 +314,7 @@ import Footer from '@/components/Footer.vue'
             </div>
             
             <!-- Neighborhood Map Card -->
-            <div class="sidebar-card map-card">
-              <div class="map-header">
-                <h3 class="card-title">NEIGHBORHOOD MAP</h3>
-                <a href="#" class="view-full">VIEW FULL</a>
-              </div>
-              <div class="map-image">
-                <img src="/pic1.jpg" alt="Neighborhood Map" />
-                <div class="map-info">
-                  <span class="refuge-count">3 refuges currently open in this view</span>
-                </div>
-              </div>
-            </div>
+         
           </div>
         </div>
         
@@ -311,8 +466,13 @@ import Footer from '@/components/Footer.vue'
   white-space: nowrap;
 }
 
-.search-button:hover {
+.search-button:hover:not(:disabled) {
   background-color: #1a4bb8;
+}
+
+.search-button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
 }
 
 .controls-container {
@@ -403,6 +563,8 @@ import Footer from '@/components/Footer.vue'
 .refuges-list {
   flex: 1;
   min-width: 300px;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar {
@@ -437,6 +599,14 @@ import Footer from '@/components/Footer.vue'
   border-left: 4px solid #8b5cf6;
 }
 
+.refuge-card.park {
+  border-left: 4px solid #22c55e;
+}
+
+.refuge-card.community {
+  border-left: 4px solid #f59e0b;
+}
+
 .refuge-card.shopping {
   border-left: 4px solid #ec4899;
 }
@@ -465,7 +635,7 @@ import Footer from '@/components/Footer.vue'
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .refuge-name {
@@ -475,10 +645,20 @@ import Footer from '@/components/Footer.vue'
   margin: 0;
 }
 
-.refuge-distance {
+.refuge-distance-badge {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #3b82f6;
+  background-color: #e0f2fe;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.refuge-address {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.75rem;
 }
 
 .refuge-features {
@@ -554,6 +734,7 @@ import Footer from '@/components/Footer.vue'
   display: flex;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -579,14 +760,10 @@ import Footer from '@/components/Footer.vue'
   letter-spacing: 0.5px;
 }
 
-.facility-icons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.facility {
-  font-size: 1rem;
+.facility-text {
+  font-size: 0.875rem;
   color: #333;
+  line-height: 1.4;
 }
 
 .sidebar-card {
@@ -721,6 +898,47 @@ import Footer from '@/components/Footer.vue'
   font-size: 0.875rem;
 }
 
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.retry-button {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.retry-button:hover {
+  background-color: #b91c1c;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
 @media (max-width: 768px) {
   .content-container {
     flex-direction: column;
@@ -809,4 +1027,3 @@ import Footer from '@/components/Footer.vue'
   line-height: 1.4;
 }
 </style>
-

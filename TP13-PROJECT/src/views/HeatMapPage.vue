@@ -74,12 +74,17 @@ const INNER_MELBOURNE = new Set([
   'Travancore',
   'West Melbourne',
   'Windsor (Vic.)',
+  'Test Suburb', // 🧪 TEST ONLY — remove before production
 ])
 
 const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
 const selectedSuburb = ref(null)
+
+// AC3.3.1 — High-risk warning popup
+const showHighRiskPopup = ref(false)
+const highRiskSuburbName = ref('')
 
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
@@ -92,6 +97,23 @@ async function fetchSuburbs() {
     const res = await fetch(`${API_BASE}/suburbs`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     allSuburbs.value = await res.json()
+
+    // 🧪 TEST ONLY — mock high-risk suburb (remove before production)
+    allSuburbs.value.push({
+      suburb_id: 9999,
+      suburb_name: 'Test Suburb',
+      latitude: -37.805,
+      longitude: 144.955,
+      temperature: 38,
+      apparent_temperature: 42,
+      uv_index: 11,
+      heat_level: 'higher',
+      heat_score: 88,
+      shade_score: 75,
+      tree_canopy_percent: 8,
+      risk_level: 'high',
+      updated_at: new Date().toISOString(),
+    })
   } catch (e) {
     error.value = 'Failed to load suburb data. Please try again.'
     console.error(e)
@@ -107,6 +129,12 @@ function selectSuburb(suburb) {
   }
   const isSame = selectedSuburb.value?.suburb_name === suburb.suburb_name
   selectedSuburb.value = isSame ? null : suburb
+
+  // AC3.3.1 — trigger popup when high-risk suburb selected (not deselected)
+  if (!isSame && suburb.risk_level === 'high') {
+    highRiskSuburbName.value = suburb.suburb_name
+    showHighRiskPopup.value = true
+  }
 }
 
 function clearSelection() {
@@ -162,6 +190,51 @@ onMounted(fetchSuburbs)
       </template>
     </main>
     <Footer />
+
+    <!-- AC3.3.1 — High-risk suburb warning popup -->
+    <Teleport to="body">
+      <Transition name="popup-fade">
+        <div
+          v-if="showHighRiskPopup"
+          class="popup-backdrop"
+          @click.self="showHighRiskPopup = false"
+        >
+          <div
+            class="popup"
+            role="alertdialog"
+            aria-modal="true"
+            aria-label="High heat risk warning"
+          >
+            <button
+              class="popup-close"
+              @click="showHighRiskPopup = false"
+              aria-label="Close warning"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            <div class="popup-icon">🚨</div>
+            <h3 class="popup-title">High Heat Risk Area</h3>
+            <p class="popup-body">
+              <strong>{{ highRiskSuburbName }}</strong> is currently rated high heat risk. Take
+              precautions before spending time outdoors.
+            </p>
+            <button class="popup-dismiss" @click="showHighRiskPopup = false">Got it</button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -223,7 +296,6 @@ onMounted(fetchSuburbs)
   top: 88px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
-  /* hide scrollbar visually but keep functionality */
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
@@ -263,5 +335,106 @@ onMounted(fetchSuburbs)
 
 .status-msg.error {
   color: #991b1b;
+}
+
+/* AC3.3.1 — High-risk popup */
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1.5rem;
+}
+
+.popup {
+  position: relative;
+  background: #fff;
+  border: 2px solid #f87171;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem 1.5rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(153, 27, 27, 0.2);
+}
+
+.popup-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background 0.15s;
+}
+.popup-close:hover {
+  background: #f3f4f6;
+  color: #111;
+}
+
+.popup-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.popup-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin: 0 0 0.6rem;
+}
+
+.popup-body {
+  font-size: 0.92rem;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0 0 1.25rem;
+}
+
+.popup-dismiss {
+  background: #991b1b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.75rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.popup-dismiss:hover {
+  filter: brightness(1.1);
+}
+
+/* Popup transition */
+.popup-fade-enter-active,
+.popup-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.popup-fade-enter-active .popup,
+.popup-fade-leave-active .popup {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+.popup-fade-enter-from {
+  opacity: 0;
+}
+.popup-fade-enter-from .popup {
+  transform: scale(0.95);
+  opacity: 0;
+}
+.popup-fade-leave-to {
+  opacity: 0;
 }
 </style>

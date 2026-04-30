@@ -20,12 +20,14 @@ const showAlertModal = ref(false)
             <span class="highlight">Cool in Melbourne</span>
           </h1>
           <p class="hero-description" v-hover-scale="1.05">
-            Helping older residents (60+) stay safe in the heat. The Heat Map shows hot areas based on temperature, tree cover, and elderly population, helping find cooler, safer places nearby.
+           CoolPath enables older adults (60+) to make safer decisions during extreme heat. Through intelligent heat mapping and route guidance, it identifies high-risk zones, prioritises shaded paths, and directs users to nearby cooling spaces—supporting independence, safety, and everyday mobility.
           </p>
           <div class="hero-buttons">
-            <!-- <button class="btn-primary"><span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span></button> -->
+            <button class="btn-primary" @click="$router.push('/cool-refuges')">
+              <span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span>
+            </button>
              <button class="btn-secondary" @click="$router.push('/heatmap')">
-                <span class="icon" v-hover-scale="1.2">📃 View Heat Map</span></button>
+              <span class="icon" v-hover-scale="1.2">📃 View Heat Map</span></button>
           </div>
         </div>
       </div>

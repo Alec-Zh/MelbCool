@@ -15,8 +15,8 @@ importers:
         specifier: ^1.9.4
         version: 1.9.4
       mapbox-gl:
-        specifier: ^3.15.0
-        version: 3.21.0
+        specifier: ^3.22.0
+        version: 3.23.0
       vue:
         specifier: ^3.5.31
         version: 3.5.32
@@ -209,10 +209,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@mapbox/jsonlint-lines-primitives@2.0.2':
-    resolution: {integrity: sha512-rY0o9A5ECsTQRVhv7tL/OyDpGAoUB4tTvLiW1DSzQGq4bvTPhNw1VpSNjDJc5GFZ2XuyOtSWSVN05qOtcD71qQ==}
-    engines: {node: '>= 0.6'}
 
   '@mapbox/mapbox-gl-supported@3.0.0':
     resolution: {integrity: sha512-2XghOwu16ZwPJLOFVuIOaLbN0iKMn867evzXFyf0P22dqugezfJwLmdanAgU25ITvz1TvOfVP4jsDImlDJzcWg==}
@@ -693,8 +689,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  mapbox-gl@3.21.0:
-    resolution: {integrity: sha512-0mv/LHDoW6QmxLEoNqCPuby428WTekfs38TtNXd/cxDOLdY6kFd/ztaSkcBeqNksbYSz2lXnPfBm8nN5+hxA0w==}
+  mapbox-gl@3.23.0:
+    resolution: {integrity: sha512-zzjNAaMNvXnAVEUrYpOWmRVEBCIWgDAMLRPvSOoKY3smKvrINFVrRK/1jEpUDbEa7Ppf5Q/nwC6E07tz/i7IKw==}
 
   martinez-polygon-clipping@0.8.1:
     resolution: {integrity: sha512-9PLLMzMPI6ihHox4Ns6LpVBLpRc7sbhULybZ/wyaY8sY3ECNe2+hxm1hA2/9bEEpRrdpjoeduBuZLg2aq1cSIQ==}
@@ -1185,8 +1181,6 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@mapbox/jsonlint-lines-primitives@2.0.2': {}
-
   '@mapbox/mapbox-gl-supported@3.0.0': {}
 
   '@mapbox/point-geometry@1.1.0': {}
@@ -1283,7 +1277,7 @@ snapshots:
 
   '@types/mapbox-gl@3.5.0':
     dependencies:
-      mapbox-gl: 3.21.0
+      mapbox-gl: 3.23.0
 
   '@types/pbf@3.0.5': {}
 
@@ -1594,9 +1588,8 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  mapbox-gl@3.21.0:
+  mapbox-gl@3.23.0:
     dependencies:
-      '@mapbox/jsonlint-lines-primitives': 2.0.2
       '@mapbox/mapbox-gl-supported': 3.0.0
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.1.0

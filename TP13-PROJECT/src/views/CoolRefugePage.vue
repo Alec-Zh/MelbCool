@@ -1,10 +1,498 @@
 <script setup>
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
+import WelcomeModal from '@/components/WelcomeModal.vue'
+import TemperatureAlert from '@/components/TemperatureAlert.vue'
+import mapboxgl from 'mapbox-gl'
+import 'mapbox-gl/dist/mapbox-gl.css'
+const photoObj = {
+  library: '/libraryCover.jpg',
+  museum: '/museumCover.jpg',
+  park: '/parkCover.jpg',
+  community: '/communityCover.jpg',
+  shopping: '/shoppingCover.jpg'
+}
+const mapPhotoObj = {
+  library: '/library.png',
+  museum: '/museum.png',
+  park: '/park.png',
+  community: '/community.jpg',
+  shopping: '/shopping.png'
+}
+
+const facilitiesObj = {
+  library: '❄️  🛜  ☕️',
+  museum: '🚻  🛜  ☕️',
+  park: '🚻  🅿️ 💧',
+  community: '🛜  ☕️  🅿️',
+  shopping: '❄️  🛜  🚻'
+}
+const openingHoursObj = {
+  library: '9:00-17:00',
+  museum: '11:00-17:00',
+  park: 'Open 24 hours',
+  community: 'Open 24 hours',
+  shopping: '10:00-20:00'
+}
+
+// API 基础地址
+// const API_BASE_URL = 'http://localhost:3000/api'
+const API_BASE_URL = 'http://114.132.125.151:3000/api'
+
+// 响应式数据
+const refuges = ref([])
+const loading = ref(false)
+const error = ref(null)
+const searchQuery = ref('')
+const selectedType = ref('all')
+const userLocation = ref(null)
+const locationPermissionDenied = ref(false)
+const currentView = ref('list') // 'list' 或 'map'
+const mapContainer = ref(null)
+let map = null
+let markers = []
+
+// 选中的 refuge（用于地图标记点击显示详情）
+const selectedRefuge = ref(null)
+
+// 温度弹窗相关数据
+const showTempAlert = ref(false)
+const currentTemp = ref(0)
+
+// Mapbox access token
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
+
+// 获取指定位置的温度
+const fetchTemperature = async (latitude, longitude) => {
+  try {
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`)
+    const data = await response.json()
+    if (data.current && data.current.temperature_2m !== undefined) {
+      return data.current.temperature_2m
+    }
+    return null
+  } catch (err) {
+    console.error('Error fetching temperature:', err)
+    return null
+  }
+}
+
+// 显示温度弹窗
+const showTemperatureAlert = async (refuge) => {
+  const temp = await fetchTemperature(refuge.latitude, refuge.longitude)
+  if (temp !== null) {
+    currentTemp.value = temp
+    showTempAlert.value = true
+  }
+}
+
+// 类型配置
+const typeConfig = {
+  all: { label: 'All', icon: '' },
+  library: { label: 'Library', icon: '📚' },
+  museum: { label: 'Museum', icon: '🏛️' },
+  park: { label: 'Park', icon: '🌳' },
+  community: { label: 'Community', icon: '🏘️' },
+  shopping: { label: 'Shopping', icon: '🛍️' }
+}
+
+const getDirections = (refuge) => {
+  // 如果有用户位置，使用实际经纬度作为起始点
+  // 否则使用默认位置（墨尔本市中心）
+  let origin
+  if (userLocation.value) {
+    origin = `${userLocation.value.latitude},${userLocation.value.longitude}`
+  } else {
+    // origin = '-37.8136,144.9631' // 墨尔本市中心默认位置
+  }
+  
+  const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${refuge.latitude},${refuge.longitude}`
+  window.open(url, '_blank')
+}
+
+// 获取设施列表
+const getFacilities = (type) => {
+  const facilitiesMap = {
+    '❄️': { icon: '❄️', name: 'COOL AIR' },
+    '🛜': { icon: '📶', name: 'WIFI' },
+    '☕️': { icon: '☕', name: 'CAFE' },
+    '🚻': { icon: '🚻', name: 'TOILET' },
+    '🅿️': { icon: '🅿️', name: 'PARKING' },
+    '💧': { icon: '💧', name: 'WATER' }
+  }
+  
+  const facilityStr = facilitiesObj[type] || ''
+  const facilityEmojis = facilityStr.split(/\s+/).filter(e => e)
+  
+  return facilityEmojis.map(emoji => facilitiesMap[emoji])
+}
+
+// 判断是否营业中
+const isOpenNow = (type) => {
+  const hours = openingHoursObj[type]
+  
+  // 24小时开放
+  if (hours === 'Open 24 hours') {
+    return true
+  }
+  
+  // 解析营业时间，如 "9:00-17:00"
+  const match = hours.match(/(\d+):(\d+)-(\d+):(\d+)/)
+  if (!match) return false
+  
+  const [, openHour, openMin, closeHour, closeMin] = match.map(Number)
+  
+  const now = new Date()
+  const currentHour = now.getHours()
+  const currentMin = now.getMinutes()
+  
+  // 转换为分钟数便于比较
+  const currentTime = currentHour * 60 + currentMin
+  const openTime = openHour * 60 + openMin
+  const closeTime = closeHour * 60 + closeMin
+  
+  return currentTime >= openTime && currentTime < closeTime
+}
+
+// 获取类型标签样式
+const getTypeClass = (type) => {
+  const typeClasses = {
+    library: 'library',
+    museum: 'museum',
+    park: 'park',
+    community: 'community',
+    shopping: 'shopping'
+  }
+  return typeClasses[type] || ''
+}
+
+
+// 计算两点之间的距离（使用 Haversine 公式）
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371 // 地球半径（公里）
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+// 获取用户位置 - 只调用一次浏览器弹框
+const getUserLocation = () => {
+  if (!navigator.geolocation) {
+    console.log('Geolocation is not supported by your browser')
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLocation.value = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      }
+      locationPermissionDenied.value = false
+      console.log('Location obtained:', userLocation.value)
+    },
+    (error) => {
+      // 用户拒绝权限
+      if (error.code === error.PERMISSION_DENIED) {
+        locationPermissionDenied.value = true
+        console.log('Location permission denied by user')
+      } else {
+        console.log('Location access unavailable')
+      }
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000
+    }
+  )
+}
+
+// 计算距离显示文本
+const getDistanceText = (refuge) => {
+  if (!userLocation.value || !refuge.latitude || !refuge.longitude) {
+    return ''
+  }
+  
+  const distance = calculateDistance(
+    userLocation.value.latitude,
+    userLocation.value.longitude,
+    refuge.latitude,
+    refuge.longitude
+  )
+  
+  if (distance < 1) {
+    return `${Math.round(distance * 1000)} m`
+  } else {
+    return `${distance.toFixed(1)} km`
+  }
+}
+
+
+// 获取数据
+const fetchRefuges = async () => {
+  loading.value = true
+  error.value = null
+  
+  // 数据更新时关闭弹框
+  selectedRefuge.value = null
+  showTempAlert.value = false
+  
+  try {
+    let url = `${API_BASE_URL}/cool-refuges`
+    const params = new URLSearchParams()
+    
+    // 添加搜索参数
+    if (searchQuery.value.trim()) {
+      params.append('name', searchQuery.value.trim())
+    }
+    
+    // 添加类型参数
+    if (selectedType.value !== 'all') {
+      params.append('type', selectedType.value)
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`
+    }
+    
+    const response = await fetch(url)
+    const result = await response.json()
+    
+    if (result.success) {
+      refuges.value = result.data
+    } else {
+      error.value = 'Failed to load refuges'
+    }
+  } catch (err) {
+    console.error('Error fetching refuges:', err)
+    error.value = 'Failed to connect to server'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索
+const handleSearch = async () => {
+  await fetchRefuges()
+  
+  // 如果在地图视图，刷新标记
+  if (currentView.value === 'map' && map) {
+    nextTick(() => {
+      addMarkers()
+    })
+  }
+}
+
+// 选择类型
+const selectType = async (type) => {
+  console.log('Selecting type:', type)
+  selectedType.value = type
+  await fetchRefuges()
+  console.log('Fetched refuges:', refuges.value.length)
+  
+  // 如果在地图视图，刷新标记
+  if (currentView.value === 'map') {
+    console.log('In map view, refreshing markers...')
+    nextTick(() => {
+      if (map) {
+        console.log('Map exists, calling addMarkers')
+        addMarkers()
+      } else {
+        console.log('Map does not exist')
+      }
+    })
+  }
+}
+
+// 计算属性：统计数量
+const refugeCount = computed(() => refuges.value.length)
+
+// 初始化地图
+const initMap = () => {
+  if (!mapContainer.value) return
+  
+  // 默认中心点（墨尔本）
+  const center = [144.9631, -37.8136]
+  
+  map = new mapboxgl.Map({
+    container: mapContainer.value,
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: center,
+    zoom: 12
+  })
+  
+  // 添加导航控件
+  map.addControl(new mapboxgl.NavigationControl())
+  
+  // 地图加载完成后添加标记
+  map.on('load', () => {
+    console.log('Map loaded event fired')
+    addMarkers()
+  })
+  
+  // 添加错误处理
+  map.on('error', (e) => {
+    console.error('Map error:', e)
+  })
+}
+
+// 添加标记到地图
+const addMarkers = () => {
+  console.log('Adding markers, refuges count:', refuges.value.length)
+  console.log('Map exists:', !!map)
+  
+  // 清除现有标记
+  markers.forEach(marker => marker.remove())
+  markers = []
+  
+  if (!map) {
+    console.log('No map to display')
+    return
+  }
+  
+  if (!refuges.value.length) {
+    console.log('No refuges to display')
+    return
+  }
+  
+  console.log('Adding markers to map...')
+  
+  // 10km 距离限制
+  const MAX_DISTANCE_KM = 15
+  
+  // 过滤出 10km 以内的避暑场所
+  const nearbyRefuges = refuges.value.filter(refuge => {
+    // if (!refuge.longitude || !refuge.latitude) {
+    //   return false
+    // }
+    
+    // 如果没有用户位置，显示所有标记
+    // if (!userLocation.value) {
+    //   return true
+    // }
+    
+    // 计算距离
+    const distance = calculateDistance(
+      userLocation.value.latitude,
+      userLocation.value.longitude,
+      refuge.latitude,
+      refuge.longitude
+    )
+    
+    return distance <= MAX_DISTANCE_KM
+  })
+  
+  console.log(`Showing ${nearbyRefuges.length} refuges within ${MAX_DISTANCE_KM}km`)
+  
+  nearbyRefuges.forEach(refuge => {
+    if (!refuge.longitude || !refuge.latitude) {
+      return
+    }
+    
+    // 创建标记元素
+    const el = document.createElement('div')
+    el.className = 'map-marker'
+    el.style.width = '36px'
+    el.style.height = '36px'
+    el.style.borderRadius = '50%'
+    el.style.border = '2px solid #0056b3'
+    el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = `url(${mapPhotoObj[refuge.type]})`
+    el.style.backgroundSize = 'cover'
+    el.style.backgroundPosition = 'center'
+    
+    // 点击标记显示详情卡片和温度弹窗
+    el.addEventListener('click', (e) => {
+      e.stopPropagation()
+      selectedRefuge.value = refuge
+      // 显示温度弹窗
+      showTemperatureAlert(refuge)
+    })
+    
+    // 添加标记
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([refuge.longitude, refuge.latitude])
+      .addTo(map)
+    
+    markers.push(marker)
+  })
+  
+  console.log('Added', markers.length, 'markers')
+  
+  // 如果有标记，调整地图视野以包含所有标记
+  if (markers.length > 0) {
+    const bounds = new mapboxgl.LngLatBounds()
+    nearbyRefuges.forEach(refuge => {
+      if (refuge.longitude && refuge.latitude) {
+        bounds.extend([refuge.longitude, refuge.latitude])
+      }
+    })
+    map.fitBounds(bounds, { 
+      padding: 50,
+      maxZoom: 14,
+      duration: 0
+    })
+  }
+}
+
+// 获取标记颜色
+const getMarkerColor = (type) => {
+  const colors = {
+    library: '#3b82f6',
+    museum: '#8b5cf6',
+    park: '#22c55e',
+    community: '#f59e0b',
+    shopping: '#ec4899'
+  }
+  return colors[type] || '#6b7280'
+}
+
+// 切换视图
+const switchView = (view) => {
+  console.log('Switching to view:', view)
+  currentView.value = view
+  if (view === 'map') {
+    nextTick(() => {
+      console.log('In nextTick, mapContainer:', mapContainer.value)
+      if (!map) {
+        console.log('Initializing map...')
+        initMap()
+      } else {
+        console.log('Resizing map and adding markers...')
+        map.resize()
+        addMarkers()
+      }
+    })
+  }
+}
+
+// 监听数据变化，更新地图标记
+watch(refuges, () => {
+  if (currentView.value === 'map' && map) {
+    addMarkers()
+  }
+})
+
+// 页面加载时获取用户位置和数据
+onMounted(() => {
+  // 自动请求位置权限（会触发浏览器弹框）
+  getUserLocation()
+  
+  // 获取数据
+  fetchRefuges()
+})
 </script>
 
 <template>
   <div class="page">
+    <WelcomeModal />
     <NavBar :show-alert-button="false" />
     
     <div class="refuges-header">
@@ -14,124 +502,193 @@ import Footer from '@/components/Footer.vue'
             <h1 class="refuges-title">Stay Safe and Cool Today</h1>
             <p class="refuges-description">Find public spaces with air conditioning nearby to escape the summer heat safely.</p>
           </div>
-          <div class="current-location">
+          <div class="current-location" v-if="userLocation">
             <span class="location-icon">📍</span>
             <span class="location-text">CURRENT LOCATION</span>
-            <span class="location-result">8 Refuges found near Carlton</span>
+            <span class="location-result">{{ refugeCount }} Refuges found</span>
           </div>
         </div>
         
         <div class="search-container">
-          <input type="text" class="search-input" placeholder="Search by suburb or landmark..." />
-          <button class="search-button">FIND</button>
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search by suburb or landmark..."
+            v-model="searchQuery"
+            @keyup.enter="handleSearch"
+          />
+          <button class="search-button" @click="handleSearch" :disabled="loading">
+            {{ loading ? 'Loading...' : 'FIND' }}
+          </button>
         </div>
         
         <div class="controls-container">
           <div class="view-toggle">
-            <button class="view-button active">📋 List</button>
-            <button class="view-button">🗺️ Map</button>
+            <button 
+              class="view-button" 
+              :class="{ active: currentView === 'list' }"
+              @click="switchView('list')"
+            >📋 List</button>
+            <button 
+              class="view-button" 
+              :class="{ active: currentView === 'map' }"
+              @click="switchView('map')"
+            >🗺️ Map</button>
           </div>
           <div class="category-filters">
-            <button class="filter-button active">All</button>
-            <button class="filter-button">📚 Library</button>
-            <button class="filter-button">🏛️ Museum</button>
-            <button class="filter-button">🌳 Park</button>
-            <button class="filter-button">🏘️ Community</button>
-            <button class="filter-button">🛍️ Shopping</button>
+            <button 
+              v-for="(config, type) in typeConfig" 
+              :key="type"
+              class="filter-button"
+              :class="{ active: selectedType === type }"
+              @click="selectType(type)"
+            >
+              <span v-if="config.icon">{{ config.icon }}</span>
+              {{ config.label }}
+            </button>
           </div>
         </div>
         
-        <div class="content-container">
-          <div class="refuges-list">
-            <!-- Carlton Public Library -->
-            <div class="refuge-card library">
-              <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Carlton Public Library" />
+        <!-- 位置权限被拒绝提示 -->
+        <div v-if="locationPermissionDenied" class="location-denied-prompt">
+          <div class="location-denied-content">
+            <span class="location-icon-large">📍</span>
+            <h3>Location Access Required</h3>
+            <p>You have denied location access. To see distances to cool refuges, please enable location permission in your browser settings:</p>
+            <div class="browser-instructions">
+              <div class="instruction-item">
+                <strong>Chrome / Edge:</strong> Click the 🔒 lock icon in the address bar → Site settings → Location → Allow
               </div>
-              <div class="refuge-info">
-                <div class="refuge-header">
-                  <h3 class="refuge-name">Carlton Public Library</h3>
-                  <span class="refuge-distance">0.5 km</span>
-                </div>
-                <div class="refuge-tags">
-                  <span class="tag">Full Air-Con</span>
-                  <span class="tag">9:00 AM - 8:00 PM</span>
-                </div>
-                <div class="refuge-facilities">
-                  <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
-                </div>
-                <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
-                  <button class="btn-details">DETAILS</button>
-                </div>
+              <div class="instruction-item">
+                <strong>Firefox:</strong> Click the 🔒 lock icon in the address bar → Permissions → Location → Allow
+              </div>
+              <div class="instruction-item">
+                <strong>Safari:</strong> Safari menu → Settings → Websites → Location → Allow for this website
               </div>
             </div>
-            
-            <!-- Royal Exhibition Museum -->
-            <div class="refuge-card museum">
-              <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Royal Exhibition Museum" />
-              </div>
-              <div class="refuge-info">
-                <div class="refuge-header">
-                  <h3 class="refuge-name">Royal Exhibition Museum</h3>
-                  <span class="refuge-distance">1.2 km</span>
-                </div>
-                <div class="refuge-tags">
-                  <span class="tag">Advanced Cooling</span>
-                  <span class="tag">10:00 AM - 5:00 PM</span>
-                </div>
-                <div class="refuge-facilities">
-                  <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
-                </div>
-                <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
-                  <button class="btn-details">DETAILS</button>
-                </div>
-              </div>
+            <button @click="locationPermissionDenied = false" class="btn-dismiss">Got it</button>
+          </div>
+        </div>
+
+        <!-- 错误提示 -->
+        <div v-if="error" class="error-message">
+          {{ error }}
+          <button @click="fetchRefuges" class="retry-button">Retry</button>
+        </div>
+        
+        <!-- 加载状态 -->
+        <div v-if="loading && currentView === 'list'" class="loading-message">
+          Loading refuges...
+        </div>
+        
+        <div class="content-container" v-if="!error">
+          <!-- 列表视图 -->
+          <div v-if="currentView === 'list'" class="refuges-list">
+            <!-- 加载状态 -->
+            <div v-if="loading" class="loading-message">
+              Loading refuges...
+            </div>
+            <!-- 没有数据时显示 -->
+            <div v-if="!loading && refuges.length === 0" class="no-data">
+              No refuges found. Try adjusting your search or filters.
             </div>
             
-            <!-- Central Plaza Mall -->
-            <div class="refuge-card shopping">
+            <!-- 数据列表 -->
+            <div 
+              v-for="refuge in refuges" 
+              :key="refuge.id"
+              v-show="!loading"
+              class="refuge-card"
+              :class="getTypeClass(refuge.type)"
+            >
               <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Central Plaza Mall" />
+                <img 
+                  :src="photoObj[refuge.type]" 
+                  :alt="refuge.name"
+                />
               </div>
               <div class="refuge-info">
                 <div class="refuge-header">
-                  <h3 class="refuge-name">Central Plaza Mall</h3>
-                  <span class="refuge-distance">1.8 km</span>
+                  <h3 class="refuge-name">{{ refuge.name }}</h3>
+                  <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
+                    {{ getDistanceText(refuge) }}
+                  </span>
+                </div>
+                <div class="refuge-address">
+                  <span>📍 {{ refuge.street }}, {{ refuge.city }}</span>
                 </div>
                 <div class="refuge-tags">
-                  <span class="tag">Climate Controlled</span>
-                  <span class="tag">8:00 AM - 10:00 PM</span>
+                  <!-- <span class="tag">{{ getTagText(refuge.type) }}</span> -->
+                  <span class="tag" v-if="refuge.openingHours">{{ openingHoursObj[refuge.type] }}</span>
                 </div>
                 <div class="refuge-facilities">
                   <span class="facility-label">AVAILABLE FACILITIES</span>
-                  <div class="facility-icons">
-                    <span class="facility">💧</span>
-                    <span class="facility">🚻</span>
-                    <span class="facility">📶</span>
-                  </div>
+                  <div class="facility-text">{{ facilitiesObj[refuge.type] }}</div>
                 </div>
                 <div class="refuge-buttons">
-                  <button class="btn-direction">GET DIRECTIONS</button>
-                  <button class="btn-details">DETAILS</button>
+                  <button class="btn-direction" @click="getDirections(refuge)">
+                    GET DIRECTIONS
+                  </button>
+                  <!-- <button class="btn-details">DETAILS</button> -->
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="sidebar">
+          <!-- 地图视图 -->
+          <div v-show="currentView === 'map'" class="map-view">
+            <div ref="mapContainer" class="map-container">
+              <!-- 温度预警弹窗 - 在地图内部左下角 -->
+              <TemperatureAlert
+                v-if="showTempAlert"
+                :temperature="currentTemp"
+                :show="showTempAlert"
+                @close="showTempAlert = false"
+                class="map-temp-alert"
+              />
+            </div>
+
+            <!-- 地图标记详情卡片 -->
+            <div v-if="selectedRefuge" class="map-detail-card">
+              <button class="close-btn" @click="selectedRefuge = null">×</button>
+              <div class="detail-image">
+                <img :src="photoObj[selectedRefuge.type]" :alt="selectedRefuge.name" />
+                <span class="open-badge" :class="{ closed: !isOpenNow(selectedRefuge.type) }">
+                  {{ isOpenNow(selectedRefuge.type) ? 'OPEN NOW' : 'CLOSED' }}
+                </span>
+              </div>
+              <div class="detail-content">
+                <h3 class="detail-name">{{ selectedRefuge.name }}</h3>
+                <p class="detail-address">
+                  <span v-if="getDistanceText(selectedRefuge)">{{ getDistanceText(selectedRefuge) }} • </span>
+                  {{ selectedRefuge.street }}, {{ selectedRefuge.city }}
+                </p>
+                
+                <div class="detail-hours">
+                  <div class="hours-icon">🕐</div>
+                  <div class="hours-text">
+                    <span class="hours-label">FULL HOURS</span>
+                    <span class="hours-value">Open today: {{ openingHoursObj[selectedRefuge.type] }}</span>
+                  </div>
+                </div>
+                
+                <div class="detail-facilities">
+                  <div v-for="(facility, index) in getFacilities(selectedRefuge.type)" :key="index" class="facility-item">
+                    <span class="facility-icon">{{ facility.icon }}</span>
+                    <span class="facility-name">{{ facility.name }}</span>
+                  </div>
+                </div>
+                
+                <button class="btn-directions" @click="getDirections(selectedRefuge)">
+                  <span class="direction-icon">🚶</span>
+                  GET DIRECTIONS
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 仅在列表视图显示侧边栏 -->
+          <div v-if="currentView === 'list'" class="sidebar">
             <!-- Health Contacts Card -->
             <div class="sidebar-card health-card">
               <h3 class="card-title">* HEALTH CONTACTS</h3>
@@ -147,63 +704,11 @@ import Footer from '@/components/Footer.vue'
               </div>
             </div>
             
-            <!-- Neighborhood Map Card -->
-            <div class="sidebar-card map-card">
-              <div class="map-header">
-                <h3 class="card-title">NEIGHBORHOOD MAP</h3>
-                <a href="#" class="view-full">VIEW FULL</a>
-              </div>
-              <div class="map-image">
-                <img src="/pic1.jpg" alt="Neighborhood Map" />
-                <div class="map-info">
-                  <span class="refuge-count">3 refuges currently open in this view</span>
-                </div>
-              </div>
-            </div>
+        
           </div>
         </div>
         
-        <!-- Using Cool Refuges Effectively Section -->
-        <div class="using-refuges-section">
-          <h2 class="section-title">Using Cool Refuges Effectively</h2>
-          <div class="tips-container">
-            <!-- Drink Water Tip -->
-            <div class="tip-item">
-              <div class="tip-icon">
-                <span class="icon">💧</span>
-              </div>
-              <h3 class="tip-title">Drink Water</h3>
-              <p class="tip-description">Drink plenty of water before you feel thirsty.</p>
-            </div>
-            
-            <!-- Light Clothing Tip -->
-            <div class="tip-item">
-              <div class="tip-icon">
-                <span class="icon">👕</span>
-              </div>
-              <h3 class="tip-title">Light Clothing</h3>
-              <p class="tip-description">Wear loose, lightweight, and light-colored clothes.</p>
-            </div>
-            
-            <!-- Stay Longer Tip -->
-            <div class="tip-item">
-              <div class="tip-icon">
-                <span class="icon">⏰</span>
-              </div>
-              <h3 class="tip-title">Stay Longer</h3>
-              <p class="tip-description">Stay at least 2 hours in a cool refuge to lower body temperature.</p>
-            </div>
-            
-            <!-- Check In Tip -->
-            <div class="tip-item">
-              <div class="tip-icon">
-                <span class="icon">👥</span>
-              </div>
-              <h3 class="tip-title">Check In</h3>
-              <p class="tip-description">Call a friend or family member to let them know where you are.</p>
-            </div>
-          </div>
-        </div>
+      
       </div>
     </div>
     <Footer />
@@ -311,8 +816,13 @@ import Footer from '@/components/Footer.vue'
   white-space: nowrap;
 }
 
-.search-button:hover {
+.search-button:hover:not(:disabled) {
   background-color: #1a4bb8;
+}
+
+.search-button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
 }
 
 .controls-container {
@@ -405,6 +915,231 @@ import Footer from '@/components/Footer.vue'
   min-width: 300px;
 }
 
+.map-view {
+  flex: 1;
+  min-width: 300px;
+  height: 600px;
+  position: relative;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* 地图内的温度弹窗 */
+.map-temp-alert {
+  position: absolute !important;
+  bottom: 20px;
+  left: 20px;
+}
+
+/* 地图详情卡片 */
+.map-detail-card {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.map-detail-card .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+.map-detail-card .detail-image {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+}
+
+.map-detail-card .detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-detail-card .open-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #22c55e;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.map-detail-card .open-badge.closed {
+  background: #ef4444;
+}
+
+.map-detail-card .favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a3a8f;
+}
+
+.map-detail-card .detail-content {
+  padding: 16px;
+}
+
+.map-detail-card .detail-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+}
+
+.map-detail-card .detail-address {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.map-detail-card .detail-hours {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.map-detail-card .hours-icon {
+  width: 36px;
+  height: 36px;
+  background: #1a3a8f;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.map-detail-card .hours-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-detail-card .hours-label {
+  font-size: 10px;
+  color: #999;
+  letter-spacing: 0.5px;
+}
+
+.map-detail-card .hours-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.map-detail-card .detail-facilities {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.map-detail-card .facility-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-detail-card .facility-icon {
+  width: 48px;
+  height: 48px;
+  background: #f0f4ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.map-detail-card .facility-name {
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+}
+
+.map-detail-card .btn-directions {
+  width: 100%;
+  padding: 14px;
+  background: #1a3a8f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.map-detail-card .btn-directions:hover {
+  background: #142d73;
+}
+
+.map-detail-card .direction-icon {
+  font-size: 16px;
+}
+ 
+
+
 .sidebar {
   width: 300px;
   display: flex;
@@ -437,6 +1172,14 @@ import Footer from '@/components/Footer.vue'
   border-left: 4px solid #8b5cf6;
 }
 
+.refuge-card.park {
+  border-left: 4px solid #22c55e;
+}
+
+.refuge-card.community {
+  border-left: 4px solid #f59e0b;
+}
+
 .refuge-card.shopping {
   border-left: 4px solid #ec4899;
 }
@@ -465,7 +1208,7 @@ import Footer from '@/components/Footer.vue'
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .refuge-name {
@@ -475,10 +1218,20 @@ import Footer from '@/components/Footer.vue'
   margin: 0;
 }
 
-.refuge-distance {
-  font-size: 0.875rem;
-  font-weight: 500;
+.refuge-distance-badge {
+  font-size: 25px;
+  font-weight: 600;
   color: #3b82f6;
+  background-color: #e0f2fe;
+  padding: 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.refuge-address {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.75rem;
 }
 
 .refuge-features {
@@ -554,6 +1307,7 @@ import Footer from '@/components/Footer.vue'
   display: flex;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -579,14 +1333,11 @@ import Footer from '@/components/Footer.vue'
   letter-spacing: 0.5px;
 }
 
-.facility-icons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.facility {
-  font-size: 1rem;
+.facility-text {
+  font-size: 20px;
   color: #333;
+  line-height: 1.4;
+  letter-spacing: 5px;
 }
 
 .sidebar-card {
@@ -721,6 +1472,123 @@ import Footer from '@/components/Footer.vue'
   font-size: 0.875rem;
 }
 
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.retry-button {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.retry-button:hover {
+  background-color: #b91c1c;
+}
+
+.location-denied-prompt {
+  background-color: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.location-denied-content {
+  text-align: center;
+}
+
+.location-icon-large {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.location-denied-prompt h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+.location-denied-prompt p {
+  font-size: 0.875rem;
+  color: #a16207;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.browser-instructions {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.instruction-item {
+  font-size: 0.8rem;
+  color: #713f12;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: #fef9c3;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+.instruction-item:last-child {
+  margin-bottom: 0;
+}
+
+.instruction-item strong {
+  color: #92400e;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.btn-dismiss {
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-dismiss:hover {
+  background-color: #d97706;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
 @media (max-width: 768px) {
   .content-container {
     flex-direction: column;
@@ -809,4 +1677,3 @@ import Footer from '@/components/Footer.vue'
   line-height: 1.4;
 }
 </style>
-

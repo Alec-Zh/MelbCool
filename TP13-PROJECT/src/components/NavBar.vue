@@ -12,19 +12,17 @@ const closeMenu = () => {
 <template>
   <header class="header">
     <div class="header-container">
-      <!-- Logo → home (left) -->
       <RouterLink to="/" class="brand" @click="closeMenu">
-        <img src="/logo.png" alt="CoolPath Melbourne" class="logo" />
-        <span class="brand-name">CoolPath</span>
+        <img src="/logo.png" alt="MelbCool Melbourne" class="logo" />
+        <span class="brand-name">MelbCool</span>
       </RouterLink>
 
-      <!-- Desktop nav — right -->
       <nav class="nav">
         <RouterLink to="/" class="nav-link">Home</RouterLink>
         <RouterLink to="/heatmap" class="nav-link">Heat Map</RouterLink>
+        <RouterLink to="/trip-coach" class="nav-link">Trip Coach</RouterLink>
       </nav>
 
-      <!-- Hamburger (mobile) -->
       <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
         <span :class="{ open: menuOpen }"></span>
         <span :class="{ open: menuOpen }"></span>
@@ -32,10 +30,10 @@ const closeMenu = () => {
       </button>
     </div>
 
-    <!-- Mobile dropdown -->
     <div class="mobile-menu" :class="{ active: menuOpen }">
       <RouterLink to="/" class="mobile-link" @click="closeMenu">Home</RouterLink>
       <RouterLink to="/heatmap" class="mobile-link" @click="closeMenu">Heat Map</RouterLink>
+      <RouterLink to="/trip-coach" class="mobile-link" @click="closeMenu">Trip Coach</RouterLink>
     </div>
   </header>
 </template>
@@ -48,7 +46,6 @@ const closeMenu = () => {
   top: 0;
   z-index: 100;
 }
-
 .header-container {
   max-width: var(--max-width);
   margin: 0 auto;
@@ -58,7 +55,6 @@ const closeMenu = () => {
   padding: 0 2rem;
   height: 72px;
 }
-
 .brand {
   display: flex;
   align-items: center;
@@ -66,26 +62,21 @@ const closeMenu = () => {
   text-decoration: none;
   flex-shrink: 0;
 }
-
 .brand-name {
   color: var(--color-primary);
   font-weight: bold;
   font-size: 17px;
 }
-
 .logo {
   height: 48px;
   width: auto;
   object-fit: contain;
 }
-
-/* Desktop nav — right */
 .nav {
   display: flex;
   gap: 2rem;
   align-items: center;
 }
-
 .nav-link {
   text-decoration: none;
   color: var(--color-text-muted);
@@ -94,16 +85,13 @@ const closeMenu = () => {
   transition: color 0.3s ease;
   white-space: nowrap;
 }
-
 .nav-link:hover {
   color: var(--color-primary);
 }
-
 .nav-link.router-link-active {
   color: var(--color-primary);
   border-bottom: 2px solid var(--color-primary);
 }
-
 .hamburger {
   display: none;
   flex-direction: column;
@@ -114,7 +102,6 @@ const closeMenu = () => {
   cursor: pointer;
   padding: 0.5rem;
 }
-
 .hamburger span {
   display: block;
   width: 24px;
@@ -123,7 +110,6 @@ const closeMenu = () => {
   transition: all 0.3s ease;
   transform-origin: center;
 }
-
 .hamburger span.open:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
@@ -133,7 +119,6 @@ const closeMenu = () => {
 .hamburger span.open:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
 }
-
 .mobile-menu {
   display: none;
   flex-direction: column;
@@ -141,11 +126,9 @@ const closeMenu = () => {
   border-top: 1px solid var(--color-border);
   gap: 0.5rem;
 }
-
 .mobile-menu.active {
   display: flex;
 }
-
 .mobile-link {
   text-decoration: none;
   color: var(--color-text-muted);
@@ -154,12 +137,10 @@ const closeMenu = () => {
   border-bottom: 1px solid #f0f0f0;
   transition: color 0.3s ease;
 }
-
 .mobile-link:hover,
 .mobile-link.router-link-active {
   color: var(--color-primary);
 }
-
 @media (max-width: 768px) {
   .nav {
     display: none;

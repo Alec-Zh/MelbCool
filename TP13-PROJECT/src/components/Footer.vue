@@ -3,8 +3,8 @@
     <div class="footer-container">
       <div class="footer-left">
         <RouterLink to="/" class="brand">
-          <img src="/logo.png" alt="CoolPath Melbourne" class="footer-logo" />
-          <span class="brand-name">CoolPath</span>
+          <img src="/logo.png" alt="MelbCool Melbourne" class="footer-logo" />
+          <span class="brand-name">MelbCool</span>
         </RouterLink>
         <p class="footer-source">
           Temperature data:

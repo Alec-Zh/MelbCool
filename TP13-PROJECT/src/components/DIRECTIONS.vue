@@ -9,10 +9,10 @@
       <div class="directions-content">
         <!-- 温度预警 -->
         <TemperatureAlert
-          v-if="showTempAlert && currentTemp !== null"
+          v-if="props.showTempAlert && currentTemp !== null"
           :temperature="currentTemp"
-          :show="showTempAlert"
-          @close="showTempAlert = false"
+          :show="props.showTempAlert"
+          @close="$emit('close')"
           class="directions-temp-alert"
         />
         <!-- 顶部区域：路线信息、交通方式和路线统计并排 -->
@@ -115,7 +115,6 @@
         </div>
         
        
-    
       </div>
     </div>
   </div>
@@ -135,6 +134,10 @@ const props = defineProps({
   userLocation: {
     type: Object,
     default: null
+  },
+  showTempAlert: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -147,7 +150,6 @@ const routeInfo = ref(null)
 const steps = ref([])
 const selectedMode = ref('driving')
 const showDetailCard = ref(false)
-const showTempAlert = ref(false)
 const currentTemp = ref(0)
 
 // 封面图片配置
@@ -445,12 +447,11 @@ const fetchTemperature = async (latitude, longitude) => {
   }
 }
 
-// 显示温度预警
-const showTemperatureAlert = async () => {
+// 获取温度数据
+const fetchTemperatureData = async () => {
   const temp = await fetchTemperature(props.refuge.latitude, props.refuge.longitude)
   if (temp !== null) {
     currentTemp.value = temp
-    showTempAlert.value = true
   }
 }
 
@@ -472,9 +473,11 @@ const openGoogleMaps = () => {
   window.open(url, '_blank')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 获取温度数据（用于路线颜色）
+  await fetchTemperatureData()
+  // 初始化地图
   initMap()
-  showTemperatureAlert()
 })
 </script>
 

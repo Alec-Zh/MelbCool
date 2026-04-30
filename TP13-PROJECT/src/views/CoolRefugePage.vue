@@ -64,6 +64,7 @@ const currentTemp = ref(0)
 // 路线弹窗相关数据
 const showDirections = ref(false)
 const directionsRefuge = ref(null)
+const showTempAlertInDirections = ref(false)
 
 // Mapbox access token（从 Lambda 获取）
 const initMapboxToken = async () => {
@@ -110,9 +111,17 @@ const typeConfig = {
   shopping: { label: 'Shopping', icon: '🛍️' }
 }
 
-// 打开路线弹窗
+// 打开路线弹窗（从列表点击，显示温度预警）
 const openDirections = (refuge) => {
   directionsRefuge.value = refuge
+  showTempAlertInDirections.value = true
+  showDirections.value = true
+}
+
+// 打开路线弹窗（从地图点击，不显示温度预警）
+const openDirectionsFromMap = (refuge) => {
+  directionsRefuge.value = refuge
+  showTempAlertInDirections.value = false
   showDirections.value = true
 }
 
@@ -705,7 +714,7 @@ onMounted(async () => {
                   </div>
                 </div>
                 
-                <button class="btn-directions" @click="getDirections(selectedRefuge)">
+                <button class="btn-directions" @click="openDirectionsFromMap(selectedRefuge)">
                   <span class="direction-icon">🚶</span>
                   GET DIRECTIONS
                 </button>
@@ -744,6 +753,7 @@ onMounted(async () => {
       v-if="showDirections && directionsRefuge"
       :refuge="directionsRefuge"
       :user-location="userLocation"
+      :show-temp-alert="showTempAlertInDirections"
       @close="showDirections = false"
     />
   </div>

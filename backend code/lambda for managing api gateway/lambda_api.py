@@ -29,18 +29,17 @@ def get_all_suburbs(cursor):
             s.latitude,
             s.longitude,
             h.temperature,
+            h.apparent_temperature,
+            h.uv_index,
             h.heat_level,
             h.timestamp AS updated_at,
             v.vegetation_index AS tree_canopy_percent,
-            p.elderly_population,
-            p.total_population,
             r.risk_level,
             r.heat_score,
-            r.vulnerability_score
+            r.shade_score
         FROM Suburb s
         LEFT JOIN Heat_Data h ON s.suburb_id = h.suburb_id
         LEFT JOIN Vegetation_Data v ON s.suburb_id = v.suburb_id
-        LEFT JOIN Population_Data p ON s.suburb_id = p.suburb_id
         LEFT JOIN Risk_Assessment r ON s.suburb_id = r.suburb_id
         ORDER BY s.suburb_name
     """)
@@ -56,18 +55,17 @@ def get_suburb_by_id(cursor, suburb_id):
             s.latitude,
             s.longitude,
             h.temperature,
+            h.apparent_temperature,
+            h.uv_index,
             h.heat_level,
             h.timestamp AS updated_at,
             v.vegetation_index AS tree_canopy_percent,
-            p.elderly_population,
-            p.total_population,
             r.risk_level,
             r.heat_score,
-            r.vulnerability_score
+            r.shade_score
         FROM Suburb s
         LEFT JOIN Heat_Data h ON s.suburb_id = h.suburb_id
         LEFT JOIN Vegetation_Data v ON s.suburb_id = v.suburb_id
-        LEFT JOIN Population_Data p ON s.suburb_id = p.suburb_id
         LEFT JOIN Risk_Assessment r ON s.suburb_id = r.suburb_id
         WHERE s.suburb_id = %s
     """, (suburb_id,))

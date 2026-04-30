@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
 import HeatBadge from './HeatBadge.vue'
+import HeatAdviceCard from './HeatAdviceCard.vue'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
@@ -12,6 +13,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const showAdvice = ref(false)
+
+// Reset advice modal when suburb changes
+watch(
+  () => props.suburb.suburb_name,
+  () => {
+    showAdvice.value = false
+  },
+)
 
 const updatedAt = computed(() => {
   if (!props.suburb.updated_at) return null
@@ -78,6 +89,12 @@ const riskConfig = {
   moderate: { label: 'Moderate Risk', bg: '#FEF3C7', color: '#92400E' },
   low: { label: 'Low Risk', bg: '#DCFCE7', color: '#166534' },
 }
+
+const adviceButtonConfig = {
+  high: { label: 'View safety advice', bg: '#991B1B', color: '#fff' },
+  moderate: { label: 'View safety advice', bg: '#92400E', color: '#fff' },
+  low: { label: 'View safety advice', bg: '#166534', color: '#fff' },
+}
 </script>
 
 <template>
@@ -102,7 +119,7 @@ const riskConfig = {
         </button>
       </div>
 
-      <!-- Risk first, then heat -->
+      <!-- Risk badge -->
       <div class="detail-badges">
         <span
           v-if="suburb.risk_level"
@@ -114,6 +131,9 @@ const riskConfig = {
         >
           {{ riskConfig[suburb.risk_level]?.label }}
         </span>
+
+        <!-- 🧪 TEST ONLY — remove before production -->
+        <span v-if="suburb.suburb_id === 9999" class="test-tag">TEST</span>
       </div>
 
       <div v-if="updatedAt" class="updated-at">Data updated {{ updatedAt }} (Melbourne time)</div>
@@ -156,18 +176,20 @@ const riskConfig = {
           <span class="score-label">🌳 Shade Coverage</span>
           <span class="score-note">How much tree shade is available</span>
         </div>
-        <div class="score-bar-wrap">
-          <div
-            class="score-bar"
-            :style="{
-              width: shadeBarWidth + '%',
-              backgroundColor: shadeCoverageColor(suburb.shade_score ?? 0),
-            }"
-          ></div>
+        <div class="score-bar-row">
+          <div class="score-bar-wrap">
+            <div
+              class="score-bar"
+              :style="{
+                width: shadeBarWidth + '%',
+                backgroundColor: shadeCoverageColor(suburb.shade_score ?? 0),
+              }"
+            ></div>
+          </div>
+          <span class="score-num">
+            {{ Math.round(100 - (suburb.shade_score ?? 0)) }}<span class="score-denom">/100</span>
+          </span>
         </div>
-        <span class="score-num">
-          {{ Math.round(100 - (suburb.shade_score ?? 0)) }}<span class="score-denom">/100</span>
-        </span>
       </div>
 
       <div class="score-row">
@@ -175,24 +197,63 @@ const riskConfig = {
           <span class="score-label">🌡 Heat Score</span>
           <span class="score-note">Based on how hot it feels and sun exposure today</span>
         </div>
-        <div class="score-bar-wrap">
-          <div
-            class="score-bar"
-            :style="{
-              width: heatBarWidth + '%',
-              backgroundColor: heatScoreColor(suburb.heat_score ?? 0),
-            }"
-          ></div>
+        <div class="score-bar-row">
+          <div class="score-bar-wrap">
+            <div
+              class="score-bar"
+              :style="{
+                width: heatBarWidth + '%',
+                backgroundColor: heatScoreColor(suburb.heat_score ?? 0),
+              }"
+            ></div>
+          </div>
+          <span class="score-num">
+            {{ Math.round(suburb.heat_score ?? 0) }}<span class="score-denom">/100</span>
+          </span>
         </div>
-        <span class="score-num">
-          {{ Math.round(suburb.heat_score ?? 0) }}<span class="score-denom">/100</span>
-        </span>
       </div>
 
       <div class="score-note-bottom">
         Risk is mostly driven by today's heat conditions, with tree shade as a secondary factor.
       </div>
     </div>
+
+    <!-- AC3.1.1 / AC3.2.1 — Safety advice button -->
+    <button
+      v-if="suburb.risk_level"
+      class="advice-btn"
+      :style="{
+        backgroundColor: adviceButtonConfig[suburb.risk_level]?.bg,
+        color: adviceButtonConfig[suburb.risk_level]?.color,
+      }"
+      @click="showAdvice = true"
+    >
+      <span class="advice-btn-icon">🛡️</span>
+      View safety advice
+      <svg
+        class="advice-btn-arrow"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    </button>
+
+    <!-- AC3.1.1 / AC3.2.1 — Advice modal -->
+    <HeatAdviceCard
+      v-if="showAdvice"
+      :riskLevel="suburb.risk_level"
+      :heatScore="suburb.heat_score ?? 0"
+      :shadeScore="suburb.shade_score ?? 0"
+      @close="showAdvice = false"
+    />
   </div>
 </template>
 
@@ -325,6 +386,12 @@ const riskConfig = {
 
 .score-row {
   display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.score-bar-row {
+  display: flex;
   align-items: center;
   gap: 0.6rem;
 }
@@ -333,7 +400,6 @@ const riskConfig = {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
-  min-width: 150px;
 }
 
 .score-label {
@@ -381,5 +447,52 @@ const riskConfig = {
   color: var(--color-text-muted);
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);
+}
+
+/* AC3.1.1 — Advice button */
+.advice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--radius-card);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    transform 0.1s ease;
+  letter-spacing: 0.01em;
+}
+
+.advice-btn:hover {
+  filter: brightness(1.1);
+}
+
+.advice-btn:active {
+  transform: scale(0.98);
+}
+
+.advice-btn-icon {
+  font-size: 1rem;
+}
+
+.advice-btn-arrow {
+  margin-left: auto;
+  opacity: 0.75;
+}
+
+/* 🧪 TEST ONLY — remove before production */
+.test-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  background: #1e1e1e;
+  color: #facc15;
+  letter-spacing: 0.08em;
 }
 </style>

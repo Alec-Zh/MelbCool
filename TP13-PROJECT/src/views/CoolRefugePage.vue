@@ -38,7 +38,7 @@ const openingHoursObj = {
 
 // API 基础地址
 // const API_BASE_URL = 'http://localhost:3000/api'
-const API_BASE_URL = 'http://114.132.125.151:3000/api'
+const API_BASE_URL = 'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com/api'
 
 // 响应式数据
 const refuges = ref([])

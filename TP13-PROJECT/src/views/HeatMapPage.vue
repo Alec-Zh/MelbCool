@@ -292,7 +292,7 @@ onMounted(fetchSuburbs)
             <div class="popup-icon">📍</div>
             <h3 class="popup-title popup-title--outrange">Outside Coverage Area</h3>
             <p class="popup-body">
-              Your location is outside the inner Melbourne suburbs covered by CoolPath. Browse the
+              Your location is outside the inner Melbourne suburbs covered by MelbCool. Browse the
               map manually or use the search bar to find a suburb.
             </p>
             <button class="popup-dismiss popup-dismiss--outrange" @click="showOutOfRangePopup = false">

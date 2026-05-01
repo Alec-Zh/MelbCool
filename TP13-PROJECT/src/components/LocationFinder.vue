@@ -20,9 +20,7 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   const dLon = ((lon2 - lon1) * Math.PI) / 180
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
@@ -53,7 +51,7 @@ function locate() {
       if (suburb) {
         status.value = 'found'
         foundSuburbName.value = suburb.suburb_name
-        emit('suburb-found', suburb)
+        emit('suburb-found', suburb, { lat: latitude, lng: longitude })
       } else {
         status.value = 'out-of-range'
         emit('out-of-range')
@@ -126,9 +124,7 @@ onMounted(() => {
         </svg>
         <span>Outside covered area</span>
       </div>
-      <button class="lf-refresh-btn" @click="locate" aria-label="Try again">
-        🔄 Try again
-      </button>
+      <button class="lf-refresh-btn" @click="locate" aria-label="Try again">🔄 Try again</button>
     </div>
 
     <!-- Permission denied -->
@@ -172,9 +168,7 @@ onMounted(() => {
         </svg>
         <span>Location unavailable</span>
       </div>
-      <button class="lf-refresh-btn" @click="locate" aria-label="Try again">
-        🔄 Try again
-      </button>
+      <button class="lf-refresh-btn" @click="locate" aria-label="Try again">🔄 Try again</button>
     </div>
 
     <!-- Idle: show button before first attempt (shouldn't show long due to auto-locate) -->
@@ -285,7 +279,9 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .lf-refresh-btn:hover {
   background: rgba(255, 255, 255, 0.28);

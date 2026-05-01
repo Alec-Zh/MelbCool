@@ -22,7 +22,34 @@ const riskLevels = [
   <div class="guide">
     <h3 class="guide-title">Map Legend</h3>
 
-    <!-- Risk Level first -->
+    <!-- How to use first -->
+    <div class="how-to-section">
+      <div class="section-header">🗺️ How to use this map</div>
+      <ul class="how-to-list">
+        <li>
+          <span class="how-to-icon">📍</span>
+          <span>Your location appears as a <strong>blue dot</strong> on the map</span>
+        </li>
+        <li>
+          <span class="how-to-icon">👆</span>
+          <span><strong>Tap any suburb</strong> on the map to see its heat details</span>
+        </li>
+        <li>
+          <span class="how-to-icon">🔄</span>
+          <span><strong>Tap the same suburb again</strong> to return to the full map</span>
+        </li>
+        <li>
+          <span class="how-to-icon">🔍</span>
+          <span>Use the <strong>search bar</strong> above to find a specific suburb</span>
+        </li>
+        <li>
+          <span class="how-to-icon">✕</span>
+          <span>Press <strong>✕</strong> on the detail panel to return to this guide</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Risk Level -->
     <div class="section">
       <div class="section-header">⚠️ Risk Level</div>
       <ul class="item-list">
@@ -185,5 +212,35 @@ const riskLevels = [
   border-top: 1px solid var(--color-border);
   font-size: 0.78rem;
   color: var(--color-text-muted);
+}
+
+.how-to-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.how-to-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.how-to-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.how-to-icon {
+  flex-shrink: 0;
+  width: 1.2rem;
+  text-align: center;
 }
 </style>

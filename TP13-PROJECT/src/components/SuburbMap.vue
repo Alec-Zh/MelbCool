@@ -12,6 +12,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  userLocation: {
+    type: Object, // { lat, lng }
+    default: null,
+  },
 })
 
 const emit = defineEmits(['select'])
@@ -19,12 +23,13 @@ const emit = defineEmits(['select'])
 const mapContainer = ref(null)
 let map = null
 let geoJsonLayer = null
+let locationMarker = null
 
 const DEFAULT_CENTER = [-37.8136, 144.9631]
 const DEFAULT_ZOOM = 12
 const SELECTED_ZOOM = 14
-let fitZoom = DEFAULT_ZOOM // actual zoom after fitBounds, used when deselecting
-let fitCenter = DEFAULT_CENTER // actual center after fitBounds
+let fitZoom = DEFAULT_ZOOM
+let fitCenter = DEFAULT_CENTER
 
 const riskColors = {
   high: { fill: '#EF4444', border: '#B91C1C' },
@@ -117,6 +122,11 @@ async function initMap() {
       fitZoom = map.getZoom()
       fitCenter = [map.getCenter().lat, map.getCenter().lng]
     })
+
+    // 地图初始化完成后，如果 userLocation 已经有值（定位比地图快），补渲染 marker
+    if (props.userLocation) {
+      updateLocationMarker(props.userLocation)
+    }
   } catch (e) {
     console.error('Failed to load GeoJSON:', e)
   }
@@ -147,6 +157,27 @@ function flyToSuburb(suburb) {
   })
 }
 
+function updateLocationMarker(location) {
+  if (!map) return
+  if (locationMarker) {
+    locationMarker.remove()
+    locationMarker = null
+  }
+  if (!location) return
+
+  // 蓝色脉冲圆点
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="user-location-marker"><div class="user-location-dot"></div><div class="user-location-pulse"></div></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  })
+
+  locationMarker = L.marker([location.lat, location.lng], { icon, zIndexOffset: 1000 })
+    .addTo(map)
+    .bindTooltip('Your location', { permanent: false, className: 'suburb-tooltip' })
+}
+
 onMounted(() => {
   initMap()
 })
@@ -164,6 +195,12 @@ watch(
   (suburb) => {
     refreshStyles()
     flyToSuburb(suburb)
+  },
+)
+watch(
+  () => props.userLocation,
+  (location) => {
+    updateLocationMarker(location)
   },
 )
 </script>
@@ -197,5 +234,49 @@ watch(
   border-radius: 8px;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.user-location-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.user-location-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+  border: 2.5px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.user-location-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background: rgba(37, 99, 235, 0.2);
+  border-radius: 50%;
+  animation: location-pulse 1.8s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes location-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
 }
 </style>

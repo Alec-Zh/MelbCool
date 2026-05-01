@@ -5,6 +5,7 @@ import SuburbSearch from '../components/SuburbSearch.vue'
 import SuburbDetail from '../components/SuburbDetail.vue'
 import SuburbMap from '../components/SuburbMap.vue'
 import HeatLevelGuide from '../components/HeatLevelGuide.vue'
+import LocationFinder from '../components/LocationFinder.vue'
 import Footer from '../components/Footer.vue'
 
 const API_BASE = 'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com'
@@ -86,6 +87,9 @@ const selectedSuburb = ref(null)
 const showHighRiskPopup = ref(false)
 const highRiskSuburbName = ref('')
 
+// Out-of-range location popup
+const showOutOfRangePopup = ref(false)
+
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
 )
@@ -141,12 +145,22 @@ function clearSelection() {
   selectedSuburb.value = null
 }
 
+// LocationFinder handlers
+function onSuburbFound(suburb) {
+  selectSuburb(suburb)
+}
+
+function onOutOfRange() {
+  showOutOfRangePopup.value = true
+}
+
 onMounted(fetchSuburbs)
 </script>
 
 <template>
   <div class="page">
     <NavBar />
+
     <main class="content">
       <!-- Page header -->
       <div class="page-header">
@@ -155,6 +169,12 @@ onMounted(fetchSuburbs)
           See how hot it feels right now across inner Melbourne suburbs.
           <strong>Click any suburb</strong> on the map or use the search bar to view details.
         </p>
+        <LocationFinder
+          v-if="!loading && !error"
+          :suburbs="innerSuburbs"
+          @suburb-found="onSuburbFound"
+          @out-of-range="onOutOfRange"
+        />
       </div>
 
       <div v-if="loading" class="status-msg">Loading suburb data...</div>
@@ -235,6 +255,53 @@ onMounted(fetchSuburbs)
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Out-of-range location popup -->
+    <Teleport to="body">
+      <Transition name="popup-fade">
+        <div
+          v-if="showOutOfRangePopup"
+          class="popup-backdrop"
+          @click.self="showOutOfRangePopup = false"
+        >
+          <div
+            class="popup popup--outrange"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Outside coverage area"
+          >
+            <button
+              class="popup-close"
+              @click="showOutOfRangePopup = false"
+              aria-label="Close"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            <div class="popup-icon">📍</div>
+            <h3 class="popup-title popup-title--outrange">Outside Coverage Area</h3>
+            <p class="popup-body">
+              Your location is outside the inner Melbourne suburbs covered by CoolPath. Browse the
+              map manually or use the search bar to find a suburb.
+            </p>
+            <button class="popup-dismiss popup-dismiss--outrange" @click="showOutOfRangePopup = false">
+              Got it
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -256,7 +323,11 @@ onMounted(fetchSuburbs)
 .page-header {
   background: linear-gradient(135deg, #0d3a8f 0%, #1a56c4 100%);
   margin: 0 -1.5rem;
-  padding: 2.25rem 1.5rem;
+  padding: 2.25rem 1.5rem 1.75rem;
+}
+
+.page-header :deep(.lf-wrap) {
+  margin-top: 1.1rem;
 }
 
 .page-title {
@@ -337,7 +408,7 @@ onMounted(fetchSuburbs)
   color: #991b1b;
 }
 
-/* AC3.3.1 — High-risk popup */
+/* Popups — shared base */
 .popup-backdrop {
   position: fixed;
   inset: 0;
@@ -359,6 +430,11 @@ onMounted(fetchSuburbs)
   width: 100%;
   text-align: center;
   box-shadow: 0 24px 64px rgba(153, 27, 27, 0.2);
+}
+
+.popup--outrange {
+  border-color: #93c5fd;
+  box-shadow: 0 24px 64px rgba(29, 78, 216, 0.15);
 }
 
 .popup-close {
@@ -394,6 +470,10 @@ onMounted(fetchSuburbs)
   margin: 0 0 0.6rem;
 }
 
+.popup-title--outrange {
+  color: #1d4ed8;
+}
+
 .popup-body {
   font-size: 0.92rem;
   color: #374151;
@@ -414,6 +494,10 @@ onMounted(fetchSuburbs)
 }
 .popup-dismiss:hover {
   filter: brightness(1.1);
+}
+
+.popup-dismiss--outrange {
+  background: #1d4ed8;
 }
 
 /* Popup transition */

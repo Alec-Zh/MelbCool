@@ -20,6 +20,7 @@ const closeMenu = () => {
       <nav class="nav">
         <RouterLink to="/" class="nav-link">Home</RouterLink>
         <RouterLink to="/heatmap" class="nav-link">Heat Map</RouterLink>
+        <RouterLink to="/cool-refuges" class="nav-link">Cool Refuges</RouterLink>
         <RouterLink to="/trip-coach" class="nav-link">Trip Coach</RouterLink>
       </nav>
 
@@ -33,6 +34,7 @@ const closeMenu = () => {
     <div class="mobile-menu" :class="{ active: menuOpen }">
       <RouterLink to="/" class="mobile-link" @click="closeMenu">Home</RouterLink>
       <RouterLink to="/heatmap" class="mobile-link" @click="closeMenu">Heat Map</RouterLink>
+      <RouterLink to="/cool-refuges" class="mobile-link" @click="closeMenu">Cool Refuges</RouterLink>
       <RouterLink to="/trip-coach" class="mobile-link" @click="closeMenu">Trip Coach</RouterLink>
     </div>
   </header>

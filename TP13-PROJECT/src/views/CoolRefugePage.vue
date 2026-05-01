@@ -4,6 +4,7 @@ import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
 import WelcomeModal from '@/components/WelcomeModal.vue'
 import TemperatureAlert from '@/components/TemperatureAlert.vue'
+import Directions from '@/components/DIRECTIONS.vue'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 const photoObj = {
@@ -37,8 +38,8 @@ const openingHoursObj = {
 }
 
 // API 基础地址
-// const API_BASE_URL = 'http://localhost:3000/api'
-const API_BASE_URL = 'http://114.132.125.151:3000/api'
+// const API_BASE_URL = 'http://114.132.125.151:3000/api'
+const API_BASE_URL = 'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com/api'
 
 // 响应式数据
 const refuges = ref([])
@@ -59,6 +60,11 @@ const selectedRefuge = ref(null)
 // 温度弹窗相关数据
 const showTempAlert = ref(false)
 const currentTemp = ref(0)
+
+// 路线弹窗相关数据
+const showDirections = ref(false)
+const directionsRefuge = ref(null)
+const showTempAlertInDirections = ref(false)
 
 // Mapbox access token（从 Lambda 获取）
 const initMapboxToken = async () => {
@@ -103,6 +109,20 @@ const typeConfig = {
   park: { label: 'Park', icon: '🌳' },
   community: { label: 'Community', icon: '🏘️' },
   shopping: { label: 'Shopping', icon: '🛍️' }
+}
+
+// 打开路线弹窗（从列表点击，显示温度预警）
+const openDirections = (refuge) => {
+  directionsRefuge.value = refuge
+  showTempAlertInDirections.value = true
+  showDirections.value = true
+}
+
+// 打开路线弹窗（从地图点击，不显示温度预警）
+const openDirectionsFromMap = (refuge) => {
+  directionsRefuge.value = refuge
+  showTempAlertInDirections.value = false
+  showDirections.value = true
 }
 
 const getDirections = (refuge) => {
@@ -201,6 +221,10 @@ const getUserLocation = () => {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude
       }
+      // userLocation.value = {
+      //   latitude: -37.8136,
+      //   longitude: 144.9631
+      // }
       locationPermissionDenied.value = false
       console.log('Location obtained:', userLocation.value)
     },
@@ -637,7 +661,7 @@ onMounted(async () => {
                   <div class="facility-text">{{ facilitiesObj[refuge.type] }}</div>
                 </div>
                 <div class="refuge-buttons">
-                  <button class="btn-direction" @click="getDirections(refuge)">
+                  <button class="btn-direction" @click="openDirections(refuge)">
                     GET DIRECTIONS
                   </button>
                   <!-- <button class="btn-details">DETAILS</button> -->
@@ -690,7 +714,7 @@ onMounted(async () => {
                   </div>
                 </div>
                 
-                <button class="btn-directions" @click="getDirections(selectedRefuge)">
+                <button class="btn-directions" @click="openDirectionsFromMap(selectedRefuge)">
                   <span class="direction-icon">🚶</span>
                   GET DIRECTIONS
                 </button>
@@ -723,6 +747,15 @@ onMounted(async () => {
       </div>
     </div>
     <Footer />
+    
+    <!-- 路线弹窗 -->
+    <Directions
+      v-if="showDirections && directionsRefuge"
+      :refuge="directionsRefuge"
+      :user-location="userLocation"
+      :show-temp-alert="showTempAlertInDirections"
+      @close="showDirections = false"
+    />
   </div>
 </template>
 

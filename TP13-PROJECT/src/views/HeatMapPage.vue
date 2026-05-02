@@ -90,6 +90,8 @@ const highRiskSuburbName = ref('')
 // Out-of-range location popup
 const showOutOfRangePopup = ref(false)
 
+const userLocation = ref(null)
+
 const innerSuburbs = computed(() =>
   allSuburbs.value.filter((s) => INNER_MELBOURNE.has(s.suburb_name)),
 )
@@ -106,8 +108,8 @@ async function fetchSuburbs() {
     allSuburbs.value.push({
       suburb_id: 9999,
       suburb_name: 'Test Suburb',
-      latitude: -37.805,
-      longitude: 144.955,
+      latitude: -33.8688,
+      longitude: 151.2093,
       temperature: 38,
       apparent_temperature: 42,
       uv_index: 11,
@@ -146,8 +148,8 @@ function clearSelection() {
 }
 
 // LocationFinder handlers
-function onSuburbFound(suburb) {
-  selectSuburb(suburb)
+function onSuburbFound(suburb, coords) {
+  userLocation.value = coords
 }
 
 function onOutOfRange() {
@@ -190,6 +192,7 @@ onMounted(fetchSuburbs)
             <SuburbMap
               :suburbs="innerSuburbs"
               :selectedSuburb="selectedSuburb"
+              :userLocation="userLocation"
               @select="selectSuburb"
             />
           </div>
@@ -270,11 +273,7 @@ onMounted(fetchSuburbs)
             aria-modal="true"
             aria-label="Outside coverage area"
           >
-            <button
-              class="popup-close"
-              @click="showOutOfRangePopup = false"
-              aria-label="Close"
-            >
+            <button class="popup-close" @click="showOutOfRangePopup = false" aria-label="Close">
               <svg
                 width="13"
                 height="13"
@@ -295,7 +294,10 @@ onMounted(fetchSuburbs)
               Your location is outside the inner Melbourne suburbs covered by MelbCool. Browse the
               map manually or use the search bar to find a suburb.
             </p>
-            <button class="popup-dismiss popup-dismiss--outrange" @click="showOutOfRangePopup = false">
+            <button
+              class="popup-dismiss popup-dismiss--outrange"
+              @click="showOutOfRangePopup = false"
+            >
               Got it
             </button>
           </div>

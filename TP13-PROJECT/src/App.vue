@@ -1,10 +1,17 @@
 <script setup>
+import { ref } from 'vue'
 import BackToTop from './components/BackToTop.vue'
+import PasswordGate from './components/PasswordGate.vue'
+
+const unlocked = ref(sessionStorage.getItem('melbcool_access') === 'true')
 </script>
 
 <template>
-  <RouterView />
-  <BackToTop />
+  <PasswordGate v-if="!unlocked" @unlocked="unlocked = true" />
+  <template v-else>
+    <RouterView />
+    <BackToTop />
+  </template>
 </template>
 
 <style>
@@ -15,7 +22,8 @@ import BackToTop from './components/BackToTop.vue'
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-    'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+    'Helvetica Neue', sans-serif;
 }
 </style>

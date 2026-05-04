@@ -20,7 +20,7 @@ const showAlertModal = ref(false)
             <span class="highlight">Cool in Melbourne</span>
           </h1>
           <p class="hero-description" v-hover-scale="1.05">
-           CoolPath enables older adults (60+) to make safer decisions during extreme heat. Through intelligent heat mapping and route guidance, it identifies high-risk zones, prioritises shaded paths, and directs users to nearby cooling spaces—supporting independence, safety, and everyday mobility.
+           MelbCool enables older adults (60+) to make safer decisions during extreme heat. Through intelligent heat mapping and route guidance, it identifies high-risk zones, prioritises shaded paths, and directs users to nearby cooling spaces—supporting independence, safety, and everyday mobility.
           </p>
           <div class="hero-buttons">
             <button class="btn-primary" @click="$router.push('/cool-refuges')">
@@ -330,20 +330,21 @@ const showAlertModal = ref(false)
               </li>
             </ul>
           </div>
-          <div class="risk-calc-card elderly">
+          <div class="risk-calc-card uv">
             <div class="card-image">
-              <img src="/Elderly.png" alt="Elderly Population" />
+              <img src="/uv.jpg" alt="UV Levels" />
             </div>
             <div class="calc-header">
               <div class="calc-title-group">
-                <span class="calc-label" v-hover-scale="1.2">Elderly Population</span>
-                <span class="calc-value purple" v-hover-scale="1.2">Up to 30%</span>
+                <span class="calc-label" v-hover-scale="1.2">UV Levels</span>
+                <span class="calc-value purple" v-hover-scale="1.2">3</span>
               </div>
             </div>
-            <ul class="calc-list">
-              <li v-hover-scale="1.1"><span class="dot purple"></span> More sensitive to heat</li>
-              <li v-hover-scale="1.1"><span class="dot purple"></span> May need extra support to stay safe and cool</li>
-            </ul>
+           <ul class="calc-list">
+              <li v-hover-scale="1.1">🟢 Low — Safe conditions, ideal for outdoor activities</li>
+              <li v-hover-scale="1.1">🟡 Moderate — May need extra support to stay safe and cool</li>
+              <li v-hover-scale="1.1">🔴 High — Take precautions to avoid heat-related illness</li>
+          </ul>
           </div>
         </div>
       </section>
@@ -1319,7 +1320,7 @@ const showAlertModal = ref(false)
   background-color: #f0fdf4;
 }
 
-.risk-calc-card.elderly {
+.risk-calc-card.uv {
   border-color: #ddd6fe;
   background-color: #faf5ff;
 }

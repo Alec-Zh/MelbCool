@@ -957,6 +957,8 @@ onMounted(async () => {
 .refuges-list {
   flex: 1;
   min-width: 300px;
+  max-height: 500vh;
+  overflow-y: scroll;
 }
 
 .map-view {

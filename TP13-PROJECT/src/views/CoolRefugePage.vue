@@ -311,6 +311,7 @@ const fetchRefuges = async () => {
 
 // 搜索
 const handleSearch = async () => {
+  currentPage.value = 1
   await fetchRefuges()
   
   // 如果在地图视图，刷新标记
@@ -325,6 +326,7 @@ const handleSearch = async () => {
 const selectType = async (type) => {
   console.log('Selecting type:', type)
   selectedType.value = type
+  currentPage.value = 1
   await fetchRefuges()
   console.log('Fetched refuges:', refuges.value.length)
   
@@ -342,8 +344,39 @@ const selectType = async (type) => {
   }
 }
 
+// 分页相关
+const currentPage = ref(1)
+const pageSize = 5
+
 // 计算属性：统计数量
 const refugeCount = computed(() => refuges.value.length)
+
+// 分页后的数据
+const paginatedRefuges = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return refuges.value.slice(start, start + pageSize)
+})
+
+// 总页数
+const totalPages = computed(() => Math.ceil(refuges.value.length / pageSize))
+
+// 显示的页码（最多显示5个）
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1)
+  let start = Math.max(1, current - 2)
+  let end = Math.min(total, start + 4)
+  if (end - start < 4) start = Math.max(1, end - 4)
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
 
 // 初始化地图
 const initMap = () => {
@@ -630,7 +663,7 @@ onMounted(async () => {
             
             <!-- 数据列表 -->
             <div 
-              v-for="refuge in refuges" 
+              v-for="refuge in paginatedRefuges" 
               :key="refuge.id"
               v-show="!loading"
               class="refuge-card"
@@ -667,6 +700,34 @@ onMounted(async () => {
                   <!-- <button class="btn-details">DETAILS</button> -->
                 </div>
               </div>
+            </div>
+
+            <!-- 分页组件 -->
+            <div v-if="!loading && refuges.length > 0" class="pagination-wrapper">
+              <div class="pagination">
+                <button 
+                  class="page-btn prev-next" 
+                  :disabled="currentPage === 1"
+                  @click="goToPage(currentPage - 1)"
+                >‹ Previous</button>
+
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  class="page-btn"
+                  :class="{ active: page === currentPage }"
+                  @click="goToPage(page)"
+                >{{ page }}</button>
+
+                <button 
+                  class="page-btn prev-next"
+                  :disabled="currentPage === totalPages"
+                  @click="goToPage(currentPage + 1)"
+                >Next ›</button>
+              </div>
+              <p class="pagination-info">
+                Showing <strong>{{ (currentPage - 1) * 5 + 1 }}-{{ Math.min(currentPage * 5, refuges.length) }}</strong> of <strong>{{ refuges.length }}</strong> entries
+              </p>
             </div>
           </div>
           
@@ -1617,6 +1678,69 @@ onMounted(async () => {
 
 .btn-dismiss:hover {
   background-color: #d97706;
+}
+
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: #1d3f99;
+  color: #1d3f99;
+  background-color: #eff6ff;
+}
+
+.page-btn.active {
+  background-color: #1d3f99;
+  border-color: #1d3f99;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.page-btn.prev-next {
+  padding: 0 1rem;
+  color: #374151;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.pagination-info strong {
+  color: #111827;
 }
 
 .loading-message {

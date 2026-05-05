@@ -110,7 +110,7 @@ const showAlertModal = ref(false)
           </div>
 
           <div class="matter-card">
-            <div class="matter-number blue" v-hover-scale="1.2">+10°F</div>
+            <div class="matter-number blue" v-hover-scale="1.2">+10°C</div>
             <div class="matter-content">
               <h3 v-hover-scale="1.2">Night temperatures in cities can be significantly higher.</h3>
               <p v-hover-scale="1.2">
@@ -125,7 +125,7 @@ const showAlertModal = ref(false)
                 <div class="slider-bar">
                   <div class="slider-fill" style="width: 80%"></div>
                 </div>
-                <span class="temp-high" v-hover-scale="1.2">+10°F Higher Risk</span>
+                <span class="temp-high" v-hover-scale="1.2">+10°C Higher Risk</span>
               </div>
             </div>
           </div>

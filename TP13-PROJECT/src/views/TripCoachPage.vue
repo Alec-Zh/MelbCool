@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
 import TripPlannerForm from '../components/TripPlannerForm.vue'
@@ -35,6 +36,16 @@ const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
 const showResults = ref(false)
+
+const router = useRouter()
+
+function goToOutfitAdvisor() {
+  if (selectedSuburbId.value) {
+    router.push({ path: '/outfit-advisor', query: { suburbId: selectedSuburbId.value } })
+  } else {
+    router.push('/outfit-advisor')
+  }
+}
 
 onMounted(async () => {
   try {
@@ -408,6 +419,47 @@ function handleSelectAlt(params) {
                 <span class="summary-value">{{ departureLabel }}</span>
               </div>
               <button class="reset-btn" @click="handleReset">← Plan a different trip</button>
+
+              <div class="trip-nav-links">
+                <RouterLink to="/heatmap" class="trip-nav-btn trip-nav-btn--green">
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    />
+                  </svg>
+                  Heat map
+                </RouterLink>
+                <button class="trip-nav-btn trip-nav-btn--teal" @click="goToOutfitAdvisor">
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"
+                    />
+                  </svg>
+                  Outfit advisor
+                </button>
+              </div>
             </div>
 
             <!-- Results guide -->
@@ -718,6 +770,54 @@ function handleSelectAlt(params) {
 .reset-btn:hover {
   border-color: #2d7a3a;
   color: #2d7a3a;
+}
+
+.trip-nav-links {
+  display: flex;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.trip-nav-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.55rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    filter 0.15s,
+    transform 0.1s;
+  letter-spacing: 0.01em;
+}
+
+.trip-nav-btn:active {
+  transform: scale(0.98);
+}
+
+.trip-nav-btn--green {
+  background: #2d7a3a;
+  color: #ffffff;
+}
+
+.trip-nav-btn--green:hover {
+  filter: brightness(1.12);
+}
+
+.trip-nav-btn--teal {
+  background: #0f6e56;
+  color: #ffffff;
+}
+
+.trip-nav-btn--teal:hover {
+  filter: brightness(1.15);
 }
 
 .status-msg {

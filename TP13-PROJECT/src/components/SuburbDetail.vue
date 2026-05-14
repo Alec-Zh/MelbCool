@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import HeatBadge from './HeatBadge.vue'
 import HeatAdviceCard from './HeatAdviceCard.vue'
 import dayjs from 'dayjs'
@@ -14,6 +15,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const router = useRouter()
 const showAdvice = ref(false)
 
 // Reset advice modal when suburb changes
@@ -94,6 +96,10 @@ const adviceButtonConfig = {
   high: { label: 'View safety advice', bg: '#c0392b', color: '#fff' },
   moderate: { label: 'View safety advice', bg: '#c97a2a', color: '#fff' },
   low: { label: 'View safety advice', bg: '#2d7a3a', color: '#fff' },
+}
+
+function goToOutfitAdvisor() {
+  router.push({ path: '/outfit-advisor', query: { suburbId: props.suburb.suburb_id } })
 }
 </script>
 
@@ -177,9 +183,23 @@ const adviceButtonConfig = {
           <span class="score-note">How much tree shade is available</span>
         </div>
         <div class="seg-wrap">
-          <div class="seg" :class="{ active: (suburb.shade_score ?? 0) < 40 }" style="--c: #4d9e5a">Good</div>
-          <div class="seg" :class="{ active: (suburb.shade_score ?? 0) >= 40 && (suburb.shade_score ?? 0) < 65 }" style="--c: #e8903a">Limited</div>
-          <div class="seg" :class="{ active: (suburb.shade_score ?? 0) >= 65 }" style="--c: #c0392b">Very little</div>
+          <div class="seg" :class="{ active: (suburb.shade_score ?? 0) < 40 }" style="--c: #4d9e5a">
+            Good
+          </div>
+          <div
+            class="seg"
+            :class="{ active: (suburb.shade_score ?? 0) >= 40 && (suburb.shade_score ?? 0) < 65 }"
+            style="--c: #e8903a"
+          >
+            Limited
+          </div>
+          <div
+            class="seg"
+            :class="{ active: (suburb.shade_score ?? 0) >= 65 }"
+            style="--c: #c0392b"
+          >
+            Very little
+          </div>
         </div>
       </div>
 
@@ -189,9 +209,19 @@ const adviceButtonConfig = {
           <span class="score-note">Based on how hot it feels and sun exposure today</span>
         </div>
         <div class="seg-wrap">
-          <div class="seg" :class="{ active: (suburb.heat_score ?? 0) < 40 }" style="--c: #4d9e5a">Low</div>
-          <div class="seg" :class="{ active: (suburb.heat_score ?? 0) >= 40 && (suburb.heat_score ?? 0) < 65 }" style="--c: #e8903a">Moderate</div>
-          <div class="seg" :class="{ active: (suburb.heat_score ?? 0) >= 65 }" style="--c: #c0392b">High</div>
+          <div class="seg" :class="{ active: (suburb.heat_score ?? 0) < 40 }" style="--c: #4d9e5a">
+            Low
+          </div>
+          <div
+            class="seg"
+            :class="{ active: (suburb.heat_score ?? 0) >= 40 && (suburb.heat_score ?? 0) < 65 }"
+            style="--c: #e8903a"
+          >
+            Moderate
+          </div>
+          <div class="seg" :class="{ active: (suburb.heat_score ?? 0) >= 65 }" style="--c: #c0392b">
+            High
+          </div>
         </div>
       </div>
 
@@ -199,6 +229,7 @@ const adviceButtonConfig = {
         Risk is mostly driven by today's heat conditions, with tree shade as a secondary factor.
       </div>
     </div>
+
     <!-- AC3.1.1 / AC3.2.1 — Safety advice button -->
     <button
       v-if="suburb.risk_level"
@@ -211,6 +242,26 @@ const adviceButtonConfig = {
     >
       <span class="advice-btn-icon">🛡️</span>
       View safety advice
+      <svg
+        class="advice-btn-arrow"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    </button>
+
+    <!-- AC4.1.1 — Outfit Advisor button -->
+    <button class="outfit-btn" @click="goToOutfitAdvisor">
+      <span class="advice-btn-icon">👕</span>
+      Check what to wear
       <svg
         class="advice-btn-arrow"
         width="14"
@@ -283,7 +334,9 @@ const adviceButtonConfig = {
   justify-content: center;
   cursor: pointer;
   color: #6b6560;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   margin-top: 2px;
 }
 .close-btn:hover {
@@ -419,7 +472,9 @@ const adviceButtonConfig = {
   border-radius: 6px;
   background: #f0f0f0;
   color: #aaa;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .seg.active {
@@ -448,7 +503,9 @@ const adviceButtonConfig = {
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.1s;
+  transition:
+    filter 0.15s,
+    transform 0.1s;
   letter-spacing: 0.02em;
 }
 .advice-btn:hover {
@@ -458,7 +515,39 @@ const adviceButtonConfig = {
   transform: scale(0.98);
 }
 
-.advice-btn-icon { font-size: 1rem; }
+/* Outfit Advisor button — secondary style */
+.outfit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #d8eae6;
+  border-radius: 10px;
+  background: #f4faf8;
+  color: #2d7a3a;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    transform 0.1s;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+}
+.outfit-btn:hover {
+  border-color: #4d9e5a;
+  background-color: #e6f4e8;
+}
+.outfit-btn:active {
+  transform: scale(0.98);
+}
+
+.advice-btn-icon {
+  font-size: 1rem;
+}
 
 .advice-btn-arrow {
   margin-left: auto;

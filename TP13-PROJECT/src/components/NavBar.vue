@@ -22,6 +22,7 @@ const closeMenu = () => {
         <RouterLink to="/heatmap" class="nav-link">Heat Map</RouterLink>
         <RouterLink to="/cool-refuges" class="nav-link">Cool Refuges</RouterLink>
         <RouterLink to="/trip-coach" class="nav-link">Trip Coach</RouterLink>
+        <RouterLink to="/outfit-advisor" class="nav-link">Outfit Advisor</RouterLink>
       </nav>
 
       <button class="hamburger" @click="toggleMenu" aria-label="Toggle menu">
@@ -34,8 +35,13 @@ const closeMenu = () => {
     <div class="mobile-menu" :class="{ active: menuOpen }">
       <RouterLink to="/" class="mobile-link" @click="closeMenu">Home</RouterLink>
       <RouterLink to="/heatmap" class="mobile-link" @click="closeMenu">Heat Map</RouterLink>
-      <RouterLink to="/cool-refuges" class="mobile-link" @click="closeMenu">Cool Refuges</RouterLink>
+      <RouterLink to="/cool-refuges" class="mobile-link" @click="closeMenu"
+        >Cool Refuges</RouterLink
+      >
       <RouterLink to="/trip-coach" class="mobile-link" @click="closeMenu">Trip Coach</RouterLink>
+      <RouterLink to="/outfit-advisor" class="mobile-link" @click="closeMenu"
+        >Outfit Advisor</RouterLink
+      >
     </div>
   </header>
 </template>
@@ -88,17 +94,19 @@ const closeMenu = () => {
   font-weight: 500;
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
   white-space: nowrap;
   letter-spacing: 0.01em;
 }
 .nav-link:hover {
   color: #1a1714;
-  background: rgba(13,212,191,0.06);
+  background: rgba(13, 212, 191, 0.06);
 }
 .nav-link.router-link-active {
   color: #2d7a3a;
-  background: rgba(45,122,58,0.09);
+  background: rgba(45, 122, 58, 0.09);
 }
 .hamburger {
   display: none;

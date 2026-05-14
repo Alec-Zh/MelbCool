@@ -1,123 +1,37 @@
 <template>
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-left">
-        <RouterLink to="/" class="brand">
-          <img src="/logo.png" alt="MelbCool Melbourne" class="footer-logo" />
-          <span class="brand-name">MelbCool</span>
-        </RouterLink>
-        <p class="footer-source">
-          Temperature data:
-          <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> ·
-          Population data: ABS 2021 Census · Boundaries: data.gov.au
+ <footer class="mh-footer">
+    <div class="mh-footer-inner">
+      <div class="mh-footer-brand">
+        <a href="index.html" class="mh-brand">
+          <img src="/logo-mark-transparent.png" alt="MelbCool" />
+          <span>MelbCool</span>
+        </a>
+        <p>Helping older adults stay safe during Melbourne's heat.</p>
+        <p class="mh-footer-source">
+          Weather source: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> ·
+          Population: ABS 2021 Census · Boundaries: data.gov.au
         </p>
       </div>
-      <div class="footer-links">
-        <a class="footer-link">Privacy Policy</a>
-        <a class="footer-link">Accessibility</a>
-        <a class="footer-link">Contact Us</a>
+      <div class="mh-footer-nav">
+        <p>Navigate</p>
+        <RouterLink to="/" class="active">Home</RouterLink>
+        <RouterLink to="/heatmap">Heat Map</RouterLink>
+        <RouterLink to="/cool-refuges">Cool Refuges</RouterLink>
+        <RouterLink to="/trip-coach">Trip Coach</RouterLink>
+        <RouterLink to="/safety-plan">Safety Plan</RouterLink>
       </div>
-      <div class="footer-right">
-        <p>© 2026 City of Melbourne. All rights reserved.</p>
+      <div class="mh-footer-emergency">
+        <p>Emergency</p>
+        <a href="tel:000" class="mh-footer-sos">🚨 Call 000</a>
+        <a href="tel:1300606024">Nurse-on-Call: 1300 60 60 24</a>
+        <a href="tel:131450">Translation: 131 450</a>
       </div>
+    </div>
+    <div class="mh-footer-bottom">
+      <span>© 2026 City of Melbourne. All rights reserved.</span>
+      <span>Guidance only — not medical advice. For emergencies call 000.</span>
     </div>
   </footer>
 </template>
 
-<style scoped>
-.footer {
-  background-color: #f8fafc;
-  padding: 2rem;
-  border-top: 1px solid #e2e8f0;
-}
 
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-}
-
-.brand-name {
-  color: #0d3a8f;
-  font-weight: bold;
-  font-size: 17px;
-}
-
-.footer-logo {
-  height: 48px;
-  width: auto;
-  object-fit: contain;
-}
-
-.footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.footer-source {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.footer-source a {
-  color: #64748b;
-  text-decoration: none;
-}
-
-.footer-source a:hover {
-  color: #1a3a8f;
-  text-decoration: underline;
-}
-
-.footer-links {
-  display: flex;
-  gap: 2rem;
-}
-
-.footer-link {
-  text-decoration: none;
-  color: #666;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-  cursor: pointer;
-}
-
-.footer-link:hover {
-  color: #1a3a8f;
-}
-
-.footer-right p {
-  font-size: 0.875rem;
-  color: #94a3b8;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .footer-container {
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-  }
-
-  .footer-links {
-    justify-content: center;
-  }
-
-  .footer-left {
-    align-items: center;
-  }
-}
-</style>

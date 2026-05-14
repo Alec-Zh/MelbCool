@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router/index.js'
 import './assets/main.css'
 import { hoverScale } from './directives/hoverScale.js'
+import './views/codex-homepage.css'
 
 const app = createApp(App)
 app.use(router)

@@ -32,10 +32,10 @@ let fitZoom = DEFAULT_ZOOM
 let fitCenter = DEFAULT_CENTER
 
 const riskColors = {
-  high: { fill: '#c0392b', border: '#96281b' },
-  moderate: { fill: '#e8903a', border: '#c97a2a' },
-  low: { fill: '#4d9e5a', border: '#3a7d45' },
-  default: { fill: '#c8bfb0', border: '#b0a898' },
+  high: { fill: '#EF4444', border: '#B91C1C' },
+  moderate: { fill: '#F97316', border: '#C2410C' },
+  low: { fill: '#22C55E', border: '#15803D' },
+  default: { fill: '#94A3B8', border: '#64748B' },
 }
 
 function getStyle(feature) {
@@ -50,9 +50,9 @@ function getStyle(feature) {
 
   return {
     fillColor: color.fill,
-    fillOpacity: isSelected ? 0.75 : 0.50,
+    fillOpacity: isSelected ? 0.85 : 0.45,
     color: color.border,
-    weight: isSelected ? 2 : 0.8,
+    weight: isSelected ? 2.5 : 1,
     opacity: 1,
   }
 }
@@ -101,9 +101,7 @@ async function initMap() {
     maxBoundsViscosity: 1.0, // hard boundary, user cannot drag outside
   })
 
-  // Background handled via CSS .leaflet-container override below
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap © CARTO',
     maxZoom: 18,
     minZoom: 11,
@@ -217,10 +215,8 @@ watch(
 .map-wrap {
   width: 100%;
   height: 100%;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   overflow: hidden;
-  position: relative;
-  z-index: 0;
 }
 
 .map-container {
@@ -231,24 +227,13 @@ watch(
 </style>
 
 <style>
-/* Match Leaflet background to page gradient */
-.leaflet-container {
-  background: #ffffff !important;
-}
-
 .suburb-tooltip {
-  font-family: system-ui, sans-serif;
-  font-size: 0.82rem;
-  padding: 7px 11px;
+  font-family: sans-serif;
+  font-size: 0.85rem;
+  padding: 6px 10px;
   border-radius: 8px;
-  border: 1px solid #d8eae6 !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-  background: #ffffff !important;
-  color: #1c2e2a !important;
-}
-
-.suburb-tooltip::before {
-  display: none;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .user-location-marker {
@@ -264,10 +249,10 @@ watch(
   transform: translate(-50%, -50%);
   width: 12px;
   height: 12px;
-  background: #2d7a3a;
+  background: #2563eb;
   border: 2.5px solid #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(45,122,58,0.4);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   z-index: 2;
 }
 
@@ -278,14 +263,20 @@ watch(
   transform: translate(-50%, -50%);
   width: 28px;
   height: 28px;
-  background: rgba(45, 122, 58, 0.18);
+  background: rgba(37, 99, 235, 0.2);
   border-radius: 50%;
   animation: location-pulse 1.8s ease-out infinite;
   z-index: 1;
 }
 
 @keyframes location-pulse {
-  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
 }
 </style>

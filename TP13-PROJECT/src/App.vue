@@ -9,7 +9,9 @@ const unlocked = ref(sessionStorage.getItem('melbcool_access') === 'true')
 <template>
   <PasswordGate v-if="!unlocked" @unlocked="unlocked = true" />
   <template v-else>
+    <div class="mhome">
     <RouterView />
+    </div>
     <BackToTop />
   </template>
 </template>

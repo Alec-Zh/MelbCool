@@ -3,6 +3,7 @@ import HomePage from '../views/codex-homepage.vue'
 import HeatMapPage from '../views/HeatMapPage.vue'
 import CoolRefugePage from '../views/CoolRefugePage.vue'
 import TripCoachPage from '../views/TripCoachPage.vue'
+import OutfitAdvisorPage from '../views/OutfitAdvisorPage.vue'
 import SafetyPlanPage from '../views/SafetyPlanPage.vue'
 
 const router = createRouter({
@@ -12,6 +13,7 @@ const router = createRouter({
     { path: '/heatmap', component: HeatMapPage },
     { path: '/cool-refuges', component: CoolRefugePage },
     { path: '/trip-coach', component: TripCoachPage },
+    { path: '/outfit-advisor', component: OutfitAdvisorPage },
     { path: '/safety-plan', component: SafetyPlanPage },
   ],
 })

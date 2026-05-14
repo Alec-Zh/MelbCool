@@ -629,8 +629,8 @@ const navigateTo = (path) => {
           <div class="mh-feature-copy mh-feature-copy--light" data-animate="from-right">
             <span class="mh-feature-num" style="color:rgba(163,247,125,0.6)">05</span>
             <p class="mh-label">Personal Safety Plan</p>
-            <h2>12 questions.<br />One personalised plan.</h2>
-            <p>Answer 12 simple questions about your suburb, health, and daily routine. Get a calm, clear plan with your risk level, safest time window, nearest cool refuge, and emergency contacts — all printable.</p>
+            <h2>6 questions.<br />One personalised plan.</h2>
+            <p>Answer 6 simple questions about your suburb, health, and daily routine. Get a calm, clear plan with your risk level, safest time window, nearest cool refuge, and emergency contacts — all printable.</p>
             <div class="mh-plan-flow" aria-label="Plan creation steps">
               <div class="mh-plan-step">
                 <span class="mh-plan-step-num">1</span>

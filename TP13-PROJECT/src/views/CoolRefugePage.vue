@@ -636,7 +636,7 @@ onMounted(async () => {
           <div class="header-text">
             <h1 class="refuges-title">Stay Safe and Cool Today</h1>
             <p class="refuges-description">Find public spaces with air conditioning nearby to escape the summer heat safely.</p>
-            <router-link to="/safety-plan" class="safety-plan-btn">Safety Plan</router-link>
+            <!-- <router-link to="/safety-plan" class="safety-plan-btn">Safety Plan</router-link> -->
           </div>
           <div class="current-location" v-if="userLocation">
             <span class="location-icon">📍</span>

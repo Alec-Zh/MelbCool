@@ -18,6 +18,7 @@
         <RouterLink to="/heatmap">Heat Map</RouterLink>
         <RouterLink to="/cool-refuges">Cool Refuges</RouterLink>
         <RouterLink to="/trip-coach">Trip Coach</RouterLink>
+        <RouterLink to="/safety-plan">Safety Plan</RouterLink>
       </div>
       <div class="mh-footer-emergency">
         <p>Emergency</p>

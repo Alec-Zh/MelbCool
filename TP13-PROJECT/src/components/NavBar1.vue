@@ -23,9 +23,9 @@ const closeMenu = () => {
         <RouterLink to="/cool-refuges" exact-active-class="active">Cool Refuges</RouterLink>
         <RouterLink to="/trip-coach" exact-active-class="active">Trip Coach</RouterLink>
         <!-- <RouterLink to="/clothing-recommendations">Clothing</RouterLink> -->
-        <!-- <RouterLink to="/heat-safety-plan">Safety Plan</RouterLink> -->
+        <RouterLink to="/safety-plan" exact-active-class="active">Safety Plan</RouterLink>
       </nav>
-      <!-- <a class="mh-nav-cta" href="heat-safety-plan.html">Plan Today ↗</a> -->
+      <a class="mh-nav-cta" href="/safety-plan">Plan Today ↗</a>
     </div>
   </header>
 </template>

@@ -1,5 +1,5 @@
 <script setup>
-import NavBar from '@/components/NavBar.vue'
+import NavBar from '@/components/NavBar1.vue'
 import Footer from '@/components/Footer.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -387,7 +387,7 @@ onMounted(() => {})
     <main class="senior-plan-app">
       <section class="care-hero">
         <div class="care-hero-copy">
-          <button class="back-btn" @click="router.back()">← Back</button>
+          <!-- <button class="back-btn" @click="router.back()">← Back</button> -->
           <h2>Make a heat plan in simple steps</h2>
           <p>Tap one answer. The next question opens by itself.</p>
         </div>

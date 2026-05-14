@@ -59,6 +59,7 @@ const transportOptions = [
 ]
 
 // ── Duration options ──────────────────────────────────────────────────────────
+const durationOptions = [15, 30, 45, 60]
 
 // ── Time slider ───────────────────────────────────────────────────────────────
 const sliderMin = 540
@@ -180,25 +181,18 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
 
     <!-- Duration -->
     <div class="field">
-      <span class="field-label">
-        How long will the trip take?
-        <span class="field-value-badge">{{ durationMins }} min</span>
-      </span>
-      <input
-        type="range"
-        class="duration-slider"
-        :value="durationMins"
-        min="5"
-        max="120"
-        step="5"
-        @input="emit('update:durationMins', Number($event.target.value))"
-      />
-      <div class="slider-ticks">
-        <span>5 min</span>
-        <span>30 min</span>
-        <span>60 min</span>
-        <span>90 min</span>
-        <span>120 min</span>
+      <span class="field-label">How long will the trip take?</span>
+      <div class="toggle-group">
+        <button
+          v-for="d in durationOptions"
+          :key="d"
+          type="button"
+          class="toggle-btn toggle-btn--dur"
+          :class="{ active: durationMins === d }"
+          @click="emit('update:durationMins', d)"
+        >
+          {{ d }} min
+        </button>
       </div>
     </div>
 
@@ -399,32 +393,12 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
   font-weight: 600;
   font-size: 0.82rem;
 }
-.field-value-badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  background: #2d7a3a;
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.15rem 0.6rem;
-  border-radius: 50px;
-  vertical-align: middle;
-}
-
-.duration-slider {
-  width: 100%;
-  accent-color: #2d7a3a;
-  height: 6px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-.slider-ticks {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.72rem;
-  color: #9ab5b2;
-  margin-top: 0.3rem;
+.toggle-btn--dur {
+  flex-direction: row;
+  font-weight: 600;
+  font-size: 0.88rem;
+  min-width: 68px;
+  justify-content: center;
 }
 
 /* Slider */

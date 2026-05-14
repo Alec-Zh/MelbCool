@@ -141,8 +141,8 @@ function submit() {
   width: 100%;
   margin-top: 1.25rem;
   padding: 0.9rem;
-  background-color: #2d7a3a;
-  color: #ffffff;
+  background-color: #a3f77d;
+  color: #1a4a12;
   border: none;
   border-radius: 50px;
   font-size: 1rem;
@@ -154,7 +154,7 @@ function submit() {
 }
 
 .continue-btn:hover {
-  background-color: #245f2e;
+  background-color: #8fed60;
   transform: translateY(-1px);
 }
 

@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/HomePage.vue'
+import HomePage from '../views/codex-homepage.vue'
 import HeatMapPage from '../views/HeatMapPage.vue'
 import CoolRefugePage from '../views/CoolRefugePage.vue'
 import TripCoachPage from '../views/TripCoachPage.vue'
+import SafetyPlanPage from '../views/SafetyPlanPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,7 @@ const router = createRouter({
     { path: '/heatmap', component: HeatMapPage },
     { path: '/cool-refuges', component: CoolRefugePage },
     { path: '/trip-coach', component: TripCoachPage },
+    { path: '/safety-plan', component: SafetyPlanPage },
   ],
 })
 

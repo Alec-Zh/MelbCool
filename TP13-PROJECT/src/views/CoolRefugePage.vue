@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import NavBar from '@/components/NavBar.vue'
+import NavBar from '@/components/NavBar1.vue'
 import Footer from '@/components/Footer.vue'
 import WelcomeModal from '@/components/WelcomeModal.vue'
 import TemperatureAlert from '@/components/TemperatureAlert.vue'
@@ -47,6 +47,7 @@ const loading = ref(false)
 const error = ref(null)
 const searchQuery = ref('')
 const selectedType = ref('all')
+const openStatusFilter = ref('all')
 const userLocation = ref(null)
 const locationPermissionDenied = ref(false)
 const currentView = ref('list') // 'list' 或 'map'
@@ -65,6 +66,7 @@ const currentTemp = ref(0)
 const showDirections = ref(false)
 const directionsRefuge = ref(null)
 const showTempAlertInDirections = ref(false)
+const showLocationModal = ref(false)
 
 // Mapbox access token（从 Lambda 获取）
 const initMapboxToken = async () => {
@@ -113,6 +115,10 @@ const typeConfig = {
 
 // 打开路线弹窗（从列表点击，显示温度预警）
 const openDirections = (refuge) => {
+  if (!userLocation.value) {
+    showLocationModal.value = true
+    return
+  }
   directionsRefuge.value = refuge
   showTempAlertInDirections.value = true
   showDirections.value = true
@@ -120,6 +126,10 @@ const openDirections = (refuge) => {
 
 // 打开路线弹窗（从地图点击，不显示温度预警）
 const openDirectionsFromMap = (refuge) => {
+  if (!userLocation.value) {
+    showLocationModal.value = true
+    return
+  }
   directionsRefuge.value = refuge
   showTempAlertInDirections.value = false
   showDirections.value = true
@@ -195,6 +205,19 @@ const getTypeClass = (type) => {
   return typeClasses[type] || ''
 }
 
+// 获取类型对应颜色
+const getTypeColor = (type) => {
+  const colors = {
+    all: '#0d3a8f',
+    library: '#3b82f6',
+    museum: '#8b5cf6',
+    park: '#22c55e',
+    community: '#f59e0b',
+    shopping: '#ec4899'
+  }
+  return colors[type] || '#0d3a8f'
+}
+
 
 // 计算两点之间的距离（使用 Haversine 公式）
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -263,6 +286,20 @@ const getDistanceText = (refuge) => {
   } else {
     return `${distance.toFixed(1)} km`
   }
+}
+
+// 计算距离数值（用于排序）
+const getDistanceValue = (refuge) => {
+  if (!userLocation.value || !refuge.latitude || !refuge.longitude) {
+    return Infinity
+  }
+  
+  return calculateDistance(
+    userLocation.value.latitude,
+    userLocation.value.longitude,
+    refuge.latitude,
+    refuge.longitude
+  )
 }
 
 
@@ -346,19 +383,41 @@ const selectType = async (type) => {
 
 // 分页相关
 const currentPage = ref(1)
-const pageSize = 5
+const pageSize = 6
+
+// 按营业状态筛选后的数据
+const filteredRefuges = computed(() => {
+  if (openStatusFilter.value === 'all') {
+    return refuges.value
+  }
+  
+  return refuges.value.filter(refuge => {
+    const open = isOpenNow(refuge.type)
+    return openStatusFilter.value === 'open' ? open : !open
+  })
+})
 
 // 计算属性：统计数量
-const refugeCount = computed(() => refuges.value.length)
+const refugeCount = computed(() => filteredRefuges.value.length)
 
-// 分页后的数据
+// 分页后的数据（按距离从小到大排序）
 const paginatedRefuges = computed(() => {
+  // 先排序
+  const sorted = [...filteredRefuges.value].sort((a, b) => {
+    const distA = getDistanceValue(a)
+    const distB = getDistanceValue(b)
+    if (distA === Infinity && distB === Infinity) return 0
+    if (distA === Infinity) return 1
+    if (distB === Infinity) return -1
+    return distA - distB
+  })
+  
   const start = (currentPage.value - 1) * pageSize
-  return refuges.value.slice(start, start + pageSize)
+  return sorted.slice(start, start + pageSize)
 })
 
 // 总页数
-const totalPages = computed(() => Math.ceil(refuges.value.length / pageSize))
+const totalPages = computed(() => Math.ceil(filteredRefuges.value.length / pageSize))
 
 // 显示的页码（最多显示5个）
 const visiblePages = computed(() => {
@@ -409,7 +468,7 @@ const initMap = () => {
 
 // 添加标记到地图
 const addMarkers = () => {
-  console.log('Adding markers, refuges count:', refuges.value.length)
+  console.log('Adding markers, refuges count:', filteredRefuges.value.length)
   console.log('Map exists:', !!map)
   
   // 清除现有标记
@@ -421,7 +480,7 @@ const addMarkers = () => {
     return
   }
   
-  if (!refuges.value.length) {
+  if (!filteredRefuges.value.length) {
     console.log('No refuges to display')
     return
   }
@@ -432,7 +491,7 @@ const addMarkers = () => {
   const MAX_DISTANCE_KM = 15
   
   // 过滤出 10km 以内的避暑场所
-  const nearbyRefuges = refuges.value.filter(refuge => {
+  const nearbyRefuges = filteredRefuges.value.filter(refuge => {
     // if (!refuge.longitude || !refuge.latitude) {
     //   return false
     // }
@@ -545,6 +604,14 @@ watch(refuges, () => {
   }
 })
 
+// 监听营业状态筛选变化，重置分页并刷新地图
+watch(openStatusFilter, () => {
+  currentPage.value = 1
+  if (currentView.value === 'map' && map) {
+    addMarkers()
+  }
+})
+
 // 页面加载时获取用户位置和数据
 onMounted(async () => {
   // 先获取 Mapbox token
@@ -569,6 +636,7 @@ onMounted(async () => {
           <div class="header-text">
             <h1 class="refuges-title">Stay Safe and Cool Today</h1>
             <p class="refuges-description">Find public spaces with air conditioning nearby to escape the summer heat safely.</p>
+            <router-link to="/safety-plan" class="safety-plan-btn">Safety Plan</router-link>
           </div>
           <div class="current-location" v-if="userLocation">
             <span class="location-icon">📍</span>
@@ -604,11 +672,17 @@ onMounted(async () => {
             >🗺️ Map</button>
           </div>
           <div class="category-filters">
+            <select class="status-filter-select" v-model="openStatusFilter">
+              <option value="all">All Status</option>
+              <option value="open">🟢 Open Now</option>
+              <option value="closed">🔴 Closed</option>
+            </select>
             <button 
               v-for="(config, type) in typeConfig" 
               :key="type"
               class="filter-button"
               :class="{ active: selectedType === type }"
+              :style="selectedType === type ? { backgroundColor: getTypeColor(type), borderColor: getTypeColor(type), color: '#ffffff' } : {}"
               @click="selectType(type)"
             >
               <span v-if="config.icon">{{ config.icon }}</span>
@@ -637,6 +711,27 @@ onMounted(async () => {
             <button @click="locationPermissionDenied = false" class="btn-dismiss">Got it</button>
           </div>
         </div>
+        
+        <!-- 无位置权限弹窗 -->
+        <div v-if="showLocationModal" class="location-modal-overlay" @click.self="showLocationModal = false">
+          <div class="location-modal">
+            <span class="location-icon-large">📍</span>
+            <h3>Location Required</h3>
+            <p>Please enable location permission to get directions.</p>
+            <div class="browser-instructions">
+              <div class="instruction-item">
+                <strong>Chrome / Edge:</strong> Click the 🔒 lock icon in the address bar → Site settings → Location → Allow
+              </div>
+              <div class="instruction-item">
+                <strong>Firefox:</strong> Click the 🔒 lock icon in the address bar → Permissions → Location → Allow
+              </div>
+              <div class="instruction-item">
+                <strong>Safari:</strong> Safari menu → Settings → Websites → Location → Allow for this website
+              </div>
+            </div>
+            <button @click="showLocationModal = false" class="btn-dismiss">Got it</button>
+          </div>
+        </div>
 
         <!-- 错误提示 -->
         <div v-if="error" class="error-message">
@@ -657,7 +752,7 @@ onMounted(async () => {
               Loading refuges...
             </div>
             <!-- 没有数据时显示 -->
-            <div v-if="!loading && refuges.length === 0" class="no-data">
+            <div v-if="!loading && filteredRefuges.length === 0" class="no-data">
               No refuges found. Try adjusting your search or filters.
             </div>
             
@@ -669,18 +764,23 @@ onMounted(async () => {
               class="refuge-card"
               :class="getTypeClass(refuge.type)"
             >
-              <div class="refuge-image">
-                <img 
-                  :src="photoObj[refuge.type]" 
-                  :alt="refuge.name"
-                />
+              <div class="refuge-image-wrapper">
+                <span class="image-type-label" :class="getTypeClass(refuge.type)">
+                  {{ typeConfig[refuge.type]?.label }}
+                </span>
+                <div class="refuge-image">
+                  <img 
+                    :src="photoObj[refuge.type]" 
+                    :alt="refuge.name"
+                  />
+                </div>
+                <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
+                  {{ getDistanceText(refuge) }}
+                </span>
               </div>
               <div class="refuge-info">
                 <div class="refuge-header">
                   <h3 class="refuge-name">{{ refuge.name }}</h3>
-                  <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
-                    {{ getDistanceText(refuge) }}
-                  </span>
                 </div>
                 <div class="refuge-address">
                   <span>📍 {{ refuge.street }}, {{ refuge.city }}</span>
@@ -703,32 +803,30 @@ onMounted(async () => {
             </div>
 
             <!-- 分页组件 -->
-            <div v-if="!loading && refuges.length > 0" class="pagination-wrapper">
-              <div class="pagination">
-                <button 
-                  class="page-btn prev-next" 
-                  :disabled="currentPage === 1"
-                  @click="goToPage(currentPage - 1)"
-                >‹ Previous</button>
+            <div v-if="!loading && filteredRefuges.length > 0" class="pagination">
+              <button 
+                class="page-btn prev-next" 
+                :disabled="currentPage === 1"
+                @click="goToPage(currentPage - 1)"
+              >‹ Previous</button>
 
-                <button
-                  v-for="page in visiblePages"
-                  :key="page"
-                  class="page-btn"
-                  :class="{ active: page === currentPage }"
-                  @click="goToPage(page)"
-                >{{ page }}</button>
+              <button
+                v-for="page in visiblePages"
+                :key="page"
+                class="page-btn"
+                :class="{ active: page === currentPage }"
+                @click="goToPage(page)"
+              >{{ page }}</button>
 
-                <button 
-                  class="page-btn prev-next"
-                  :disabled="currentPage === totalPages"
-                  @click="goToPage(currentPage + 1)"
-                >Next ›</button>
-              </div>
-              <p class="pagination-info">
-                Showing <strong>{{ (currentPage - 1) * 5 + 1 }}-{{ Math.min(currentPage * 5, refuges.length) }}</strong> of <strong>{{ refuges.length }}</strong> entries
-              </p>
+              <button 
+                class="page-btn prev-next"
+                :disabled="currentPage === totalPages"
+                @click="goToPage(currentPage + 1)"
+              >Next ›</button>
             </div>
+            <p class="pagination-info" v-if="!loading && filteredRefuges.length > 0">
+              Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, filteredRefuges.length) }}</strong> of <strong>{{ filteredRefuges.length }}</strong> entries
+            </p>
           </div>
           
           <!-- 地图视图 -->
@@ -782,26 +880,6 @@ onMounted(async () => {
               </div>
             </div>
           </div>
-          
-          <!-- 仅在列表视图显示侧边栏 -->
-          <div v-if="currentView === 'list'" class="sidebar">
-            <!-- Health Contacts Card -->
-            <div class="sidebar-card health-card">
-              <h3 class="card-title">* HEALTH CONTACTS</h3>
-              <div class="contact-item">
-                <span class="contact-label">HEALTH DIRECT ENQ/TS</span>
-                <span class="contact-number">1800 022 222</span>
-                <span class="contact-note">Professional medical advice for non-emergencies</span>
-              </div>
-              <div class="contact-item emergency">
-                <span class="contact-label">EMERGENCY ONLY</span>
-                <span class="contact-number emergency">000</span>
-                <span class="contact-note">Call immediately for heatstroke signs</span>
-              </div>
-            </div>
-            
-        
-          </div>
         </div>
         
       
@@ -841,7 +919,10 @@ onMounted(async () => {
 
 .header-top {
   display: flex;
+  background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88)), linear-gradient(45deg, rgba(255, 255, 255, 0.12) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.12) 50% 75%, transparent 75%);
+  color: #fff;
   justify-content: space-between;
+  padding: 1.25rem;
   align-items: flex-start;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
@@ -856,14 +937,35 @@ onMounted(async () => {
 .refuges-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a3a8f;
+  /* color: #1a3a8f; */
   margin-bottom: 0.5rem;
 }
 
 .refuges-description {
   font-size: 1rem;
-  color: #666;
+  /* color: #666; */
   margin-bottom: 1.5rem;
+}
+
+.safety-plan-btn {
+  display: inline-flex;
+  align-items: center;
+  background-color: #0d3a8f;
+  color: #ffffff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.safety-plan-btn:hover {
+  background-color: #1a4bb8;
+  transform: translateY(-2px);
+  color: #ffffff;
 }
 
 .current-location {
@@ -982,6 +1084,24 @@ onMounted(async () => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  color: #1a1a1a;
+  appearance: auto;
+}
+
+.status-filter-select:focus {
+  border-color: #0d3a8f;
 }
 
 .filter-button {
@@ -1017,9 +1137,11 @@ onMounted(async () => {
 
 .refuges-list {
   flex: 1;
-  min-width: 300px;
-  max-height: 500vh;
-  overflow-y: scroll;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-content: start;
 }
 
 .map-view {
@@ -1258,10 +1380,9 @@ onMounted(async () => {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem;
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -1289,6 +1410,44 @@ onMounted(async () => {
 
 .refuge-card.shopping {
   border-left: 4px solid #ec4899;
+}
+
+.refuge-image-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.image-type-label {
+  padding: 2px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.image-type-label.library {
+  background-color: #3b82f6;
+}
+
+.image-type-label.museum {
+  background-color: #8b5cf6;
+}
+
+.image-type-label.park {
+  background-color: #22c55e;
+}
+
+.image-type-label.community {
+  background-color: #f59e0b;
+}
+
+.image-type-label.shopping {
+  background-color: #ec4899;
 }
 
 .refuge-image {
@@ -1616,20 +1775,44 @@ onMounted(async () => {
   text-align: center;
 }
 
+.location-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 20px;
+}
+
+.location-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
 .location-icon-large {
   font-size: 2.5rem;
   display: block;
   margin-bottom: 0.75rem;
 }
 
-.location-denied-prompt h3 {
+.location-modal h3 {
   font-size: 1.125rem;
   font-weight: 600;
   color: #92400e;
   margin-bottom: 0.5rem;
 }
 
-.location-denied-prompt p {
+.location-modal p {
   font-size: 0.875rem;
   color: #a16207;
   margin-bottom: 1rem;
@@ -1680,18 +1863,14 @@ onMounted(async () => {
   background-color: #d97706;
 }
 
-.pagination-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem 0 0.5rem;
-}
-
 .pagination {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
+  padding: 1.5rem 0 0.5rem;
+  width: 100%;
 }
 
 .page-btn {
@@ -1735,6 +1914,8 @@ onMounted(async () => {
 }
 
 .pagination-info {
+  grid-column: 1 / -1;
+  text-align: center;
   font-size: 0.875rem;
   color: #6b7280;
 }
@@ -1764,12 +1945,16 @@ onMounted(async () => {
     flex-direction: column;
   }
   
-  .sidebar {
-    width: 100%;
+  .refuges-list {
+    grid-template-columns: 1fr;
   }
   
   .refuge-card {
     flex-direction: column;
+  }
+  
+  .refuge-image-wrapper {
+    width: 100%;
   }
   
   .refuge-image {

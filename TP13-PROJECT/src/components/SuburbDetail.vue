@@ -73,29 +73,29 @@ watch(() => props.suburb.suburb_name, animateBars)
 
 // heat_score: higher = more dangerous = red
 function heatScoreColor(score) {
-  if (score >= 65) return '#EF4444'
-  if (score >= 40) return '#F97316'
-  return '#22C55E'
+  if (score >= 65) return '#c0392b'
+  if (score >= 40) return '#e8903a'
+  return '#4d9e5a'
 }
 
 // shade bar shows coverage (inverted): higher coverage = greener
 function shadeCoverageColor(shadeScore) {
   const coverage = 100 - shadeScore
-  if (coverage >= 65) return '#22C55E'
-  if (coverage >= 40) return '#F97316'
-  return '#EF4444'
+  if (coverage >= 65) return '#4d9e5a'
+  if (coverage >= 40) return '#e8903a'
+  return '#c0392b'
 }
 
 const riskConfig = {
-  high: { label: 'High Risk', bg: '#FEE2E2', color: '#991B1B' },
-  moderate: { label: 'Moderate Risk', bg: '#FEF3C7', color: '#92400E' },
-  low: { label: 'Low Risk', bg: '#DCFCE7', color: '#166534' },
+  high: { label: 'High Risk', bg: '#fce8e6', color: '#8b1a12' },
+  moderate: { label: 'Moderate Risk', bg: '#fef1e0', color: '#7a4510' },
+  low: { label: 'Low Risk', bg: '#e6f4e8', color: '#1e5c28' },
 }
 
 const adviceButtonConfig = {
-  high: { label: 'View safety advice', bg: '#991B1B', color: '#fff' },
-  moderate: { label: 'View safety advice', bg: '#92400E', color: '#fff' },
-  low: { label: 'View safety advice', bg: '#166534', color: '#fff' },
+  high: { label: 'View safety advice', bg: '#c0392b', color: '#fff' },
+  moderate: { label: 'View safety advice', bg: '#c97a2a', color: '#fff' },
+  low: { label: 'View safety advice', bg: '#2d7a3a', color: '#fff' },
 }
 
 function goToOutfitAdvisor() {
@@ -179,7 +179,7 @@ function goToOutfitAdvisor() {
 
       <div class="score-row">
         <div class="score-meta">
-          <span class="score-label">🌳 Shade Coverage</span>
+          <span class="score-label">Shade Coverage</span>
           <span class="score-note">How much tree shade is available</span>
         </div>
         <div class="seg-wrap">
@@ -205,7 +205,7 @@ function goToOutfitAdvisor() {
 
       <div class="score-row">
         <div class="score-meta">
-          <span class="score-label">🌡 Heat Score</span>
+          <span class="score-label">Heat Score</span>
           <span class="score-note">Based on how hot it feels and sun exposure today</span>
         </div>
         <div class="seg-wrap">
@@ -292,12 +292,13 @@ function goToOutfitAdvisor() {
 <style scoped>
 .detail {
   padding: 1.25rem;
-  background-color: var(--color-white);
-  border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #d8eae6;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: none;
 }
 
 .detail-header {
@@ -314,16 +315,17 @@ function goToOutfitAdvisor() {
 }
 
 .detail-name {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1a1714;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .close-btn {
   flex-shrink: 0;
-  background: var(--color-bg-light, #f1f5f9);
-  border: 1px solid var(--color-border);
+  background: #f0f7f5;
+  border: 1px solid #d8eae6;
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -337,10 +339,9 @@ function goToOutfitAdvisor() {
     color 0.15s;
   margin-top: 2px;
 }
-
 .close-btn:hover {
-  background-color: #e2e8f0;
-  color: var(--color-text);
+  background-color: #ede9e1;
+  color: #1a1714;
 }
 
 .detail-badges {
@@ -350,60 +351,69 @@ function goToOutfitAdvisor() {
 }
 
 .risk-tag {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.8rem;
   border-radius: 50px;
+  letter-spacing: 0.02em;
 }
 
 .updated-at {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  color: #9e9890;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
   padding: 0.85rem;
-  background-color: var(--color-bg-light);
-  border-radius: var(--radius-card);
-  border: 1px solid var(--color-border);
+  background: #f4faf8;
+  border-radius: 10px;
+  border: 1px solid #d8eae6;
+  transition: border-color 0.2s;
+}
+.stat-card:hover {
+  border-color: #4d9e5a;
 }
 
 .stat-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   margin-bottom: 0.1rem;
 }
 
 .stat-label {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: #6b6560;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #1a1714;
   line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .stat-sub {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  color: #9e9890;
+  line-height: 1.4;
 }
 
 .score-section {
-  background-color: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
+  background: #f0f7f5;
+  border: 1px solid #d8eae6;
+  border-radius: 10px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -411,15 +421,17 @@ function goToOutfitAdvisor() {
 }
 
 .score-title {
-  font-size: 0.95rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: #6b6560;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .score-row {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.2rem;
 }
 
 .score-bar-row {
@@ -435,17 +447,23 @@ function goToOutfitAdvisor() {
 }
 
 .score-label {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: #1a1714;
 }
 
 .score-note {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  color: #9e9890;
 }
 
-.score-bar-wrap {
+.seg-wrap {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.seg {
   flex: 1;
   padding: 0.3rem 0;
   text-align: center;
@@ -459,35 +477,20 @@ function goToOutfitAdvisor() {
     color 0.2s;
 }
 
-.score-bar {
-  height: 100%;
-  border-radius: 50px;
-  width: 0%;
-  transition: width 0.9s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.score-num {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--color-text);
-  min-width: 48px;
-  text-align: right;
-}
-
-.score-denom {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--color-text-muted);
+.seg.active {
+  background: var(--c);
+  color: #ffffff;
 }
 
 .score-note-bottom {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  color: #7a9490;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid #e3ded5;
+  font-style: italic;
 }
 
-/* AC3.1.1 — Advice button */
+/* Advice button */
 .advice-btn {
   display: flex;
   align-items: center;
@@ -496,20 +499,18 @@ function goToOutfitAdvisor() {
   width: 100%;
   padding: 0.75rem 1rem;
   border: none;
-  border-radius: var(--radius-card);
-  font-size: 0.95rem;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 700;
   cursor: pointer;
   transition:
     filter 0.15s,
     transform 0.1s;
   letter-spacing: 0.02em;
 }
-
 .advice-btn:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.12);
 }
-
 .advice-btn:active {
   transform: scale(0.98);
 }
@@ -550,12 +551,12 @@ function goToOutfitAdvisor() {
 
 .advice-btn-arrow {
   margin-left: auto;
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
-/* 🧪 TEST ONLY — remove before production */
+/* TEST badge */
 .test-tag {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   padding: 0.2rem 0.6rem;
   border-radius: 50px;

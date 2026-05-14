@@ -42,11 +42,12 @@ const closeMenu = () => {
 
 <style scoped>
 .header {
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-bottom: 1px solid #e3ded5;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 0 #e3ded5;
 }
 .header-container {
   max-width: var(--max-width);
@@ -55,7 +56,7 @@ const closeMenu = () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  height: 72px;
+  height: 64px;
 }
 .brand {
   display: flex;
@@ -65,34 +66,39 @@ const closeMenu = () => {
   flex-shrink: 0;
 }
 .brand-name {
-  color: var(--color-primary);
-  font-weight: bold;
+  color: #1a1714;
+  font-weight: 700;
   font-size: 17px;
+  letter-spacing: 0.02em;
 }
 .logo {
-  height: 48px;
+  height: 38px;
   width: auto;
   object-fit: contain;
 }
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 0.25rem;
   align-items: center;
 }
 .nav-link {
   text-decoration: none;
-  color: var(--color-text-muted);
-  font-size: 1rem;
-  padding: 0.5rem 0;
-  transition: color 0.3s ease;
+  color: #6b6560;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 .nav-link:hover {
-  color: var(--color-primary);
+  color: #1a1714;
+  background: rgba(13,212,191,0.06);
 }
 .nav-link.router-link-active {
-  color: var(--color-primary);
-  border-bottom: 2px solid var(--color-primary);
+  color: #2d7a3a;
+  background: rgba(45,122,58,0.09);
 }
 .hamburger {
   display: none;
@@ -106,9 +112,9 @@ const closeMenu = () => {
 }
 .hamburger span {
   display: block;
-  width: 24px;
+  width: 22px;
   height: 2px;
-  background-color: var(--color-primary);
+  background-color: #6b6560;
   transition: all 0.3s ease;
   transform-origin: center;
 }
@@ -125,23 +131,24 @@ const closeMenu = () => {
   display: none;
   flex-direction: column;
   padding: 1rem 2rem 1.5rem;
-  border-top: 1px solid var(--color-border);
-  gap: 0.5rem;
+  border-top: 1px solid #e3ded5;
+  gap: 0.25rem;
+  background: #ffffff;
 }
 .mobile-menu.active {
   display: flex;
 }
 .mobile-link {
   text-decoration: none;
-  color: var(--color-text-muted);
+  color: #6b6560;
   font-size: 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #f0f0f0;
-  transition: color 0.3s ease;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #e3ded5;
+  transition: color 0.2s;
 }
 .mobile-link:hover,
 .mobile-link.router-link-active {
-  color: var(--color-primary);
+  color: #2dd4bf;
 }
 @media (max-width: 768px) {
   .nav {

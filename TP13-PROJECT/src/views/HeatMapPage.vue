@@ -150,6 +150,7 @@ function clearSelection() {
 // LocationFinder handlers
 function onSuburbFound(suburb, coords) {
   userLocation.value = coords
+  selectSuburb(suburb)
 }
 
 function onOutOfRange() {
@@ -164,31 +165,40 @@ onMounted(fetchSuburbs)
     <NavBar />
 
     <main class="content">
-      <!-- Page header -->
-      <div class="page-header">
-        <h1 class="page-title">Heat Safety Map</h1>
-        <p class="page-desc">
-          See how hot it feels right now across inner Melbourne suburbs.
-          <strong>Click any suburb</strong> on the map or use the search bar to view details.
-        </p>
-        <LocationFinder
-          v-if="!loading && !error"
-          :suburbs="innerSuburbs"
-          @suburb-found="onSuburbFound"
-          @out-of-range="onOutOfRange"
-        />
+      <!-- Page header card -->
+      <div class="page-header card">
+        <div class="page-header-text">
+          <h1 class="page-title">Heat <span class="page-title-accent">Safety</span> Map</h1>
+          <p class="page-desc">
+            See how hot it feels right now across inner Melbourne suburbs.
+            <strong>Click any suburb</strong> on the map or use the search bar to view details.
+          </p>
+        </div>
       </div>
 
       <div v-if="loading" class="status-msg">Loading suburb data...</div>
       <div v-else-if="error" class="status-msg error">{{ error }}</div>
 
       <template v-else>
-        <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
+        <!-- Search bar -->
+        <div class="search-card card">
+          <SuburbSearch :suburbs="innerSuburbs" @select="selectSuburb" />
+        </div>
+
+        <!-- Location finder — separate row below search -->
+        <div class="location-row">
+          <span class="location-label">Or use your current location:</span>
+          <LocationFinder
+            :suburbs="innerSuburbs"
+            @suburb-found="onSuburbFound"
+            @out-of-range="onOutOfRange"
+          />
+        </div>
 
         <!-- Map + right panel side by side -->
         <div class="map-panel-row">
-          <!-- Map -->
-          <div class="map-col">
+          <!-- Map card -->
+          <div class="map-col card">
             <SuburbMap
               :suburbs="innerSuburbs"
               :selectedSuburb="selectedSuburb"
@@ -310,44 +320,90 @@ onMounted(fetchSuburbs)
 <style scoped>
 .page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(160deg, #eaf4f4 0%, #f0f7ee 50%, #e8f4f0 100%);
 }
 
 .content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 1.5rem 2rem;
+  padding: 1.25rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
+/* Shared card style */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Header card */
 .page-header {
-  background: linear-gradient(135deg, #0d3a8f 0%, #1a56c4 100%);
-  margin: 0 -1.5rem;
-  padding: 2.25rem 1.5rem 1.75rem;
+  padding: 1.75rem 1.6rem;
+  background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88));
+  border: none;
 }
 
-.page-header :deep(.lf-wrap) {
-  margin-top: 1.1rem;
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .page-title {
-  font-size: 2rem;
+  font-size: 1.95rem;
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 0.4rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-title-accent {
+  color: #a3f77d;
 }
 
 .page-desc {
-  font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.88);
-  line-height: 1.65;
-  max-width: 620px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin: 0;
 }
 
 .page-desc strong {
   color: #ffffff;
+  font-weight: 600;
+}
+
+/* Search + location */
+.search-card {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+}
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.location-label {
+  font-size: 0.85rem;
+  color: #1c2e2a;
+  white-space: nowrap;
+}
+
+/* Map card */
+.map-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
 }
 
 /* Map + right panel */
@@ -366,11 +422,11 @@ onMounted(fetchSuburbs)
 
 .right-col {
   position: sticky;
-  top: 88px;
-  max-height: calc(100vh - 100px);
+  top: 64px;
+  max-height: calc(100vh - 76px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: #c8bfb0 transparent;
 }
 
 @media (max-width: 960px) {
@@ -402,41 +458,42 @@ onMounted(fetchSuburbs)
 .status-msg {
   text-align: center;
   padding: 3rem 0;
-  color: var(--color-text-muted);
+  color: #6b6560;
   font-size: 1rem;
 }
 
 .status-msg.error {
-  color: #991b1b;
+  color: #dc2626;
 }
 
 /* Popups — shared base */
 .popup-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
   padding: 1.5rem;
+  backdrop-filter: blur(2px);
 }
 
 .popup {
   position: relative;
-  background: #fff;
-  border: 2px solid #f87171;
+  background: #ffffff;
+  border: 1.5px solid #fca5a5;
   border-radius: 16px;
   padding: 1.75rem 1.5rem 1.5rem;
   max-width: 360px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 24px 64px rgba(153, 27, 27, 0.2);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
 }
 
 .popup--outrange {
-  border-color: #93c5fd;
-  box-shadow: 0 24px 64px rgba(29, 78, 216, 0.15);
+  border-color: #4d9e5a;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
 }
 
 .popup-close {
@@ -446,18 +503,18 @@ onMounted(fetchSuburbs)
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid #e3ded5;
+  background: #f5f2ec;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b7280;
+  color: #6b6560;
   transition: background 0.15s;
 }
 .popup-close:hover {
-  background: #f3f4f6;
-  color: #111;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .popup-icon {
@@ -468,23 +525,23 @@ onMounted(fetchSuburbs)
 .popup-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #991b1b;
+  color: #c0392b;
   margin: 0 0 0.6rem;
 }
 
 .popup-title--outrange {
-  color: #1d4ed8;
+  color: #2d7a3a;
 }
 
 .popup-body {
   font-size: 0.92rem;
-  color: #374151;
+  color: #1a1714;
   line-height: 1.6;
   margin: 0 0 1.25rem;
 }
 
 .popup-dismiss {
-  background: #991b1b;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -495,11 +552,11 @@ onMounted(fetchSuburbs)
   transition: filter 0.15s;
 }
 .popup-dismiss:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.15);
 }
 
 .popup-dismiss--outrange {
-  background: #1d4ed8;
+  background: #2d7a3a;
 }
 
 /* Popup transition */

@@ -412,7 +412,7 @@ const navigateTo = (path) => {
               </a>
               <a
                 class="mh-tool-node mh-tool-node--clothes"
-                @click.prevent="navigateTo('/clothing')"
+                @click.prevent="navigateTo('/outfit-advisor')"
                 href="#"
               >
                 <b>04</b><strong>Clothing Advisor</strong><span>Outfit support</span>
@@ -489,7 +489,7 @@ const navigateTo = (path) => {
                 conditions are safer for your specific suburb and route.
               </p>
             </div>
-            <a class="mh-btn outline" href="trip-coach">Plan My Trip →</a>
+            <a class="mh-btn outline" href="/trip-coach">Plan My Trip →</a>
           </div>
 
           <div class="mh-hourly mh-hourly-chart" data-animate>
@@ -744,7 +744,7 @@ const navigateTo = (path) => {
                 <span>Dark, synthetic, or tight-fitting layers</span>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/clothing')" href="#"
+            <a class="mh-btn primary" @click.prevent="navigateTo('/outfit-advisor')" href="#"
               >Get Recommendations →</a
             >
           </div>

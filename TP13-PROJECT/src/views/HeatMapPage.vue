@@ -336,15 +336,16 @@ onMounted(fetchSuburbs)
 .card {
   background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Header card */
 .page-header {
   padding: 1.75rem 1.6rem;
-  background:
-    linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88));
+  background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88));
   border: none;
 }
 
@@ -487,12 +488,12 @@ onMounted(fetchSuburbs)
   max-width: 360px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
 }
 
 .popup--outrange {
   border-color: #4d9e5a;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
 }
 
 .popup-close {
@@ -512,7 +513,7 @@ onMounted(fetchSuburbs)
   transition: background 0.15s;
 }
 .popup-close:hover {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
 }
 
@@ -529,7 +530,7 @@ onMounted(fetchSuburbs)
 }
 
 .popup-title--outrange {
-  color: #2dd4bf;
+  color: #2d7a3a;
 }
 
 .popup-body {

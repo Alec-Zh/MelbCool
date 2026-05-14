@@ -1,5 +1,5 @@
 <script setup>
-import NavBar from '@/components/NavBar1.vue'
+import NavBar from '@/components/NavBar.vue'
 import Footer from '@/components/Footer.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -12,65 +12,415 @@ const DEMO_WEATHER_THRESHOLDS = {
   highUv: 8,
   sunProtectionUv: 3,
   highHumidity: 65,
-  lowCanopy: 15
+  lowCanopy: 15,
 }
 
 const verifiedSources = [
-  { id: 'vic-heat-illness', title: 'Better Health Channel - Heat-related health problems', label: 'Symptoms', url: 'https://www.betterhealth.vic.gov.au/health/healthyliving/heat-related-health-problems' },
-  { id: 'vic-extreme-heat', title: 'Better Health Channel - Extreme heat', label: 'Stay cool', url: 'https://www.betterhealth.vic.gov.au/health/healthyliving/how-to-cope-and-stay-safe-in-extreme-heat' },
-  { id: 'vic-warning', title: 'Victorian Department of Health - Heat health warnings', label: 'Vic warnings', url: 'https://www.health.vic.gov.au/environmental-health/heat-health-warning' },
-  { id: 'uv', title: 'Cancer Council Australia - UV protection', label: 'UV advice', url: 'https://www.cancer.org.au/cancer-information/causes-and-prevention/sun-safety/uv-index' },
-  { id: 'open-meteo', title: 'Open-Meteo Forecast API', label: 'Weather API', url: 'https://open-meteo.com/en/docs' }
+  {
+    id: 'vic-heat-illness',
+    title: 'Better Health Channel - Heat-related health problems',
+    label: 'Symptoms',
+    url: 'https://www.betterhealth.vic.gov.au/health/healthyliving/heat-related-health-problems',
+  },
+  {
+    id: 'vic-extreme-heat',
+    title: 'Better Health Channel - Extreme heat',
+    label: 'Stay cool',
+    url: 'https://www.betterhealth.vic.gov.au/health/healthyliving/how-to-cope-and-stay-safe-in-extreme-heat',
+  },
+  {
+    id: 'vic-warning',
+    title: 'Victorian Department of Health - Heat health warnings',
+    label: 'Vic warnings',
+    url: 'https://www.health.vic.gov.au/environmental-health/heat-health-warning',
+  },
+  {
+    id: 'uv',
+    title: 'Cancer Council Australia - UV protection',
+    label: 'UV advice',
+    url: 'https://www.cancer.org.au/cancer-information/causes-and-prevention/sun-safety/uv-index',
+  },
+  {
+    id: 'open-meteo',
+    title: 'Open-Meteo Forecast API',
+    label: 'Weather API',
+    url: 'https://open-meteo.com/en/docs',
+  },
 ]
 
 const safetySuburbsRaw = [
-  { id: 'melbourne', name: 'Melbourne', temp: 34, feels: 39, uv: 9, humidity: 34, canopy: 12, lat: -37.8136, lng: 144.9631, hourly: [28, 28, 27, 27, 28, 29, 31, 33, 35, 37, 39, 40, 41, 41, 40, 39, 37, 35, 33, 31, 30, 29, 29, 28] },
-  { id: 'carlton', name: 'Carlton', temp: 33, feels: 38, uv: 8, humidity: 39, canopy: 16, lat: -37.8001, lng: 144.9671, hourly: [27, 27, 27, 27, 28, 30, 31, 33, 35, 37, 38, 39, 40, 40, 39, 38, 36, 34, 32, 30, 29, 29, 28, 28] },
-  { id: 'richmond', name: 'Richmond', temp: 32, feels: 36, uv: 8, humidity: 42, canopy: 22, lat: -37.8198, lng: 145.0017, hourly: [26, 26, 26, 26, 27, 28, 30, 32, 34, 36, 37, 38, 38, 38, 37, 36, 34, 33, 31, 29, 28, 28, 27, 27] },
-  { id: 'st-kilda', name: 'St Kilda', temp: 30, feels: 34, uv: 7, humidity: 58, canopy: 25, lat: -37.8679, lng: 144.978, hourly: [25, 25, 25, 25, 26, 27, 28, 30, 31, 33, 34, 35, 35, 35, 34, 33, 32, 31, 29, 28, 27, 27, 26, 26] },
-  { id: 'brunswick', name: 'Brunswick', temp: 31, feels: 35, uv: 7, humidity: 48, canopy: 29, lat: -37.7667, lng: 144.9614, hourly: [25, 25, 25, 25, 26, 27, 29, 31, 33, 35, 36, 37, 37, 36, 35, 34, 32, 30, 29, 28, 27, 27, 26, 26] },
-  { id: 'docklands', name: 'Docklands', temp: 35, feels: 40, uv: 9, humidity: 36, canopy: 8, lat: -37.8152, lng: 144.9478, hourly: [28, 28, 28, 28, 29, 30, 32, 34, 36, 38, 40, 41, 42, 42, 41, 40, 38, 36, 34, 32, 30, 30, 29, 29] }
+  {
+    id: 'melbourne',
+    name: 'Melbourne',
+    temp: 34,
+    feels: 39,
+    uv: 9,
+    humidity: 34,
+    canopy: 12,
+    lat: -37.8136,
+    lng: 144.9631,
+    hourly: [
+      28, 28, 27, 27, 28, 29, 31, 33, 35, 37, 39, 40, 41, 41, 40, 39, 37, 35, 33, 31, 30, 29, 29,
+      28,
+    ],
+  },
+  {
+    id: 'carlton',
+    name: 'Carlton',
+    temp: 33,
+    feels: 38,
+    uv: 8,
+    humidity: 39,
+    canopy: 16,
+    lat: -37.8001,
+    lng: 144.9671,
+    hourly: [
+      27, 27, 27, 27, 28, 30, 31, 33, 35, 37, 38, 39, 40, 40, 39, 38, 36, 34, 32, 30, 29, 29, 28,
+      28,
+    ],
+  },
+  {
+    id: 'richmond',
+    name: 'Richmond',
+    temp: 32,
+    feels: 36,
+    uv: 8,
+    humidity: 42,
+    canopy: 22,
+    lat: -37.8198,
+    lng: 145.0017,
+    hourly: [
+      26, 26, 26, 26, 27, 28, 30, 32, 34, 36, 37, 38, 38, 38, 37, 36, 34, 33, 31, 29, 28, 28, 27,
+      27,
+    ],
+  },
+  {
+    id: 'st-kilda',
+    name: 'St Kilda',
+    temp: 30,
+    feels: 34,
+    uv: 7,
+    humidity: 58,
+    canopy: 25,
+    lat: -37.8679,
+    lng: 144.978,
+    hourly: [
+      25, 25, 25, 25, 26, 27, 28, 30, 31, 33, 34, 35, 35, 35, 34, 33, 32, 31, 29, 28, 27, 27, 26,
+      26,
+    ],
+  },
+  {
+    id: 'brunswick',
+    name: 'Brunswick',
+    temp: 31,
+    feels: 35,
+    uv: 7,
+    humidity: 48,
+    canopy: 29,
+    lat: -37.7667,
+    lng: 144.9614,
+    hourly: [
+      25, 25, 25, 25, 26, 27, 29, 31, 33, 35, 36, 37, 37, 36, 35, 34, 32, 30, 29, 28, 27, 27, 26,
+      26,
+    ],
+  },
+  {
+    id: 'docklands',
+    name: 'Docklands',
+    temp: 35,
+    feels: 40,
+    uv: 9,
+    humidity: 36,
+    canopy: 8,
+    lat: -37.8152,
+    lng: 144.9478,
+    hourly: [
+      28, 28, 28, 28, 29, 30, 32, 34, 36, 38, 40, 41, 42, 42, 41, 40, 38, 36, 34, 32, 30, 30, 29,
+      29,
+    ],
+  },
 ]
 
-const safetySuburbs = ref(safetySuburbsRaw.map(s => ({ ...s, risk: deriveWeatherRisk(s).risk })))
+const safetySuburbs = ref(safetySuburbsRaw.map((s) => ({ ...s, risk: deriveWeatherRisk(s).risk })))
 
 const safetyRefuges = [
-  { name: 'State Library Victoria', type: 'Library', address: '328 Swanston Street, Melbourne', hours: '10:00 am - 6:00 pm', lat: -37.8098, lng: 144.9652 },
-  { name: 'Kathleen Syme Library', type: 'Library', address: '251 Faraday Street, Carlton', hours: '10:00 am - 6:00 pm', lat: -37.7981, lng: 144.9679 },
-  { name: 'Richmond Library', type: 'Library', address: '415 Church Street, Richmond', hours: '10:00 am - 5:00 pm', lat: -37.8216, lng: 144.9997 },
-  { name: 'St Kilda Library', type: 'Library', address: '150 Carlisle Street, St Kilda', hours: '10:00 am - 6:00 pm', lat: -37.867, lng: 144.9866 },
-  { name: 'Brunswick Library', type: 'Library', address: '233 Sydney Road, Brunswick', hours: '10:00 am - 6:00 pm', lat: -37.771, lng: 144.9612 },
-  { name: 'Library at The Dock', type: 'Library', address: '107 Victoria Harbour Promenade, Docklands', hours: '10:00 am - 6:00 pm', lat: -37.8197, lng: 144.9439 },
-  { name: 'NGV International', type: 'Museum', address: '180 St Kilda Road, Southbank', hours: '10:00 am - 5:00 pm', lat: -37.8226, lng: 144.9689 }
+  {
+    name: 'State Library Victoria',
+    type: 'Library',
+    address: '328 Swanston Street, Melbourne',
+    hours: '10:00 am - 6:00 pm',
+    lat: -37.8098,
+    lng: 144.9652,
+  },
+  {
+    name: 'Kathleen Syme Library',
+    type: 'Library',
+    address: '251 Faraday Street, Carlton',
+    hours: '10:00 am - 6:00 pm',
+    lat: -37.7981,
+    lng: 144.9679,
+  },
+  {
+    name: 'Richmond Library',
+    type: 'Library',
+    address: '415 Church Street, Richmond',
+    hours: '10:00 am - 5:00 pm',
+    lat: -37.8216,
+    lng: 144.9997,
+  },
+  {
+    name: 'St Kilda Library',
+    type: 'Library',
+    address: '150 Carlisle Street, St Kilda',
+    hours: '10:00 am - 6:00 pm',
+    lat: -37.867,
+    lng: 144.9866,
+  },
+  {
+    name: 'Brunswick Library',
+    type: 'Library',
+    address: '233 Sydney Road, Brunswick',
+    hours: '10:00 am - 6:00 pm',
+    lat: -37.771,
+    lng: 144.9612,
+  },
+  {
+    name: 'Library at The Dock',
+    type: 'Library',
+    address: '107 Victoria Harbour Promenade, Docklands',
+    hours: '10:00 am - 6:00 pm',
+    lat: -37.8197,
+    lng: 144.9439,
+  },
+  {
+    name: 'NGV International',
+    type: 'Museum',
+    address: '180 St Kilda Road, Southbank',
+    hours: '10:00 am - 5:00 pm',
+    lat: -37.8226,
+    lng: 144.9689,
+  },
 ]
 
-const riskCopy = { Low: 'Keep cool and check again later.', Moderate: 'Use these steps before going out.', High: 'Stay in unless the trip is essential.', Urgent: 'Cool down now and get help.' }
+const riskCopy = {
+  Low: 'Keep cool and check again later.',
+  Moderate: 'Use these steps before going out.',
+  High: 'Stay in unless the trip is essential.',
+  Urgent: 'Cool down now and get help.',
+}
 
 const labels = {
-  suburb: Object.fromEntries(safetySuburbsRaw.map(s => [s.id, s.name])),
+  suburb: Object.fromEntries(safetySuburbsRaw.map((s) => [s.id, s.name])),
   ageGroup: { under65: 'Under 65', '65-74': '65-74', '75-84': '75-84', '85plus': '85+' },
-  support: { 'with-someone': 'Someone nearby', 'check-in': 'Check-in available', alone: 'Alone today' },
+  support: {
+    'with-someone': 'Someone nearby',
+    'check-in': 'Check-in available',
+    alone: 'Alone today',
+  },
   coolingAccess: { aircon: 'Air conditioning', fan: 'Fan only', none: 'No reliable cooling' },
   homeHeat: { cool: 'Usually cool', warm: 'Gets warm', hot: 'Hard to cool' },
-  outdoorActivity: { none: 'No trip', 'essential-short': 'Short essential trip', 'essential-long': 'Long appointment', 'exercise-work': 'Outdoor activity' },
-  plannedTime: { flexible: 'Flexible', morning: 'Before 10 am', midday: '10 am - 4 pm', evening: 'After 5 pm' },
-  timeOutside: { none: 'Not outside', under30: 'Under 30 min', '30to60': '30-60 min', over60: 'Over 1 hour' },
-  travelShade: { 'private-cool': 'Door-to-door', 'some-shade': 'Some shade', 'public-walk': 'Transit walk', 'no-shade': 'Little shade' },
-  healthRisk: { none: 'No concern', chronic: 'Health condition', medication: 'Heat-sensitive medicine', both: 'Condition + medicine' },
+  outdoorActivity: {
+    none: 'No trip',
+    'essential-short': 'Short essential trip',
+    'essential-long': 'Long appointment',
+    'exercise-work': 'Outdoor activity',
+  },
+  plannedTime: {
+    flexible: 'Flexible',
+    morning: 'Before 10 am',
+    midday: '10 am - 4 pm',
+    evening: 'After 5 pm',
+  },
+  timeOutside: {
+    none: 'Not outside',
+    under30: 'Under 30 min',
+    '30to60': '30-60 min',
+    over60: 'Over 1 hour',
+  },
+  travelShade: {
+    'private-cool': 'Door-to-door',
+    'some-shade': 'Some shade',
+    'public-walk': 'Transit walk',
+    'no-shade': 'Little shade',
+  },
+  healthRisk: {
+    none: 'No concern',
+    chronic: 'Health condition',
+    medication: 'Heat-sensitive medicine',
+    both: 'Condition + medicine',
+  },
   symptoms: { none: 'No symptoms', early: 'Early symptoms', emergency: 'Emergency signs' },
-  fluidMobility: { ok: 'Independent', 'fluid-limit': 'Fluid limit', limited: 'Limited mobility', 'needs-help': 'Needs help' }
+  fluidMobility: {
+    ok: 'Independent',
+    'fluid-limit': 'Fluid limit',
+    limited: 'Limited mobility',
+    'needs-help': 'Needs help',
+  },
 }
 
 const questions = [
-  { id: 'suburb', category: 'Location', visual: 'map', title: 'Where are you today?', hint: 'Pick the suburb for local heat and cool places.', options: () => safetySuburbs.value.map(s => ({ value: s.id, label: s.name, detail: `${s.feels}\u00b0C feels-like`, tag: 'MAP', visual: s.id === 'docklands' ? 'building' : s.id === 'st-kilda' ? 'water' : 'map' })) },
-  { id: 'ageGroup', category: 'Profile', visual: 'person', title: 'How old is the person?', hint: 'Choose the closest age group.', options: [{ value: 'under65', label: 'Under 65', detail: 'Basic care', tag: 'AGE', visual: 'person' }, { value: '65-74', label: '65-74', detail: 'Add check-ins', tag: '65+', visual: 'senior' }, { value: '75-84', label: '75-84', detail: 'Take extra care', tag: '75+', visual: 'senior' }, { value: '85plus', label: '85+', detail: 'Plan help early', tag: '85+', visual: 'support' }] },
-  { id: 'outdoorActivity', category: 'Trip', visual: 'walk', title: 'Do they need to go out?', hint: 'Choose the closest plan.', options: [{ value: 'none', label: 'No trip', detail: 'Stay inside', tag: 'IN', visual: 'home' }, { value: 'essential-short', label: 'Short errand', detail: 'Brief trip', tag: 'TRIP', visual: 'walk' }, { value: 'essential-long', label: 'Long appointment', detail: 'More time out', tag: 'LONG', visual: 'bus' }, { value: 'exercise-work', label: 'Outdoor work', detail: 'Exercise or garden', tag: 'WORK', visual: 'sun' }] },
-  { id: 'plannedTime', category: 'Timing', visual: 'clock', title: 'When would they go?', hint: 'Morning and evening are often safer.', options: [{ value: 'flexible', label: 'Any time', detail: 'Pick coolest', tag: 'FLEX', visual: 'clock' }, { value: 'morning', label: 'Before 10 am', detail: 'Usually cooler', tag: 'AM', visual: 'morning' }, { value: 'midday', label: '10 am - 4 pm', detail: 'Usually hottest', tag: 'MID', visual: 'sun' }, { value: 'evening', label: 'After 5 pm', detail: 'Later option', tag: 'PM', visual: 'evening' }] },
-  { id: 'timeOutside', category: 'Exposure', visual: 'timer', title: 'How long outside?', hint: 'Longer time means more heat stress.', options: [{ value: 'none', label: 'Not outside', detail: 'No outing', tag: '0', visual: 'home' }, { value: 'under30', label: 'Under 30 min', detail: 'Short time', tag: '<30', visual: 'timer' }, { value: '30to60', label: '30-60 min', detail: 'Medium time', tag: '60', visual: 'clock' }, { value: 'over60', label: 'Over 1 hour', detail: 'Needs breaks', tag: '1H+', visual: 'break' }] },
-  { id: 'fluidMobility', category: 'Mobility', visual: 'water', title: 'Can they drink and move?', hint: 'This helps set water and support advice.', options: [{ value: 'ok', label: 'Yes', detail: 'Can drink and move', tag: 'OK', visual: 'water' }, { value: 'fluid-limit', label: 'Fluid limit', detail: 'Follow medical advice', tag: 'FLUID', visual: 'medicine' }, { value: 'limited', label: 'Moves slowly', detail: 'Needs extra time', tag: 'MOVE', visual: 'mobility' }, { value: 'needs-help', label: 'Needs help', detail: 'Do not go alone', tag: 'HELP', visual: 'support' }] }
+  {
+    id: 'suburb',
+    category: 'Location',
+    visual: 'map',
+    title: 'Where are you today?',
+    hint: 'Pick the suburb for local heat and cool places.',
+    options: () =>
+      safetySuburbs.value.map((s) => ({
+        value: s.id,
+        label: s.name,
+        detail: `${s.feels}\u00b0C feels-like`,
+        tag: 'MAP',
+        visual: s.id === 'docklands' ? 'building' : s.id === 'st-kilda' ? 'water' : 'map',
+      })),
+  },
+  {
+    id: 'ageGroup',
+    category: 'Profile',
+    visual: 'person',
+    title: 'How old is the person?',
+    hint: 'Choose the closest age group.',
+    options: [
+      { value: 'under65', label: 'Under 65', detail: 'Basic care', tag: 'AGE', visual: 'person' },
+      { value: '65-74', label: '65-74', detail: 'Add check-ins', tag: '65+', visual: 'senior' },
+      { value: '75-84', label: '75-84', detail: 'Take extra care', tag: '75+', visual: 'senior' },
+      { value: '85plus', label: '85+', detail: 'Plan help early', tag: '85+', visual: 'support' },
+    ],
+  },
+  {
+    id: 'outdoorActivity',
+    category: 'Trip',
+    visual: 'walk',
+    title: 'Do they need to go out?',
+    hint: 'Choose the closest plan.',
+    options: [
+      { value: 'none', label: 'No trip', detail: 'Stay inside', tag: 'IN', visual: 'home' },
+      {
+        value: 'essential-short',
+        label: 'Short errand',
+        detail: 'Brief trip',
+        tag: 'TRIP',
+        visual: 'walk',
+      },
+      {
+        value: 'essential-long',
+        label: 'Long appointment',
+        detail: 'More time out',
+        tag: 'LONG',
+        visual: 'bus',
+      },
+      {
+        value: 'exercise-work',
+        label: 'Outdoor work',
+        detail: 'Exercise or garden',
+        tag: 'WORK',
+        visual: 'sun',
+      },
+    ],
+  },
+  {
+    id: 'plannedTime',
+    category: 'Timing',
+    visual: 'clock',
+    title: 'When would they go?',
+    hint: 'Morning and evening are often safer.',
+    options: [
+      {
+        value: 'flexible',
+        label: 'Any time',
+        detail: 'Pick coolest',
+        tag: 'FLEX',
+        visual: 'clock',
+      },
+      {
+        value: 'morning',
+        label: 'Before 10 am',
+        detail: 'Usually cooler',
+        tag: 'AM',
+        visual: 'morning',
+      },
+      {
+        value: 'midday',
+        label: '10 am - 4 pm',
+        detail: 'Usually hottest',
+        tag: 'MID',
+        visual: 'sun',
+      },
+      {
+        value: 'evening',
+        label: 'After 5 pm',
+        detail: 'Later option',
+        tag: 'PM',
+        visual: 'evening',
+      },
+    ],
+  },
+  {
+    id: 'timeOutside',
+    category: 'Exposure',
+    visual: 'timer',
+    title: 'How long outside?',
+    hint: 'Longer time means more heat stress.',
+    options: [
+      { value: 'none', label: 'Not outside', detail: 'No outing', tag: '0', visual: 'home' },
+      {
+        value: 'under30',
+        label: 'Under 30 min',
+        detail: 'Short time',
+        tag: '<30',
+        visual: 'timer',
+      },
+      { value: '30to60', label: '30-60 min', detail: 'Medium time', tag: '60', visual: 'clock' },
+      {
+        value: 'over60',
+        label: 'Over 1 hour',
+        detail: 'Needs breaks',
+        tag: '1H+',
+        visual: 'break',
+      },
+    ],
+  },
+  {
+    id: 'fluidMobility',
+    category: 'Mobility',
+    visual: 'water',
+    title: 'Can they drink and move?',
+    hint: 'This helps set water and support advice.',
+    options: [
+      { value: 'ok', label: 'Yes', detail: 'Can drink and move', tag: 'OK', visual: 'water' },
+      {
+        value: 'fluid-limit',
+        label: 'Fluid limit',
+        detail: 'Follow medical advice',
+        tag: 'FLUID',
+        visual: 'medicine',
+      },
+      {
+        value: 'limited',
+        label: 'Moves slowly',
+        detail: 'Needs extra time',
+        tag: 'MOVE',
+        visual: 'mobility',
+      },
+      {
+        value: 'needs-help',
+        label: 'Needs help',
+        detail: 'Do not go alone',
+        tag: 'HELP',
+        visual: 'support',
+      },
+    ],
+  },
 ]
 
-const answers = ref({ suburb: 'melbourne', ageGroup: 'under65', outdoorActivity: 'none', plannedTime: 'flexible', timeOutside: 'none', fluidMobility: 'ok' })
+const answers = ref({
+  suburb: 'melbourne',
+  ageGroup: 'under65',
+  outdoorActivity: 'none',
+  plannedTime: 'flexible',
+  timeOutside: 'none',
+  fluidMobility: 'ok',
+})
 
 const currentStep = ref(0)
 let advanceTimer = null
@@ -81,9 +431,15 @@ const planGenerated = ref(false)
 const currentQuestion = computed(() => questions[currentStep.value])
 const stepNumber = computed(() => currentStep.value + 1)
 const percent = computed(() => Math.round((stepNumber.value / questions.length) * 100))
-const questionOptions = computed(() => typeof currentQuestion.value.options === 'function' ? currentQuestion.value.options() : currentQuestion.value.options)
+const questionOptions = computed(() =>
+  typeof currentQuestion.value.options === 'function'
+    ? currentQuestion.value.options()
+    : currentQuestion.value.options,
+)
 
-const selectedSuburb = computed(() => safetySuburbs.value.find(s => s.id === answers.value.suburb) || safetySuburbs.value[0])
+const selectedSuburb = computed(
+  () => safetySuburbs.value.find((s) => s.id === answers.value.suburb) || safetySuburbs.value[0],
+)
 const weatherRisk = computed(() => deriveWeatherRisk(selectedSuburb.value))
 const profileRisk = computed(() => riskScore(selectedSuburb.value, answers.value))
 const riskBand = computed(() => riskBandCalc(profileRisk.value, answers.value))
@@ -94,15 +450,17 @@ const planStatusText = ref('')
 const usedFallbackWeather = ref(false)
 
 async function fetchSuburbWeather(lat, lng) {
-  const url = `https://api.open-meteo.com/v1/forecast` +
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}&longitude=${lng}` +
     `&current=temperature_2m,apparent_temperature,uv_index,relative_humidity_2m` +
     `&hourly=apparent_temperature` +
     `&forecast_days=1` +
     `&timezone=Australia%2FMelbourne`
-  const signal = typeof AbortSignal !== 'undefined' && AbortSignal.timeout
-    ? AbortSignal.timeout(8000)
-    : undefined
+  const signal =
+    typeof AbortSignal !== 'undefined' && AbortSignal.timeout
+      ? AbortSignal.timeout(8000)
+      : undefined
   const resp = await fetch(url, signal ? { signal } : {})
   if (!resp.ok) throw new Error('fetch failed')
   const data = await resp.json()
@@ -112,20 +470,42 @@ async function fetchSuburbWeather(lat, lng) {
     uv: Math.round(data.current.uv_index),
     humidity: Math.round(data.current.relative_humidity_2m),
     hourly: data.hourly.apparent_temperature.map(Math.round),
-    weatherSource: 'Live Open-Meteo weather'
+    weatherSource: 'Live Open-Meteo weather',
   }
 }
 
 function deriveWeatherRisk(suburb) {
-  let score = 0; const reasons = []
-  if (suburb.feels >= DEMO_WEATHER_THRESHOLDS.highFeels) { score += 3; reasons.push(`${suburb.feels}\u00b0C feels-like`) }
-  else if (suburb.feels >= DEMO_WEATHER_THRESHOLDS.moderateFeels) { score += 2; reasons.push(`${suburb.feels}\u00b0C feels-like`) }
-  else { reasons.push(`${suburb.feels}\u00b0C feels-like`) }
-  if (suburb.uv >= DEMO_WEATHER_THRESHOLDS.highUv) { score += 1; reasons.push(`UV ${suburb.uv}`) }
-  if (suburb.humidity >= DEMO_WEATHER_THRESHOLDS.highHumidity && suburb.temp >= DEMO_WEATHER_THRESHOLDS.moderateFeels) { score += 1; reasons.push(`${suburb.humidity}% humidity`) }
-  if (suburb.canopy <= DEMO_WEATHER_THRESHOLDS.lowCanopy) { score += 1; reasons.push(`${suburb.canopy}% canopy`) }
+  let score = 0
+  const reasons = []
+  if (suburb.feels >= DEMO_WEATHER_THRESHOLDS.highFeels) {
+    score += 3
+    reasons.push(`${suburb.feels}\u00b0C feels-like`)
+  } else if (suburb.feels >= DEMO_WEATHER_THRESHOLDS.moderateFeels) {
+    score += 2
+    reasons.push(`${suburb.feels}\u00b0C feels-like`)
+  } else {
+    reasons.push(`${suburb.feels}\u00b0C feels-like`)
+  }
+  if (suburb.uv >= DEMO_WEATHER_THRESHOLDS.highUv) {
+    score += 1
+    reasons.push(`UV ${suburb.uv}`)
+  }
+  if (
+    suburb.humidity >= DEMO_WEATHER_THRESHOLDS.highHumidity &&
+    suburb.temp >= DEMO_WEATHER_THRESHOLDS.moderateFeels
+  ) {
+    score += 1
+    reasons.push(`${suburb.humidity}% humidity`)
+  }
+  if (suburb.canopy <= DEMO_WEATHER_THRESHOLDS.lowCanopy) {
+    score += 1
+    reasons.push(`${suburb.canopy}% canopy`)
+  }
   const hottest = Math.max(...suburb.hourly.filter(Number.isFinite))
-  if (hottest >= DEMO_WEATHER_THRESHOLDS.highFeels) { score += 1; reasons.push(`${hottest}\u00b0C forecast peak`) }
+  if (hottest >= DEMO_WEATHER_THRESHOLDS.highFeels) {
+    score += 1
+    reasons.push(`${hottest}\u00b0C forecast peak`)
+  }
   return { risk: score >= 4 ? 'high' : score >= 2 ? 'moderate' : 'low', score, reasons }
 }
 
@@ -133,7 +513,13 @@ function riskScore(suburb, profile) {
   const w = deriveWeatherRisk(suburb)
   let score = { low: 1, moderate: 2, high: 3 }[suburb.risk] || 1
   const factors = []
-  const add = (cond, pts, lbl) => { if (cond) { factors.push(lbl); return pts } return 0 }
+  const add = (cond, pts, lbl) => {
+    if (cond) {
+      factors.push(lbl)
+      return pts
+    }
+    return 0
+  }
   score += add(profile.ageGroup === '65-74', 1, 'Age 65+')
   score += add(profile.ageGroup === '75-84', 2, 'Age 75+')
   score += add(profile.ageGroup === '85plus', 3, 'Age 85+')
@@ -171,12 +557,16 @@ function goBack() {
 }
 
 function goForward() {
-  if (currentStep.value < questions.length - 1) { currentStep.value++; return }
+  if (currentStep.value < questions.length - 1) {
+    currentStep.value++
+    return
+  }
   generatePlan()
 }
 
 const nextBtnText = computed(() => {
-  if (currentStep.value === questions.length - 1) return planGenerated.value ? 'Update plan' : 'Generate plan'
+  if (currentStep.value === questions.length - 1)
+    return planGenerated.value ? 'Update plan' : 'Generate plan'
   return 'Next'
 })
 
@@ -206,25 +596,40 @@ async function generatePlan(options = {}) {
   const actions = buildVisualActions(suburb, answers.value, band, timing)
   const factors = buildFactorChips(suburb, answers.value, pr)
 
-  const usefulHours = suburb.hourly.map((temp, hour) => ({ temp, hour })).filter(e => Number.isFinite(e.temp) && e.hour >= 6 && e.hour <= 20)
-  const temps = usefulHours.map(e => e.temp)
+  const usefulHours = suburb.hourly
+    .map((temp, hour) => ({ temp, hour }))
+    .filter((e) => Number.isFinite(e.temp) && e.hour >= 6 && e.hour <= 20)
+  const temps = usefulHours.map((e) => e.temp)
   const minTemp = Math.min(...temps)
   const maxTemp = Math.max(...temps)
   const coolest = [...usefulHours].sort((a, b) => a.temp - b.temp)[0]
-  const peak = usefulHours.find(e => e.temp === maxTemp)
+  const peak = usefulHours.find((e) => e.temp === maxTemp)
 
-  const heatBars = usefulHours.map(e => ({
+  const heatBars = usefulHours.map((e) => ({
     ...e,
     height: 24 + ((e.temp - minTemp) / Math.max(maxTemp - minTemp, 1)) * 60,
-    tone: e.temp >= DEMO_WEATHER_THRESHOLDS.highFeels ? 'hot' : e.temp >= DEMO_WEATHER_THRESHOLDS.moderateFeels ? 'warm' : 'cool',
+    tone:
+      e.temp >= DEMO_WEATHER_THRESHOLDS.highFeels
+        ? 'hot'
+        : e.temp >= DEMO_WEATHER_THRESHOLDS.moderateFeels
+          ? 'warm'
+          : 'cool',
     isPeak: e === peak,
-    isCoolest: e === coolest
+    isCoolest: e === coolest,
   }))
 
   planData.value = {
-    suburb, profileRisk: pr, band, timing, refuge, route, actions, factors, heatBars,
+    suburb,
+    profileRisk: pr,
+    band,
+    timing,
+    refuge,
+    route,
+    actions,
+    factors,
+    heatBars,
     primaryAction: primaryActionFor(band, answers.value, timing),
-    scorePercent: band === 'Urgent' ? 100 : Math.min(Math.round((pr.score / 18) * 100), 100)
+    scorePercent: band === 'Urgent' ? 100 : Math.min(Math.round((pr.score / 18) * 100), 100),
   }
 
   latestPlanText.value = buildPlanText(suburb, band, pr, timing, refuge, route, factors)
@@ -238,68 +643,156 @@ async function generatePlan(options = {}) {
 }
 
 function safestTiming(suburb, profile) {
-  if (profile.outdoorActivity === 'none' || profile.timeOutside === 'none') return { title: 'Stay in today', text: 'No trip selected.' }
-  const daylight = suburb.hourly.map((temp, hour) => ({ temp, hour })).filter(e => Number.isFinite(e.temp) && e.hour >= 6 && e.hour <= 20)
-  if (!daylight.length) return { title: 'Morning or after 5 pm', text: 'Avoid the middle of the day.' }
+  if (profile.outdoorActivity === 'none' || profile.timeOutside === 'none')
+    return { title: 'Stay in today', text: 'No trip selected.' }
+  const daylight = suburb.hourly
+    .map((temp, hour) => ({ temp, hour }))
+    .filter((e) => Number.isFinite(e.temp) && e.hour >= 6 && e.hour <= 20)
+  if (!daylight.length)
+    return { title: 'Morning or after 5 pm', text: 'Avoid the middle of the day.' }
   const preferred = preferredWindow(profile.plannedTime, daylight)
   const bestPreferred = preferred.sort((a, b) => a.temp - b.temp)[0]
   const bestDaylight = [...daylight].sort((a, b) => a.temp - b.temp)[0]
   const best = bestPreferred || bestDaylight
-  if (profile.plannedTime === 'midday' && bestDaylight.temp + 1 < best.temp) return { title: `Move trip to ${hourLabel(bestDaylight.hour)}`, text: `Coolest option is ${bestDaylight.temp}\u00b0C.` }
-  return { title: `Around ${hourLabel(best.hour)}`, text: `Best window is ${best.temp}\u00b0C feels-like.` }
+  if (profile.plannedTime === 'midday' && bestDaylight.temp + 1 < best.temp)
+    return {
+      title: `Move trip to ${hourLabel(bestDaylight.hour)}`,
+      text: `Coolest option is ${bestDaylight.temp}\u00b0C.`,
+    }
+  return {
+    title: `Around ${hourLabel(best.hour)}`,
+    text: `Best window is ${best.temp}\u00b0C feels-like.`,
+  }
 }
 
 function preferredWindow(pt, entries) {
-  if (pt === 'morning') return entries.filter(e => e.hour >= 6 && e.hour <= 10)
-  if (pt === 'midday') return entries.filter(e => e.hour >= 10 && e.hour <= 16)
-  if (pt === 'evening') return entries.filter(e => e.hour >= 17 && e.hour <= 20)
+  if (pt === 'morning') return entries.filter((e) => e.hour >= 6 && e.hour <= 10)
+  if (pt === 'midday') return entries.filter((e) => e.hour >= 10 && e.hour <= 16)
+  if (pt === 'evening') return entries.filter((e) => e.hour >= 17 && e.hour <= 20)
   return entries
 }
 
 function nearestRefuge(suburb) {
-  return safetyRefuges.map(r => ({ ...r, distanceKm: haversine(suburb.lat, suburb.lng, r.lat, r.lng) })).sort((a, b) => a.distanceKm - b.distanceKm)[0]
+  return safetyRefuges
+    .map((r) => ({ ...r, distanceKm: haversine(suburb.lat, suburb.lng, r.lat, r.lng) }))
+    .sort((a, b) => a.distanceKm - b.distanceKm)[0]
 }
 
 function buildVisualActions(suburb, profile, band, timing) {
   const actions = []
-  if (band === 'Urgent' || band === 'High') actions.push({ label: 'Stay cool indoors', detail: 'Use AC or find a cool refuge', tone: 'danger', visual: 'cool' })
-  else actions.push({ label: 'Stay cool', detail: 'Keep hydrated', tone: 'default', visual: 'heart' })
-  actions.push({ label: 'Drink water', detail: 'Every 20 min outside', tone: 'default', visual: 'water' })
-  if (suburb.uv >= 3) actions.push({ label: 'Sun protection', detail: 'Hat, sunscreen, shade', tone: 'warm', visual: 'shade' })
-  if (profile.fluidMobility === 'limited' || profile.fluidMobility === 'needs-help') actions.push({ label: 'Mobility help', detail: 'Allow extra time', tone: 'warm', visual: 'mobility' })
+  if (band === 'Urgent' || band === 'High')
+    actions.push({
+      label: 'Stay cool indoors',
+      detail: 'Use AC or find a cool refuge',
+      tone: 'danger',
+      visual: 'cool',
+    })
+  else
+    actions.push({ label: 'Stay cool', detail: 'Keep hydrated', tone: 'default', visual: 'heart' })
+  actions.push({
+    label: 'Drink water',
+    detail: 'Every 20 min outside',
+    tone: 'default',
+    visual: 'water',
+  })
+  if (suburb.uv >= 3)
+    actions.push({
+      label: 'Sun protection',
+      detail: 'Hat, sunscreen, shade',
+      tone: 'warm',
+      visual: 'shade',
+    })
+  if (profile.fluidMobility === 'limited' || profile.fluidMobility === 'needs-help')
+    actions.push({
+      label: 'Mobility help',
+      detail: 'Allow extra time',
+      tone: 'warm',
+      visual: 'mobility',
+    })
   return actions.slice(0, 5)
 }
 
 function buildActionRoute(suburb, profile, band, timing, refuge) {
   const route = []
-  route.push({ stage: 'Now', title: timing.title, metric: timing.text, points: ['Check symptoms', 'Drink water'], visual: 'clock' })
+  route.push({
+    stage: 'Now',
+    title: timing.title,
+    metric: timing.text,
+    points: ['Check symptoms', 'Drink water'],
+    visual: 'clock',
+  })
   if (profile.outdoorActivity !== 'none') {
-    route.push({ stage: 'During trip', title: refuge.name, metric: `${refuge.type}, ${refuge.distanceKm.toFixed(1)} km`, points: ['Stay in shade', 'Take breaks'], visual: 'walk' })
+    route.push({
+      stage: 'During trip',
+      title: refuge.name,
+      metric: `${refuge.type}, ${refuge.distanceKm.toFixed(1)} km`,
+      points: ['Stay in shade', 'Take breaks'],
+      visual: 'walk',
+    })
   }
-  route.push({ stage: 'After', title: 'Cool down', metric: 'Return to cool space', points: ['Rest in AC', 'Monitor symptoms'], visual: 'home' })
+  route.push({
+    stage: 'After',
+    title: 'Cool down',
+    metric: 'Return to cool space',
+    points: ['Rest in AC', 'Monitor symptoms'],
+    visual: 'home',
+  })
   return route
 }
 
 function primaryActionFor(band, profile, timing) {
   if (band === 'Urgent') return 'Call 000 if emergency symptoms are present. Cool the person now.'
   if (band === 'High') return 'Avoid going out unless essential. Prepare support and a cool refuge.'
-  if (profile.outdoorActivity !== 'none') return `Go ${timing.title.toLowerCase()} and keep the trip short.`
+  if (profile.outdoorActivity !== 'none')
+    return `Go ${timing.title.toLowerCase()} and keep the trip short.`
   return 'Stay cool indoors and check symptoms again later.'
 }
 
 function buildPlanText(suburb, band, pr, timing, refuge, route, factors) {
-  return ['MelbCool Personal Heat Safety Plan', `Suburb: ${suburb.name}`, `Weather: ${suburb.feels}\u00b0C feels-like, UV ${suburb.uv}`, `Personal risk: ${band} (${pr.score})`, `Timing: ${timing.title}. ${timing.text}`, `Cool refuge: ${refuge.name}`, '', 'Action route:', ...route.flatMap(i => [`${i.stage}: ${i.title}`, ...i.points.map(p => `- ${p}`)]), '', 'Key drivers:', ...[...new Set(factors)].slice(0, 10).map(f => `- ${f}`), '', 'Emergency: Call 000 for confusion, fainting, collapse, seizure, or very hot dry skin.'].join('\n')
+  return [
+    'MelbCool Personal Heat Safety Plan',
+    `Suburb: ${suburb.name}`,
+    `Weather: ${suburb.feels}\u00b0C feels-like, UV ${suburb.uv}`,
+    `Personal risk: ${band} (${pr.score})`,
+    `Timing: ${timing.title}. ${timing.text}`,
+    `Cool refuge: ${refuge.name}`,
+    '',
+    'Action route:',
+    ...route.flatMap((i) => [`${i.stage}: ${i.title}`, ...i.points.map((p) => `- ${p}`)]),
+    '',
+    'Key drivers:',
+    ...[...new Set(factors)].slice(0, 10).map((f) => `- ${f}`),
+    '',
+    'Emergency: Call 000 for confusion, fainting, collapse, seizure, or very hot dry skin.',
+  ].join('\n')
 }
 
 async function copyPlan() {
-  try { await navigator.clipboard.writeText(latestPlanText.value); planStatusText.value = 'Plan copied to clipboard.' } catch { planStatusText.value = 'Could not copy automatically.' }
+  try {
+    await navigator.clipboard.writeText(latestPlanText.value)
+    planStatusText.value = 'Plan copied to clipboard.'
+  } catch {
+    planStatusText.value = 'Could not copy automatically.'
+  }
 }
 
 async function sharePlan() {
-  try { if (navigator.share) { await navigator.share({ title: 'MelbCool Safety Plan', text: latestPlanText.value }); return } copyPlan() } catch {}
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'MelbCool Safety Plan', text: latestPlanText.value })
+      return
+    }
+    copyPlan()
+  } catch {}
 }
 
-function savePlan() { localStorage.setItem('melbcool_heat_safety_plan', JSON.stringify({ savedAt: new Date().toISOString(), planText: latestPlanText.value })); planStatusText.value = 'Plan saved on this device.' }
+function savePlan() {
+  localStorage.setItem(
+    'melbcool_heat_safety_plan',
+    JSON.stringify({ savedAt: new Date().toISOString(), planText: latestPlanText.value }),
+  )
+  planStatusText.value = 'Plan saved on this device.'
+}
 
 function printPlan() {
   document.body.classList.add('printing-safety-plan')
@@ -308,18 +801,30 @@ function printPlan() {
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371; const d = ((lat2 - lat1) * Math.PI) / 180; const e = ((lon2 - lon1) * Math.PI) / 180
-  const a = Math.sin(d / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(e / 2) ** 2
+  const R = 6371
+  const d = ((lat2 - lat1) * Math.PI) / 180
+  const e = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(d / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(e / 2) ** 2
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
-function hourLabel(h) { if (h === 0) return '12:00 am'; if (h < 12) return `${h}:00 am`; if (h === 12) return '12:00 pm'; return `${h - 12}:00 pm` }
+function hourLabel(h) {
+  if (h === 0) return '12:00 am'
+  if (h < 12) return `${h}:00 am`
+  if (h === 12) return '12:00 pm'
+  return `${h - 12}:00 pm`
+}
 
-function labelFor(group, value) { return labels[group]?.[value] || value || 'Not answered' }
+function labelFor(group, value) {
+  return labels[group]?.[value] || value || 'Not answered'
+}
 
 function buildFactorChips(suburb, profile, personalRisk) {
   const chips = [...personalRisk.factors]
-  if (profile.outdoorActivity !== 'none') chips.unshift(labelFor('outdoorActivity', profile.outdoorActivity))
+  if (profile.outdoorActivity !== 'none')
+    chips.unshift(labelFor('outdoorActivity', profile.outdoorActivity))
   if (suburb.uv >= 3) chips.unshift(`UV ${suburb.uv}`)
   chips.unshift(`${suburb.feels}\u00b0C feels-like`)
   return chips
@@ -331,7 +836,10 @@ function focusGeneratedPlan() {
     const planEl = document.querySelector('.care-plan')
     if (planEl) {
       const top = planEl.getBoundingClientRect().top + window.scrollY - topbarHeight - 16
-      window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      window.scrollTo({
+        top: Math.max(0, top),
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      })
     }
   })
 }
@@ -342,7 +850,10 @@ function editAnswer(index) {
 }
 
 function pictureFor(type = 'map') {
-  const c = 'viewBox="0 0 96 72" aria-hidden="true" focusable="false"', s = 'stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"', f = 'fill="currentColor"'
+  const c = 'viewBox="0 0 96 72" aria-hidden="true" focusable="false"',
+    s =
+      'stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"',
+    f = 'fill="currentColor"'
   const scenes = {
     map: `<svg ${c}><path ${s} d="M18 54V20l20-8 20 8 20-8v34l-20 8-20-8-20 8Z"/><path ${s} d="M38 12v34M58 20v34"/><circle ${f} cx="48" cy="33" r="6"/></svg>`,
     building: `<svg ${c}><path ${s} d="M22 58V18h24v40M50 58V26h24v32M16 58h64"/><path ${s} d="M31 28h6M31 40h6M59 36h6M59 48h6"/></svg>`,
@@ -372,7 +883,7 @@ function pictureFor(type = 'map') {
     health: `<svg ${c}><path ${s} d="M48 12v48M24 36h48"/><rect ${s} x="20" y="16" width="56" height="40" rx="12"/></svg>`,
     warning: `<svg ${c}><path ${s} d="M48 12 78 60H18L48 12Z"/><path ${s} d="M48 30v12M48 51h.1"/></svg>`,
     emergency: `<svg ${c}><path ${s} d="M48 12v48M24 36h48"/><circle ${s} cx="48" cy="36" r="26"/></svg>`,
-    mobility: `<svg ${c}><circle ${s} cx="41" cy="15" r="7"/><path ${s} d="M41 24l-6 16 15 4 8 14M36 40l-9 18M61 30v28M61 58h8"/></svg>`
+    mobility: `<svg ${c}><circle ${s} cx="41" cy="15" r="7"/><path ${s} d="M41 24l-6 16 15 4 8 14M36 40l-9 18M61 30v28M61 58h8"/></svg>`,
   }
   return scenes[type] || scenes.map
 }
@@ -383,7 +894,7 @@ onMounted(() => {})
 <template>
   <div class="page">
     <NavBar :show-alert-button="false" />
-    
+
     <main class="senior-plan-app">
       <section class="care-hero">
         <div class="care-hero-copy">
@@ -401,7 +912,9 @@ onMounted(() => {})
 
       <section v-if="!planGenerated" class="gentle-wizard">
         <div class="gentle-progress">
-          <button class="wizard-secondary-btn" @click="goBack" :disabled="currentStep === 0">Back</button>
+          <button class="wizard-secondary-btn" @click="goBack" :disabled="currentStep === 0">
+            Back
+          </button>
           <div class="gentle-progress-copy">
             <span>Question {{ stepNumber }} of {{ questions.length }}</span>
             <strong>{{ percent }}%</strong>
@@ -410,7 +923,12 @@ onMounted(() => {})
             <div :style="{ width: percent + '%' }"></div>
           </div>
           <div class="gentle-step-rail">
-            <span v-for="(q, i) in questions" :key="i" class="step-dot" :class="{ active: i === currentStep, done: i < currentStep }">
+            <span
+              v-for="(q, i) in questions"
+              :key="i"
+              class="step-dot"
+              :class="{ active: i === currentStep, done: i < currentStep }"
+            >
               <span>{{ String(i + 1).padStart(2, '0') }}</span>
             </span>
           </div>
@@ -427,15 +945,26 @@ onMounted(() => {})
             <p>{{ currentQuestion.hint }}</p>
             <p class="tap-note">Tap one answer to continue</p>
             <div class="answer-grid picture-answer-grid">
-              <button v-for="opt in questionOptions" :key="opt.value" class="answer-option" :class="{ selected: answers[currentQuestion.id] === opt.value }" @click="selectAnswer(currentQuestion.id, opt.value)">
-                <span class="option-picture" v-html="pictureFor(opt.visual || currentQuestion.visual)"></span>
+              <button
+                v-for="opt in questionOptions"
+                :key="opt.value"
+                class="answer-option"
+                :class="{ selected: answers[currentQuestion.id] === opt.value }"
+                @click="selectAnswer(currentQuestion.id, opt.value)"
+              >
+                <span
+                  class="option-picture"
+                  v-html="pictureFor(opt.visual || currentQuestion.visual)"
+                ></span>
                 <span class="answer-copy">
                   <strong>{{ opt.label }}</strong>
                   <small>{{ opt.detail }}</small>
                 </span>
               </button>
             </div>
-            <button class="wizard-primary-btn hidden-next-btn" @click="goForward">{{ nextBtnText }}</button>
+            <button class="wizard-primary-btn hidden-next-btn" @click="goForward">
+              {{ nextBtnText }}
+            </button>
           </div>
         </section>
       </section>
@@ -460,9 +989,16 @@ onMounted(() => {})
         </section>
 
         <section class="do-first-panel">
-          <div class="dashboard-card-heading"><span>Do first</span><strong>Simple actions</strong></div>
+          <div class="dashboard-card-heading">
+            <span>Do first</span><strong>Simple actions</strong>
+          </div>
           <div class="dashboard-action-grid">
-            <div v-for="(action, i) in planData.actions" :key="i" class="dashboard-action" :class="action.tone">
+            <div
+              v-for="(action, i) in planData.actions"
+              :key="i"
+              class="dashboard-action"
+              :class="action.tone"
+            >
               <span class="action-picture" v-html="pictureFor(action.visual)"></span>
               <strong>{{ action.label }}</strong>
               <small>{{ action.detail }}</small>
@@ -477,23 +1013,39 @@ onMounted(() => {})
             <strong>{{ planData.timing.title }}</strong>
             <p>{{ planData.timing.text }}</p>
             <div class="dashboard-heat-bars">
-              <div v-for="(bar, i) in planData.heatBars" :key="i" class="dashboard-heat-bar" :class="[bar.tone, { peak: bar.isPeak, coolest: bar.isCoolest }]" :style="{ height: bar.height + '%' }"></div>
+              <div
+                v-for="(bar, i) in planData.heatBars"
+                :key="i"
+                class="dashboard-heat-bar"
+                :class="[bar.tone, { peak: bar.isPeak, coolest: bar.isCoolest }]"
+                :style="{ height: bar.height + '%' }"
+              ></div>
             </div>
-            <small>{{ planData.heatBars.find(b => b.isCoolest) ? `Coolest: ${hourLabel(planData.heatBars.find(b => b.isCoolest).hour)} at ${planData.heatBars.find(b => b.isCoolest).temp}\u00b0C` : '' }}</small>
+            <small>{{
+              planData.heatBars.find((b) => b.isCoolest)
+                ? `Coolest: ${hourLabel(planData.heatBars.find((b) => b.isCoolest).hour)} at ${planData.heatBars.find((b) => b.isCoolest).temp}\u00b0C`
+                : ''
+            }}</small>
           </div>
 
           <div class="visual-plan-card refuge-card">
             <span class="plan-card-picture" v-html="pictureFor('refuge')"></span>
             <span>Cool place</span>
             <strong>{{ planData.refuge.name }}</strong>
-            <p>{{ planData.refuge.type }}, {{ planData.refuge.distanceKm.toFixed(1) }} km away. Open {{ planData.refuge.hours }}.</p>
+            <p>
+              {{ planData.refuge.type }}, {{ planData.refuge.distanceKm.toFixed(1) }} km away. Open
+              {{ planData.refuge.hours }}.
+            </p>
           </div>
 
           <div class="visual-plan-card heat-card">
             <span class="plan-card-picture" v-html="pictureFor('sun')"></span>
             <span>Today outside</span>
             <strong>{{ planData.suburb.name }} - {{ planData.band }}</strong>
-            <p>{{ planData.suburb.feels }}℃ feels-like, UV {{ planData.suburb.uv }}, humidity {{ planData.suburb.humidity }}%</p>
+            <p>
+              {{ planData.suburb.feels }}℃ feels-like, UV {{ planData.suburb.uv }}, humidity
+              {{ planData.suburb.humidity }}%
+            </p>
           </div>
         </section>
 
@@ -515,9 +1067,18 @@ onMounted(() => {})
         </section>
 
         <section class="source-panel simple-source-panel">
-          <div class="dashboard-card-heading"><span>Sources</span><strong>Verified advice</strong></div>
+          <div class="dashboard-card-heading">
+            <span>Sources</span><strong>Verified advice</strong>
+          </div>
           <div class="source-chip-grid">
-            <a v-for="src in verifiedSources" :key="src.id" :href="src.url" target="_blank" rel="noreferrer"><strong>{{ src.label }}</strong></a>
+            <a
+              v-for="src in verifiedSources"
+              :key="src.id"
+              :href="src.url"
+              target="_blank"
+              rel="noreferrer"
+              ><strong>{{ src.label }}</strong></a
+            >
           </div>
         </section>
 
@@ -541,13 +1102,16 @@ onMounted(() => {})
         <p class="plan-status">{{ planStatusText }}</p>
       </article>
     </main>
-    
+
     <Footer />
   </div>
 </template>
 
 <style scoped>
-.page { min-height: 100vh; background-color: #f5f5f5; }
+.page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
 
 .senior-plan-app {
   width: min(1180px, calc(100% - 2rem));
@@ -631,7 +1195,7 @@ onMounted(() => {})
 }
 
 .care-house::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 14px;
   top: -32px;
@@ -644,7 +1208,7 @@ onMounted(() => {})
 }
 
 .care-house::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 44px;
   bottom: 0;
@@ -665,7 +1229,7 @@ onMounted(() => {})
 }
 
 .care-tree::before {
-  content: "";
+  content: '';
   position: absolute;
   left: -32px;
   top: -36px;
@@ -718,7 +1282,10 @@ onMounted(() => {})
   font-weight: 600;
 }
 
-.gentle-progress .wizard-secondary-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.gentle-progress .wizard-secondary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .gentle-progress-copy {
   display: flex;
@@ -728,7 +1295,9 @@ onMounted(() => {})
   font-weight: 700;
 }
 
-.gentle-progress-copy strong { color: #0b7f79; }
+.gentle-progress-copy strong {
+  color: #0b7f79;
+}
 
 .gentle-step-rail {
   display: grid;
@@ -756,7 +1325,9 @@ onMounted(() => {})
 }
 
 .gentle-step-rail .step-dot.done span,
-.gentle-step-rail .step-dot.active span { background: #0b7f79; }
+.gentle-step-rail .step-dot.active span {
+  background: #0b7f79;
+}
 
 .gentle-question-card {
   min-height: 620px;
@@ -767,7 +1338,9 @@ onMounted(() => {})
   box-shadow: 0 24px 70px rgba(18, 49, 75, 0.1);
 }
 
-.gentle-question-card .question-kicker { margin-top: 1rem; }
+.gentle-question-card .question-kicker {
+  margin-top: 1rem;
+}
 
 .gentle-question-card .question-kicker span {
   width: 3.2rem;
@@ -856,8 +1429,14 @@ onMounted(() => {})
   font-family: inherit;
 }
 
-.picture-answer-grid .answer-option:hover { border-color: #0b7f79; transform: translateY(-3px); }
-.picture-answer-grid .answer-option.selected { border-color: #3d7b44; background: #f3fbf4; }
+.picture-answer-grid .answer-option:hover {
+  border-color: #0b7f79;
+  transform: translateY(-3px);
+}
+.picture-answer-grid .answer-option.selected {
+  border-color: #3d7b44;
+  background: #f3fbf4;
+}
 
 .option-picture {
   width: 96px;
@@ -869,7 +1448,10 @@ onMounted(() => {})
   color: #0b7f79;
 }
 
-.option-picture :deep(svg) { width: 74px; height: 58px; }
+.option-picture :deep(svg) {
+  width: 74px;
+  height: 58px;
+}
 
 .answer-copy strong {
   margin: 0;
@@ -888,7 +1470,9 @@ onMounted(() => {})
   display: block;
 }
 
-.hidden-next-btn { display: none; }
+.hidden-next-btn {
+  display: none;
+}
 
 .care-plan {
   margin-top: 1.1rem;
@@ -907,8 +1491,15 @@ onMounted(() => {})
   box-shadow: 0 24px 70px rgba(18, 49, 75, 0.1);
 }
 
-.care-plan-hero.moderate { border-color: #f0dec0; background: linear-gradient(135deg, #fff8ed, #fff); }
-.care-plan-hero.high, .care-plan-hero.urgent { border-color: #f0c9be; background: linear-gradient(135deg, #fff2ed, #fff); }
+.care-plan-hero.moderate {
+  border-color: #f0dec0;
+  background: linear-gradient(135deg, #fff8ed, #fff);
+}
+.care-plan-hero.high,
+.care-plan-hero.urgent {
+  border-color: #f0c9be;
+  background: linear-gradient(135deg, #fff2ed, #fff);
+}
 
 .care-plan-picture {
   position: relative;
@@ -940,7 +1531,7 @@ onMounted(() => {})
 }
 
 .plan-person::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 6px;
   top: -28px;
@@ -1005,16 +1596,26 @@ onMounted(() => {})
 }
 
 .care-plan-hero.high .dashboard-score strong,
-.care-plan-hero.urgent .dashboard-score strong { color: #c24735; }
+.care-plan-hero.urgent .dashboard-score strong {
+  color: #c24735;
+}
 
-.do-first-panel, .simple-factor-panel, .simple-source-panel, .simple-emergency-strip, .visual-plan-card, .route-card {
+.do-first-panel,
+.simple-factor-panel,
+.simple-source-panel,
+.simple-emergency-strip,
+.visual-plan-card,
+.route-card {
   border: 1px solid rgba(205, 226, 226, 0.92);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 16px 40px rgba(18, 49, 75, 0.08);
 }
 
-.do-first-panel { margin-top: 1rem; padding: 1rem; }
+.do-first-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+}
 
 .do-first-panel .dashboard-action-grid {
   display: grid;
@@ -1045,13 +1646,29 @@ onMounted(() => {})
   color: #0b7f79;
 }
 
-.action-picture :deep(svg) { width: 76px; height: 58px; }
+.action-picture :deep(svg) {
+  width: 76px;
+  height: 58px;
+}
 
-.dashboard-action.danger .action-picture { background: #fff0ee; color: #c24735; }
-.dashboard-action.warm .action-picture { background: #fff7e7; color: #b56916; }
+.dashboard-action.danger .action-picture {
+  background: #fff0ee;
+  color: #c24735;
+}
+.dashboard-action.warm .action-picture {
+  background: #fff7e7;
+  color: #b56916;
+}
 
-.dashboard-action strong { margin: 0; color: #12314b; font-size: 1.1rem; }
-.dashboard-action small { color: #51677a; font-size: 0.95rem; }
+.dashboard-action strong {
+  margin: 0;
+  color: #12314b;
+  font-size: 1.1rem;
+}
+.dashboard-action small {
+  color: #51677a;
+  font-size: 0.95rem;
+}
 
 .visual-plan-grid {
   display: grid;
@@ -1060,7 +1677,9 @@ onMounted(() => {})
   margin-top: 1rem;
 }
 
-.visual-plan-card { padding: 1rem; }
+.visual-plan-card {
+  padding: 1rem;
+}
 
 .plan-card-picture {
   width: 100%;
@@ -1073,11 +1692,29 @@ onMounted(() => {})
   color: #0b7f79;
 }
 
-.plan-card-picture :deep(svg) { width: 108px; height: 78px; }
+.plan-card-picture :deep(svg) {
+  width: 108px;
+  height: 78px;
+}
 
-.visual-plan-card span { color: #0b625e; font-size: 0.92rem; font-weight: 700; }
-.visual-plan-card strong { display: block; margin-top: 0.22rem; color: #12314b; font-size: 1.35rem; line-height: 1.2; }
-.visual-plan-card p { margin: 0.4rem 0 0; color: #51677a; font-size: 1rem; line-height: 1.35; }
+.visual-plan-card span {
+  color: #0b625e;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.visual-plan-card strong {
+  display: block;
+  margin-top: 0.22rem;
+  color: #12314b;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+.visual-plan-card p {
+  margin: 0.4rem 0 0;
+  color: #51677a;
+  font-size: 1rem;
+  line-height: 1.35;
+}
 
 .time-card .dashboard-heat-bars {
   min-height: 94px;
@@ -1095,12 +1732,26 @@ onMounted(() => {})
   transition: height 0.3s;
 }
 
-.dashboard-heat-bar.warm { background: #d69a44; }
-.dashboard-heat-bar.hot { background: #c24735; }
-.dashboard-heat-bar.peak { box-shadow: 0 0 0 3px rgba(194, 71, 53, 0.13); }
-.dashboard-heat-bar.coolest { box-shadow: 0 0 0 3px rgba(61, 123, 68, 0.13); }
+.dashboard-heat-bar.warm {
+  background: #d69a44;
+}
+.dashboard-heat-bar.hot {
+  background: #c24735;
+}
+.dashboard-heat-bar.peak {
+  box-shadow: 0 0 0 3px rgba(194, 71, 53, 0.13);
+}
+.dashboard-heat-bar.coolest {
+  box-shadow: 0 0 0 3px rgba(61, 123, 68, 0.13);
+}
 
-.time-card small { display: block; margin-top: 0.55rem; color: #40556b; font-size: 0.95rem; font-weight: 700; }
+.time-card small {
+  display: block;
+  margin-top: 0.55rem;
+  color: #40556b;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
 
 .picture-route {
   display: grid;
@@ -1109,7 +1760,10 @@ onMounted(() => {})
   margin-top: 1rem;
 }
 
-.route-card { padding: 1rem; border-left: 5px solid #0b7f79; }
+.route-card {
+  padding: 1rem;
+  border-left: 5px solid #0b7f79;
+}
 
 .route-picture {
   width: 100%;
@@ -1122,67 +1776,255 @@ onMounted(() => {})
   color: #0b7f79;
 }
 
-.route-picture :deep(svg) { width: 86px; height: 64px; }
+.route-picture :deep(svg) {
+  width: 86px;
+  height: 64px;
+}
 
-.route-card span { color: #0b625e; font-size: 0.92rem; font-weight: 700; }
-.route-card strong { display: block; margin-top: 0.25rem; color: #12314b; font-size: 1.08rem; }
-.route-card div { display: inline-flex; margin-top: 0.55rem; padding: 0.35rem 0.7rem; border-radius: 999px; background: #eef7ff; color: #174f8a; font-weight: 700; }
-.route-card p { margin: 0.55rem 0 0; color: #51677a; font-size: 1rem; font-weight: 700; line-height: 1.35; }
+.route-card span {
+  color: #0b625e;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.route-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #12314b;
+  font-size: 1.08rem;
+}
+.route-card div {
+  display: inline-flex;
+  margin-top: 0.55rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #eef7ff;
+  color: #174f8a;
+  font-weight: 700;
+}
+.route-card p {
+  margin: 0.55rem 0 0;
+  color: #51677a;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
 
-.simple-factor-panel, .simple-source-panel { margin-top: 1rem; padding: 1rem; }
+.simple-factor-panel,
+.simple-source-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+}
 
-.dashboard-card-heading { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-.dashboard-card-heading span { color: #0b625e; font-size: 0.92rem; font-weight: 700; }
-.dashboard-card-heading strong { color: #12314b; }
+.dashboard-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.dashboard-card-heading span {
+  color: #0b625e;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.dashboard-card-heading strong {
+  color: #12314b;
+}
 
-.factor-chip-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
-.factor-chip-grid span { min-height: 3.2rem; padding: 0.5rem; border-radius: 18px; background: #eff8f3; font-size: 1rem; display: grid; place-items: center; }
+.factor-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.factor-chip-grid span {
+  min-height: 3.2rem;
+  padding: 0.5rem;
+  border-radius: 18px;
+  background: #eff8f3;
+  font-size: 1rem;
+  display: grid;
+  place-items: center;
+}
 
-.source-chip-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.55rem; }
-.source-chip-grid a { min-height: 3.4rem; padding: 0.7rem; border-radius: 18px; background: #eef7ff; color: #174f8a; text-decoration: none; display: grid; place-items: center; transition: transform 180ms ease, background 180ms ease; }
-.source-chip-grid a:hover { transform: translateY(-1px); background: #dff0ff; }
+.source-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.source-chip-grid a {
+  min-height: 3.4rem;
+  padding: 0.7rem;
+  border-radius: 18px;
+  background: #eef7ff;
+  color: #174f8a;
+  text-decoration: none;
+  display: grid;
+  place-items: center;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+.source-chip-grid a:hover {
+  transform: translateY(-1px);
+  background: #dff0ff;
+}
 
-.emergency-strip { margin-top: 1rem; border-width: 2px; border-color: #e9bbb6; background: #fff2ed; display: flex; justify-content: space-between; align-items: center; padding: 1rem; flex-wrap: wrap; gap: 1rem; }
-.emergency-strip strong { font-size: 1.2rem; color: #c24735; }
-.emergency-strip p { margin: 0.25rem 0 0; font-size: 1.02rem; color: #40556b; }
-.emergency-buttons { display: flex; gap: 0.75rem; }
-.emergency-buttons a { min-height: 3rem; padding: 0.75rem 1.5rem; border-radius: 14px; font-weight: 900; text-decoration: none; transition: transform 180ms ease; display: grid; place-items: center; }
-.emergency-buttons a:first-child { background: #c24735; color: #fff; }
-.emergency-buttons a:last-child { background: #0d3a8f; color: #fff; }
-.emergency-buttons a:hover { transform: translateY(-1px); }
+.emergency-strip {
+  margin-top: 1rem;
+  border-width: 2px;
+  border-color: #e9bbb6;
+  background: #fff2ed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.emergency-strip strong {
+  font-size: 1.2rem;
+  color: #c24735;
+}
+.emergency-strip p {
+  margin: 0.25rem 0 0;
+  font-size: 1.02rem;
+  color: #40556b;
+}
+.emergency-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+.emergency-buttons a {
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: transform 180ms ease;
+  display: grid;
+  place-items: center;
+}
+.emergency-buttons a:first-child {
+  background: #c24735;
+  color: #fff;
+}
+.emergency-buttons a:last-child {
+  background: #0d3a8f;
+  color: #fff;
+}
+.emergency-buttons a:hover {
+  transform: translateY(-1px);
+}
 
-.dashboard-actions { display: flex; justify-content: center; gap: 0.75rem; max-width: 560px; margin: 1rem auto 0; flex-wrap: wrap; }
-.dashboard-actions button { min-height: 3rem; padding: 0.75rem 1.5rem; border-radius: 14px; background: linear-gradient(135deg, #0d3a8f, #0b7f79); color: #fff; font-weight: 900; border: none; cursor: pointer; transition: transform 180ms ease, filter 180ms ease; }
-.dashboard-actions button:hover { transform: translateY(-1px); filter: brightness(0.95); }
+.dashboard-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 560px;
+  margin: 1rem auto 0;
+  flex-wrap: wrap;
+}
+.dashboard-actions button {
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0d3a8f, #0b7f79);
+  color: #fff;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease;
+}
+.dashboard-actions button:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.95);
+}
 
-.plan-status { text-align: center; color: #40556b; font-size: 0.95rem; margin-top: 0.5rem; }
+.plan-status {
+  text-align: center;
+  color: #40556b;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 980px) {
-  .care-hero, .gentle-wizard, .care-plan-hero, .visual-plan-grid, .picture-route { grid-template-columns: 1fr; }
-  .gentle-progress { position: static; }
-  .do-first-panel .dashboard-action-grid, .factor-chip-grid, .source-chip-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .care-plan-hero { display: flex; flex-direction: column; }
-  .care-plan-picture { min-height: 120px; }
+  .care-hero,
+  .gentle-wizard,
+  .care-plan-hero,
+  .visual-plan-grid,
+  .picture-route {
+    grid-template-columns: 1fr;
+  }
+  .gentle-progress {
+    position: static;
+  }
+  .do-first-panel .dashboard-action-grid,
+  .factor-chip-grid,
+  .source-chip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .care-plan-hero {
+    display: flex;
+    flex-direction: column;
+  }
+  .care-plan-picture {
+    min-height: 120px;
+  }
 }
 
 @media (max-width: 640px) {
-  .senior-plan-app { width: 100%; margin: 0; padding: 0.85rem; }
-  .care-hero h2 { font-size: 2.15rem; }
-  .care-hero p { font-size: 1.08rem; }
-  .gentle-question-card h2 { font-size: 1.85rem; }
-  .gentle-question-card { min-height: auto; }
-  .picture-answer-grid, .dashboard-action-grid, .factor-chip-grid, .source-chip-grid, .dashboard-actions { grid-template-columns: 1fr; }
-  .emergency-strip { flex-direction: column; align-items: flex-start; }
-  .care-plan-hero h2 { font-size: 2.8rem; }
+  .senior-plan-app {
+    width: 100%;
+    margin: 0;
+    padding: 0.85rem;
+  }
+  .care-hero h2 {
+    font-size: 2.15rem;
+  }
+  .care-hero p {
+    font-size: 1.08rem;
+  }
+  .gentle-question-card h2 {
+    font-size: 1.85rem;
+  }
+  .gentle-question-card {
+    min-height: auto;
+  }
+  .picture-answer-grid,
+  .dashboard-action-grid,
+  .factor-chip-grid,
+  .source-chip-grid,
+  .dashboard-actions {
+    grid-template-columns: 1fr;
+  }
+  .emergency-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .care-plan-hero h2 {
+    font-size: 2.8rem;
+  }
 }
 </style>

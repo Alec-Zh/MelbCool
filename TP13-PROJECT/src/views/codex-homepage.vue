@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import NavBar from '../components/NavBar1.vue'
+import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
 // import './codex-homepage.css'
 const router = useRouter()
@@ -9,45 +9,56 @@ const router = useRouter()
 // Scroll animation
 onMounted(() => {
   const animEls = document.querySelectorAll('[data-animate]')
-  const animObs = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('is-visible')
-        animObs.unobserve(e.target)
-      }
-    })
-  }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' })
-  animEls.forEach(el => animObs.observe(el))
+  const animObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible')
+          animObs.unobserve(e.target)
+        }
+      })
+    },
+    { threshold: 0.08, rootMargin: '0px 0px -50px 0px' },
+  )
+  animEls.forEach((el) => animObs.observe(el))
 
   // Stagger children
-  document.querySelectorAll('.mh-stagger').forEach(container => {
-    new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return
-        Array.from(e.target.children).forEach((c, i) => setTimeout(() => c.classList.add('is-visible'), i * 130))
-      })
-    }, { threshold: 0.05 }).observe(container)
+  document.querySelectorAll('.mh-stagger').forEach((container) => {
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          Array.from(e.target.children).forEach((c, i) =>
+            setTimeout(() => c.classList.add('is-visible'), i * 130),
+          )
+        })
+      },
+      { threshold: 0.05 },
+    ).observe(container)
   })
 
   // Count-up
-  document.querySelectorAll('.mh-count').forEach(el => {
-    new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return
-        const target = +el.dataset.target
-        let cur = 0
-        const t = setInterval(() => {
-          cur = Math.min(cur + target / 40, target)
-          el.textContent = Math.round(cur)
-          if (cur >= target) clearInterval(t)
-        }, 35)
-      })
-    }, { threshold: 0.5 }).observe(el)
+  document.querySelectorAll('.mh-count').forEach((el) => {
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          const target = +el.dataset.target
+          let cur = 0
+          const t = setInterval(() => {
+            cur = Math.min(cur + target / 40, target)
+            el.textContent = Math.round(cur)
+            if (cur >= target) clearInterval(t)
+          }, 35)
+        })
+      },
+      { threshold: 0.5 },
+    ).observe(el)
   })
 
   // Interactive impact cards
-  document.querySelectorAll('.mh-icard').forEach(card => {
-    card.addEventListener('pointermove', event => {
+  document.querySelectorAll('.mh-icard').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
       const rect = card.getBoundingClientRect()
       card.style.setProperty('--mx', `${event.clientX - rect.left}px`)
       card.style.setProperty('--my', `${event.clientY - rect.top}px`)
@@ -57,7 +68,7 @@ onMounted(() => {
       card.style.removeProperty('--my')
     })
     card.addEventListener('click', () => {
-      document.querySelectorAll('.mh-icard.is-focused').forEach(activeCard => {
+      document.querySelectorAll('.mh-icard.is-focused').forEach((activeCard) => {
         if (activeCard !== card) activeCard.classList.remove('is-focused')
       })
       card.classList.toggle('is-focused')
@@ -67,9 +78,13 @@ onMounted(() => {
   // Navbar compact on scroll
   const nav = document.getElementById('mhNav')
   if (nav) {
-    window.addEventListener('scroll', () => {
-      nav.classList.toggle('mh-nav--scrolled', window.scrollY > 80)
-    }, { passive: true })
+    window.addEventListener(
+      'scroll',
+      () => {
+        nav.classList.toggle('mh-nav--scrolled', window.scrollY > 80)
+      },
+      { passive: true },
+    )
   }
 })
 
@@ -138,11 +153,16 @@ const navigateTo = (path) => {
             <p class="mh-label">For older adults, families, and carers</p>
             <h1>Feel ready for<br /><em>hot Melbourne days.</em></h1>
             <p class="mh-hero-desc">
-              MelbCool is a calm guide for checking heat, finding a cool place, and making a simple plan before the day gets too hot.
+              MelbCool is a calm guide for checking heat, finding a cool place, and making a simple
+              plan before the day gets too hot.
             </p>
             <div class="mh-hero-ctas">
-              <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#">Create My Safety Plan</a>
-              <a class="mh-btn outline" @click.prevent="navigateTo('/cool-refuges')" href="#">Find a Cool Place</a>
+              <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#"
+                >Create My Safety Plan</a
+              >
+              <a class="mh-btn outline" @click.prevent="navigateTo('/cool-refuges')" href="#"
+                >Find a Cool Place</a
+              >
             </div>
             <!-- <div class="mh-welcome-steps" aria-label="How MelbCool helps">
               <div>
@@ -171,9 +191,15 @@ const navigateTo = (path) => {
           </div>
 
           <!-- Right: friendly support card -->
-          <div class="mh-hero-panel mh-welcome-card" aria-label="Welcoming MelbCool support preview">
+          <div
+            class="mh-hero-panel mh-welcome-card"
+            aria-label="Welcoming MelbCool support preview"
+          >
             <div class="mh-welcome-photo">
-              <img src="/assets/generated-home/hero-welcome.png" alt="Older adults and a carer preparing calmly for a hot Melbourne day" />
+              <img
+                src="/assets/generated-home/hero-welcome.png"
+                alt="Older adults and a carer preparing calmly for a hot Melbourne day"
+              />
             </div>
             <div class="mh-care-note">
               <span>Today's gentle reminder</span>
@@ -248,7 +274,11 @@ const navigateTo = (path) => {
           <h2>Why heat hits older adults <em>harder</em></h2>
         </div>
         <div class="mh-impact-grid mh-stagger" data-animate>
-          <div class="mh-icard mh-icard--red mh-icard--age" tabindex="0" aria-label="80 percent of heat hospital stays involve adults over 65">
+          <div
+            class="mh-icard mh-icard--red mh-icard--age"
+            tabindex="0"
+            aria-label="80 percent of heat hospital stays involve adults over 65"
+          >
             <span class="mh-icard-kicker">Hospital stays</span>
             <strong class="mh-icard-num"><span class="mh-count" data-target="80">0</span>%</strong>
             <p class="mh-icard-label">of heat hospital stays involve adults over 65</p>
@@ -261,19 +291,31 @@ const navigateTo = (path) => {
             <span class="mh-viz-note">Hover or tap to spotlight the older-adult share</span>
           </div>
 
-          <div class="mh-icard mh-icard--orange mh-icard--street" tabindex="0" aria-label="Tree shade changes how comfortable a street feels">
+          <div
+            class="mh-icard mh-icard--orange mh-icard--street"
+            tabindex="0"
+            aria-label="Tree shade changes how comfortable a street feels"
+          >
             <span class="mh-icard-kicker">Street heat</span>
             <strong class="mh-icard-num">Shade</strong>
             <p class="mh-icard-label">tree canopy can make outdoor movement feel safer</p>
             <div class="mh-data-visual mh-street-scene" aria-hidden="true">
-              <div class="mh-park-zone"><span>Shaded<br />rest</span><i></i></div>
+              <div class="mh-park-zone">
+                <span>Shaded<br />rest</span><i></i>
+              </div>
               <div class="mh-heat-wave"><span></span><span></span><span></span></div>
-              <div class="mh-street-zone"><span>Exposed<br />street</span><i></i><i></i><i></i></div>
+              <div class="mh-street-zone">
+                <span>Exposed<br />street</span><i></i><i></i><i></i>
+              </div>
             </div>
             <span class="mh-viz-note">Move across the card to compare shade and exposure</span>
           </div>
 
-          <div class="mh-icard mh-icard--blue mh-icard--water" tabindex="0" aria-label="Hydration loss can be twice as fast for seniors during heatwaves">
+          <div
+            class="mh-icard mh-icard--blue mh-icard--water"
+            tabindex="0"
+            aria-label="Hydration loss can be twice as fast for seniors during heatwaves"
+          >
             <span class="mh-icard-kicker">Hydration</span>
             <strong class="mh-icard-num"><span class="mh-count" data-target="2">0</span>×</strong>
             <p class="mh-icard-label">faster hydration loss for seniors during heatwaves</p>
@@ -285,20 +327,26 @@ const navigateTo = (path) => {
             <span class="mh-viz-note">Animated water level shows why reminders matter</span>
           </div>
 
-          <div class="mh-icard mh-icard--teal mh-icard--cooling" tabindex="0" aria-label="Natural cooling ability can reduce by 30 percent with age">
+          <div
+            class="mh-icard mh-icard--teal mh-icard--cooling"
+            tabindex="0"
+            aria-label="Natural cooling ability can reduce by 30 percent with age"
+          >
             <span class="mh-icard-kicker">Cooling ability</span>
             <strong class="mh-icard-num"><span class="mh-count" data-target="30">0</span>%</strong>
-            <p class="mh-icard-label">reduction in the body's natural ability to cool down with age</p>
+            <p class="mh-icard-label">
+              reduction in the body's natural ability to cool down with age
+            </p>
             <div class="mh-data-visual mh-cooling-dial" aria-hidden="true">
               <div class="mh-dial">
                 <span></span>
                 <b>70%</b>
               </div>
-              <div class="mh-cooling-beads">
-                <i></i><i></i><i></i><i></i><i></i>
-              </div>
+              <div class="mh-cooling-beads"><i></i><i></i><i></i><i></i><i></i></div>
             </div>
-            <span class="mh-viz-note">The dial compares younger cooling capacity with senior capacity</span>
+            <span class="mh-viz-note"
+              >The dial compares younger cooling capacity with senior capacity</span
+            >
           </div>
         </div>
       </section>
@@ -312,40 +360,74 @@ const navigateTo = (path) => {
             <div class="mh-section-copy" data-animate="from-left">
               <p class="mh-label">How the tools connect</p>
               <h2>Choose the feature<br /><em>that helps next.</em></h2>
-              <p>The homepage explains the journey. Open the feature pages when you want actual suburb readings, weather conditions, route timing, or a personal plan.</p>
+              <p>
+                The homepage explains the journey. Open the feature pages when you want actual
+                suburb readings, weather conditions, route timing, or a personal plan.
+              </p>
               <div class="mh-copy-stats">
-                <div class="mh-copy-stat">
-                  <strong>60+</strong><span>suburbs tracked</span>
-                </div>
-                <div class="mh-copy-stat">
-                  <strong>5</strong><span>linked safety tools</span>
-                </div>
+                <div class="mh-copy-stat"><strong>60+</strong><span>suburbs tracked</span></div>
+                <div class="mh-copy-stat"><strong>5</strong><span>linked safety tools</span></div>
               </div>
-              <a class="mh-btn primary" @click.prevent="navigateTo('/heatmap')" href="#" style="margin-top:1.75rem">Open Full Heat Map →</a>
+              <a
+                class="mh-btn primary"
+                @click.prevent="navigateTo('/heatmap')"
+                href="#"
+                style="margin-top: 1.75rem"
+                >Open Full Heat Map →</a
+              >
             </div>
 
-            <div class="mh-tool-orbit" data-animate="from-right" aria-label="MelbCool feature flow preview">
-              <div class="mh-tool-rings" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div
+              class="mh-tool-orbit"
+              data-animate="from-right"
+              aria-label="MelbCool feature flow preview"
+            >
+              <div class="mh-tool-rings" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
               <div class="mh-tool-core">
                 <span>MelbCool</span>
                 <strong>Choose next step</strong>
               </div>
-              <a class="mh-tool-node mh-tool-node--map" @click.prevent="navigateTo('/heatmap')" href="#">
+              <a
+                class="mh-tool-node mh-tool-node--map"
+                @click.prevent="navigateTo('/heatmap')"
+                href="#"
+              >
                 <b>01</b><strong>Heat Map</strong><span>Suburb overview</span>
               </a>
-              <a class="mh-tool-node mh-tool-node--refuge" @click.prevent="navigateTo('/cool-refuges')" href="#">
+              <a
+                class="mh-tool-node mh-tool-node--refuge"
+                @click.prevent="navigateTo('/cool-refuges')"
+                href="#"
+              >
                 <b>02</b><strong>Cool Refuges</strong><span>Nearby places</span>
               </a>
-              <a class="mh-tool-node mh-tool-node--trip" @click.prevent="navigateTo('/trip-coach')" href="#">
+              <a
+                class="mh-tool-node mh-tool-node--trip"
+                @click.prevent="navigateTo('/trip-coach')"
+                href="#"
+              >
                 <b>03</b><strong>Trip Coach</strong><span>Safer movement</span>
               </a>
-              <a class="mh-tool-node mh-tool-node--clothes" @click.prevent="navigateTo('/clothing')" href="#">
+              <a
+                class="mh-tool-node mh-tool-node--clothes"
+                @click.prevent="navigateTo('/clothing')"
+                href="#"
+              >
                 <b>04</b><strong>Clothing Advisor</strong><span>Outfit support</span>
               </a>
-              <a class="mh-tool-node mh-tool-node--plan" @click.prevent="navigateTo('/safety-plan')" href="#">
+              <a
+                class="mh-tool-node mh-tool-node--plan"
+                @click.prevent="navigateTo('/safety-plan')"
+                href="#"
+              >
                 <b>05</b><strong>Safety Plan</strong><span>Personal steps</span>
               </a>
-              <div class="mh-tool-note">Feature previews only. Open each tool for real suburb, weather, and personal recommendations.</div>
+              <div class="mh-tool-note">
+                Feature previews only. Open each tool for real suburb, weather, and personal
+                recommendations.
+              </div>
             </div>
           </div>
         </div>
@@ -397,72 +479,81 @@ const navigateTo = (path) => {
       </section> -->
 
       <section class="mh-timing" aria-label="Hourly heat pattern">
-      <div class="mh-timing-inner">
-        <div class="mh-timing-head" data-animate>
-          <div>
-            <p class="mh-label light">Time your trips right</p>
-            <h2>When is it<br /><em>safe to go out?</em></h2>
-            <p>Melbourne heat peaks between 10am and 4pm. Trip Coach tells you exactly when conditions are safer for your specific suburb and route.</p>
+        <div class="mh-timing-inner">
+          <div class="mh-timing-head" data-animate>
+            <div>
+              <p class="mh-label light">Time your trips right</p>
+              <h2>When is it<br /><em>safe to go out?</em></h2>
+              <p>
+                Melbourne heat peaks between 10am and 4pm. Trip Coach tells you exactly when
+                conditions are safer for your specific suburb and route.
+              </p>
+            </div>
+            <a class="mh-btn outline" href="trip-coach">Plan My Trip →</a>
           </div>
-          <a class="mh-btn outline" href="trip-coach">Plan My Trip →</a>
-        </div>
 
-        <div class="mh-hourly mh-hourly-chart" data-animate>
-          <div class="mh-best-window" aria-label="Best window to go out">✓ Best window to go out</div>
-          <!-- Animated sun cursor sweeps across the chart -->
-          <div class="mh-sun-cursor" aria-hidden="true">
-            <i class="fa-solid fa-sun mh-sun-icon"></i>
-            <div class="mh-sun-line"></div>
-          </div>
-          <div class="mh-hourly-bars" role="img" aria-label="Example heat pattern on a hot Melbourne day">
-            <div class="mh-hbar-group" style="--col:#22c55e;--h:26%;--d:0.0s">
-              <span class="mh-hbar-temp">22°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">6am</span>
+          <div class="mh-hourly mh-hourly-chart" data-animate>
+            <div class="mh-best-window" aria-label="Best window to go out">
+              ✓ Best window to go out
             </div>
-            <div class="mh-hbar-group" style="--col:#4ade80;--h:34%;--d:0.1s">
-              <span class="mh-hbar-temp">25°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">8am</span>
+            <!-- Animated sun cursor sweeps across the chart -->
+            <div class="mh-sun-cursor" aria-hidden="true">
+              <i class="fa-solid fa-sun mh-sun-icon"></i>
+              <div class="mh-sun-line"></div>
             </div>
-            <div class="mh-hbar-group" style="--col:#fbbf24;--h:50%;--d:0.2s">
-              <span class="mh-hbar-temp">30°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">10am</span>
+            <div
+              class="mh-hourly-bars"
+              role="img"
+              aria-label="Example heat pattern on a hot Melbourne day"
+            >
+              <div class="mh-hbar-group" style="--col: #22c55e; --h: 26%; --d: 0s">
+                <span class="mh-hbar-temp">22°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">6am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #4ade80; --h: 34%; --d: 0.1s">
+                <span class="mh-hbar-temp">25°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">8am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #fbbf24; --h: 50%; --d: 0.2s">
+                <span class="mh-hbar-temp">30°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">10am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #f97316; --h: 65%; --d: 0.3s">
+                <span class="mh-hbar-temp">34°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">12pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #ef4444; --h: 90%; --d: 0.4s">
+                <span class="mh-hbar-temp">38°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">2pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #ef4444; --h: 82%; --d: 0.5s">
+                <span class="mh-hbar-temp">37°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">4pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #f97316; --h: 56%; --d: 0.6s">
+                <span class="mh-hbar-temp">32°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">6pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #84cc16; --h: 38%; --d: 0.7s">
+                <span class="mh-hbar-temp">27°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">8pm</span>
+              </div>
             </div>
-            <div class="mh-hbar-group" style="--col:#f97316;--h:65%;--d:0.3s">
-              <span class="mh-hbar-temp">34°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">12pm</span>
+            <div class="mh-timing-legend">
+              <span style="color: #4ade80">● Safe — before 9am or after 7pm</span>
+              <span style="color: #fbbf24">● Caution — 9am–11am</span>
+              <span style="color: #ef4444">● Danger — 11am–6pm peak heat</span>
             </div>
-            <div class="mh-hbar-group" style="--col:#ef4444;--h:90%;--d:0.4s">
-              <span class="mh-hbar-temp">38°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">2pm</span>
-            </div>
-            <div class="mh-hbar-group" style="--col:#ef4444;--h:82%;--d:0.5s">
-              <span class="mh-hbar-temp">37°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">4pm</span>
-            </div>
-            <div class="mh-hbar-group" style="--col:#f97316;--h:56%;--d:0.6s">
-              <span class="mh-hbar-temp">32°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">6pm</span>
-            </div>
-            <div class="mh-hbar-group" style="--col:#84cc16;--h:38%;--d:0.7s">
-              <span class="mh-hbar-temp">27°</span>
-              <div class="mh-hbar-fill"></div>
-              <span class="mh-hbar-hour">8pm</span>
-            </div>
-          </div>
-          <div class="mh-timing-legend">
-            <span style="color:#4ade80">● Safe — before 9am or after 7pm</span>
-            <span style="color:#fbbf24">● Caution — 9am–11am</span>
-            <span style="color:#ef4444">● Danger — 11am–6pm peak heat</span>
           </div>
         </div>
-      </div>
       </section>
 
       <!-- ══════════════════════════════════════════
@@ -474,49 +565,65 @@ const navigateTo = (path) => {
         <div class="mh-feature-inner">
           <div class="mh-feature-visual" data-animate="from-left">
             <img src="/assets/original/reli2.png" alt="Melbourne suburb heat map" loading="lazy" />
-            <div class="mh-feature-img-tag">
-              <span class="mh-pulse-dot"></span> Feature preview
-            </div>
+            <div class="mh-feature-img-tag"><span class="mh-pulse-dot"></span> Feature preview</div>
           </div>
           <div class="mh-feature-copy" data-animate="from-right">
             <span class="mh-feature-num">01</span>
             <p class="mh-label">Heat Map</p>
             <h2>Explore suburb heat patterns clearly.</h2>
-            <p>The Heat Map page is where users open the real suburb view. The homepage only explains what the map helps them compare.</p>
+            <p>
+              The Heat Map page is where users open the real suburb view. The homepage only explains
+              what the map helps them compare.
+            </p>
             <div class="mh-simple-risk" aria-label="Heat Map feature preview">
               <div class="mh-risk-row">
-                <span class="mh-risk-dot" style="background:#0d9488"></span>
+                <span class="mh-risk-dot" style="background: #0d9488"></span>
                 <span class="mh-risk-name">Suburb comparison</span>
-                <span class="mh-risk-level" style="color:#0f766e;background:#ecfdf5">Map</span>
+                <span class="mh-risk-level" style="color: #0f766e; background: #ecfdf5">Map</span>
               </div>
               <div class="mh-risk-row">
-                <span class="mh-risk-dot" style="background:#65a30d"></span>
+                <span class="mh-risk-dot" style="background: #65a30d"></span>
                 <span class="mh-risk-name">Tree canopy context</span>
-                <span class="mh-risk-level" style="color:#65a30d;background:#f7fee7">Shade</span>
+                <span class="mh-risk-level" style="color: #65a30d; background: #f7fee7">Shade</span>
               </div>
               <div class="mh-risk-row">
-                <span class="mh-risk-dot" style="background:#2563eb"></span>
+                <span class="mh-risk-dot" style="background: #2563eb"></span>
                 <span class="mh-risk-name">Older-adult support</span>
-                <span class="mh-risk-level" style="color:#2563eb;background:#eff6ff">Care</span>
+                <span class="mh-risk-level" style="color: #2563eb; background: #eff6ff">Care</span>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/heatmap')" href="#">Open Heat Map →</a>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/heatmap')" href="#"
+              >Open Heat Map →</a
+            >
           </div>
         </div>
       </section>
 
       <!-- 5B — Cool Refuges (alt bg, flipped) -->
-      <section class="mh-feature mh-feature--alt mh-feature--flip" id="feat-refuges" aria-label="Cool Refuges tool">
+      <section
+        class="mh-feature mh-feature--alt mh-feature--flip"
+        id="feat-refuges"
+        aria-label="Cool Refuges tool"
+      >
         <div class="mh-feature-inner">
           <div class="mh-feature-visual" data-animate="from-right">
-            <img src="/assets/generated-home/cool-refuge.png" alt="Welcoming cool indoor refuge for older adults" loading="lazy" />
-            <div class="mh-feature-img-tag" style="background:rgba(14,116,144,0.9)">❄️ Air conditioned</div>
+            <img
+              src="/assets/generated-home/cool-refuge.png"
+              alt="Welcoming cool indoor refuge for older adults"
+              loading="lazy"
+            />
+            <div class="mh-feature-img-tag" style="background: rgba(14, 116, 144, 0.9)">
+              ❄️ Air conditioned
+            </div>
           </div>
           <div class="mh-feature-copy" data-animate="from-left">
             <span class="mh-feature-num">02</span>
             <p class="mh-label">Cool Refuges</p>
             <h2>Find your nearest cool space in seconds.</h2>
-            <p>Libraries, community hubs, shopping centres, parks, and museums — every type of public cooling space, mapped, filtered, and ranked by how close and how accessible they are.</p>
+            <p>
+              Libraries, community hubs, shopping centres, parks, and museums — every type of public
+              cooling space, mapped, filtered, and ranked by how close and how accessible they are.
+            </p>
             <div class="mh-refuge-list" aria-label="Example cool refuges">
               <div class="mh-refuge-row">
                 <img src="/assets/generated-home/cool-refuge.png" alt="" />
@@ -540,7 +647,9 @@ const navigateTo = (path) => {
                 </div>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/cool-refuges')" href="#">Find Cool Refuges →</a>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/cool-refuges')" href="#"
+              >Find Cool Refuges →</a
+            >
           </div>
         </div>
       </section>
@@ -549,13 +658,21 @@ const navigateTo = (path) => {
       <section class="mh-feature" id="feat-trip" aria-label="Trip Coach tool">
         <div class="mh-feature-inner">
           <div class="mh-feature-visual" data-animate="from-left">
-            <img src="/assets/generated-home/trip-coach.png" alt="Older adult and carer planning a shaded route" loading="lazy" />
+            <img
+              src="/assets/generated-home/trip-coach.png"
+              alt="Older adult and carer planning a shaded route"
+              loading="lazy"
+            />
           </div>
           <div class="mh-feature-copy" data-animate="from-right">
             <span class="mh-feature-num">03</span>
             <p class="mh-label">Trip Coach</p>
             <h2>Leave at the right moment, every time.</h2>
-            <p>Your trip is broken into legs — walk, wait, ride, arrive. Each leg gets an exposure score based on shade, transport type, and the time of day. Trip Coach tells you when and how to travel with the least heat exposure.</p>
+            <p>
+              Your trip is broken into legs — walk, wait, ride, arrive. Each leg gets an exposure
+              score based on shade, transport type, and the time of day. Trip Coach tells you when
+              and how to travel with the least heat exposure.
+            </p>
             <div class="mh-time-blocks" aria-label="Safe and unsafe travel windows">
               <div class="mh-time-block mh-time-block--safe">
                 <span class="mh-time-icon">🌅</span>
@@ -579,22 +696,35 @@ const navigateTo = (path) => {
                 </div>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/trip-coach')" href="#">Plan My Trip →</a>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/trip-coach')" href="#"
+              >Plan My Trip →</a
+            >
           </div>
         </div>
       </section>
 
       <!-- 5D — Clothing Advisor (alt, flipped) -->
-      <section class="mh-feature mh-feature--alt mh-feature--flip" id="feat-clothing" aria-label="Clothing Advisor tool">
+      <section
+        class="mh-feature mh-feature--alt mh-feature--flip"
+        id="feat-clothing"
+        aria-label="Clothing Advisor tool"
+      >
         <div class="mh-feature-inner">
           <div class="mh-feature-visual" data-animate="from-right">
-            <img src="/assets/generated-home/clothing-advisor.png" alt="Older adult choosing lightweight heat-safe clothing" loading="lazy" />
+            <img
+              src="/assets/generated-home/clothing-advisor.png"
+              alt="Older adult choosing lightweight heat-safe clothing"
+              loading="lazy"
+            />
           </div>
           <div class="mh-feature-copy" data-animate="from-left">
             <span class="mh-feature-num">04</span>
             <p class="mh-label">Clothing Advisor</p>
             <h2>Dressed right for the day you are planning.</h2>
-            <p>The Clothing Advisor page uses the actual conditions. The homepage only shows the kind of choices it helps older adults make.</p>
+            <p>
+              The Clothing Advisor page uses the actual conditions. The homepage only shows the kind
+              of choices it helps older adults make.
+            </p>
             <div class="mh-clothing-check" aria-label="Clothing checklist preview">
               <p class="mh-clothing-header">Preview · clothing choices</p>
               <div class="mh-check-row">
@@ -614,7 +744,9 @@ const navigateTo = (path) => {
                 <span>Dark, synthetic, or tight-fitting layers</span>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/clothing')" href="#">Get Recommendations →</a>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/clothing')" href="#"
+              >Get Recommendations →</a
+            >
           </div>
         </div>
       </section>
@@ -623,14 +755,31 @@ const navigateTo = (path) => {
       <section class="mh-feature mh-feature--dark" id="feat-plan" aria-label="Safety Plan tool">
         <div class="mh-feature-inner">
           <div class="mh-feature-visual" data-animate="from-left">
-            <img src="/assets/generated-home/safety-plan.png" alt="Older adult and carer reviewing a personal heat safety plan" loading="lazy" />
-            <div class="mh-feature-img-tag" style="background:rgba(163,247,125,0.18);color:#a3f77d;border:1px solid rgba(163,247,125,0.3)">📋 Printable plan</div>
+            <img
+              src="/assets/generated-home/safety-plan.png"
+              alt="Older adult and carer reviewing a personal heat safety plan"
+              loading="lazy"
+            />
+            <div
+              class="mh-feature-img-tag"
+              style="
+                background: rgba(163, 247, 125, 0.18);
+                color: #a3f77d;
+                border: 1px solid rgba(163, 247, 125, 0.3);
+              "
+            >
+              📋 Printable plan
+            </div>
           </div>
           <div class="mh-feature-copy mh-feature-copy--light" data-animate="from-right">
-            <span class="mh-feature-num" style="color:rgba(163,247,125,0.6)">05</span>
+            <span class="mh-feature-num" style="color: rgba(163, 247, 125, 0.6)">05</span>
             <p class="mh-label">Personal Safety Plan</p>
             <h2>6 questions.<br />One personalised plan.</h2>
-            <p>Answer 6 simple questions about your suburb, health, and daily routine. Get a calm, clear plan with your risk level, safest time window, nearest cool refuge, and emergency contacts — all printable.</p>
+            <p>
+              Answer 6 simple questions about your suburb, health, and daily routine. Get a calm,
+              clear plan with your risk level, safest time window, nearest cool refuge, and
+              emergency contacts — all printable.
+            </p>
             <div class="mh-plan-flow" aria-label="Plan creation steps">
               <div class="mh-plan-step">
                 <span class="mh-plan-step-num">1</span>
@@ -647,7 +796,9 @@ const navigateTo = (path) => {
                 <span>Your plan</span>
               </div>
             </div>
-            <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#">Create My Plan →</a>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#"
+              >Create My Plan →</a
+            >
           </div>
         </div>
       </section>
@@ -818,182 +969,228 @@ const navigateTo = (path) => {
         </div>
       </section> -->
 
-          <!-- ══════════════════════════════════════════
+      <!-- ══════════════════════════════════════════
          6. TRANSPORT RISK
     ══════════════════════════════════════════ -->
-    <section class="mh-transport" aria-label="Transport heat exposure">
-      <div class="mh-transport-inner">
-        <div class="mh-section-center" data-animate>
-          <p class="mh-label light">Getting around on hot days</p>
-          <h2>How you travel<br /><em>changes your risk.</em></h2>
-          <p>On a 38°C day, the same 20-minute journey carries very different heat exposure depending on how you get there.</p>
+      <section class="mh-transport" aria-label="Transport heat exposure">
+        <div class="mh-transport-inner">
+          <div class="mh-section-center" data-animate>
+            <p class="mh-label light">Getting around on hot days</p>
+            <h2>How you travel<br /><em>changes your risk.</em></h2>
+            <p>
+              On a 38°C day, the same 20-minute journey carries very different heat exposure
+              depending on how you get there.
+            </p>
+          </div>
+          <div class="mh-transport-grid mh-stagger">
+            <!-- Walking — heat haze effect -->
+            <div class="mh-tcard mh-tcard--walk">
+              <div class="mh-heat-haze" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mh-tcard-top" style="background: rgba(239, 68, 68, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--red mh-ticon--bounce">
+                  <i class="fa-solid fa-person-walking"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #dc2626; background: rgba(220, 38, 38, 0.12)"
+                  >High Risk</span
+                >
+              </div>
+              <h3>Walking</h3>
+              <p>
+                Direct sun, no shelter, maximum heat absorption. The highest-exposure option during
+                extreme heat — avoid between 10am and 5pm.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">8 of 10 · High exposure</span>
+            </div>
+            <div class="mh-tcard mh-tcard--featured">
+              <div class="mh-tcard-top" style="background: rgba(234, 88, 12, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--orange mh-ticon--sway">
+                  <i class="fa-solid fa-train-subway"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #c2410c; background: rgba(194, 65, 12, 0.12)"
+                  >Moderate</span
+                >
+              </div>
+              <h3>Tram / Bus</h3>
+              <p>
+                Air-conditioned cabin significantly reduces exposure, but outdoor waiting time adds
+                risk. Plan around a shaded stop and travel mid-trip.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">5 of 10 · Moderate exposure</span>
+            </div>
+            <div class="mh-tcard">
+              <div class="mh-tcard-top" style="background: rgba(34, 197, 94, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--teal mh-ticon--drive">
+                  <i class="fa-solid fa-car-side"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #16a34a; background: rgba(22, 163, 74, 0.12)"
+                  >Low Risk</span
+                >
+              </div>
+              <h3>Driving</h3>
+              <p>
+                Air-conditioned, door-to-door — the lowest-exposure option during extreme heat. Park
+                in shade and pre-cool the car before elderly passengers board.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">3 of 10 · Low exposure</span>
+            </div>
+          </div>
+          <p class="mh-transport-note">
+            Trip Coach calculates exposure for your specific route, time, and transport mode.
+            &nbsp;<a href="trip-coach.html">Plan my trip →</a>
+          </p>
         </div>
-        <div class="mh-transport-grid mh-stagger">
-          <!-- Walking — heat haze effect -->
-          <div class="mh-tcard mh-tcard--walk">
-            <div class="mh-heat-haze" aria-hidden="true">
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div class="mh-tcard-top" style="background:rgba(239,68,68,0.12)">
-              <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--red mh-ticon--bounce">
-                <i class="fa-solid fa-person-walking"></i>
-              </div>
-              <span class="mh-tbadge" style="color:#dc2626;background:rgba(220,38,38,0.12)">High Risk</span>
-            </div>
-            <h3>Walking</h3>
-            <p>Direct sun, no shelter, maximum heat absorption. The highest-exposure option during extreme heat — avoid between 10am and 5pm.</p>
-            <div class="mh-tcard-dots">
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ef4444"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-            </div>
-            <span class="mh-tcard-score">8 of 10 · High exposure</span>
-          </div>
-          <div class="mh-tcard mh-tcard--featured">
-            <div class="mh-tcard-top" style="background:rgba(234,88,12,0.12)">
-              <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--orange mh-ticon--sway">
-                <i class="fa-solid fa-train-subway"></i>
-              </div>
-              <span class="mh-tbadge" style="color:#c2410c;background:rgba(194,65,12,0.12)">Moderate</span>
-            </div>
-            <h3>Tram / Bus</h3>
-            <p>Air-conditioned cabin significantly reduces exposure, but outdoor waiting time adds risk. Plan around a shaded stop and travel mid-trip.</p>
-            <div class="mh-tcard-dots">
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ea580c"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ea580c"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ea580c"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ea580c"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#ea580c"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-            </div>
-            <span class="mh-tcard-score">5 of 10 · Moderate exposure</span>
-          </div>
-          <div class="mh-tcard">
-            <div class="mh-tcard-top" style="background:rgba(34,197,94,0.12)">
-              <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--teal mh-ticon--drive">
-                <i class="fa-solid fa-car-side"></i>
-              </div>
-              <span class="mh-tbadge" style="color:#16a34a;background:rgba(22,163,74,0.12)">Low Risk</span>
-            </div>
-            <h3>Driving</h3>
-            <p>Air-conditioned, door-to-door — the lowest-exposure option during extreme heat. Park in shade and pre-cool the car before elderly passengers board.</p>
-            <div class="mh-tcard-dots">
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#22c55e"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#22c55e"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc:#22c55e"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-              <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
-            </div>
-            <span class="mh-tcard-score">3 of 10 · Low exposure</span>
-          </div>
-        </div>
-        <p class="mh-transport-note">
-          Trip Coach calculates exposure for your specific route, time, and transport mode. &nbsp;<a href="trip-coach.html">Plan my trip →</a>
-        </p>
-      </div>
-    </section>
+      </section>
 
-    <!-- ══════════════════════════════════════════
+      <!-- ══════════════════════════════════════════
          7. RISK FACTORS — editorial horizontal cards
     ══════════════════════════════════════════ -->
-    <section class="mh-risk" aria-label="How heat risk is calculated">
-      <div class="mh-risk-inner">
-        <div class="mh-risk-lead" data-animate>
-          <p class="mh-label">Evidence-based</p>
-          <h2>Three factors.<br />One clear risk score.</h2>
-          <p>Every suburb's risk score is calculated from three real-world data sources updated throughout the day.</p>
+      <section class="mh-risk" aria-label="How heat risk is calculated">
+        <div class="mh-risk-inner">
+          <div class="mh-risk-lead" data-animate>
+            <p class="mh-label">Evidence-based</p>
+            <h2>Three factors.<br />One clear risk score.</h2>
+            <p>
+              Every suburb's risk score is calculated from three real-world data sources updated
+              throughout the day.
+            </p>
+          </div>
+
+          <div class="mh-factors">
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img
+                  src="/assets/original/temperature.png"
+                  alt="Temperature gauge"
+                  loading="lazy"
+                />
+                <div class="mh-factor-num-overlay">01</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #ef4444"></div>
+                <div class="mh-factor-tag" style="color: #dc2626; background: #fef2f2">
+                  Temperature
+                </div>
+                <h3>Apparent temperature</h3>
+                <p>
+                  Accounts for humidity and wind chill, not just the air reading. Inner Melbourne
+                  regularly hits 36–40°C apparent on extreme summer days — significantly more
+                  dangerous than the official maximum.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>0°C</span><span>20°C</span><span>30°C</span><span>40°C+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 88%; --col: #ef4444"></div>
+                  </div>
+                  <p class="mh-factor-caption">36–40°C is the peak risk zone for older adults</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor mh-factor--flip" data-animate>
+              <div class="mh-factor-img">
+                <img
+                  src="/assets/original/tree.jpg"
+                  alt="Tree canopy providing shade"
+                  loading="lazy"
+                />
+                <div class="mh-factor-num-overlay">02</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #16a34a"></div>
+                <div class="mh-factor-tag" style="color: #15803d; background: #f0fdf4">
+                  Tree Coverage
+                </div>
+                <h3>Canopy cover percentage</h3>
+                <p>
+                  Suburbs with less than 15% tree canopy can feel 5–7°C hotter at street level.
+                  Shade is the single most effective passive cooling factor — MelbCool uses
+                  satellite-derived canopy maps updated quarterly.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>0%</span><span>15%</span><span>30%</span><span>50%+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 62%; --col: #16a34a"></div>
+                  </div>
+                  <p class="mh-factor-caption">Under 15% canopy cover raises risk significantly</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img src="/assets/original/uv.jpg" alt="UV sun rays" loading="lazy" />
+                <div class="mh-factor-num-overlay">03</div>
+                <div class="mh-uv-spin" aria-hidden="true">
+                  <i class="fa-solid fa-sun"></i>
+                </div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #7c3aed"></div>
+                <div class="mh-factor-tag" style="color: #6d28d9; background: #f5f3ff">
+                  UV Index
+                </div>
+                <h3>Ultraviolet radiation level</h3>
+                <p>
+                  UV above 3 accelerates skin damage and compounds heat illness risk. Melbourne UV
+                  regularly peaks at 10–12 in summer, even on overcast days. Older skin burns faster
+                  and sweats less efficiently.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>UV 0</span><span>UV 3</span><span>UV 7</span><span>UV 11+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 76%; --col: #7c3aed"></div>
+                  </div>
+                  <p class="mh-factor-caption">UV 3+ triggers sun-protection requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="mh-factors">
-
-          <div class="mh-factor" data-animate>
-            <div class="mh-factor-img">
-              <img src="/assets/original/temperature.png" alt="Temperature gauge" loading="lazy" />
-              <div class="mh-factor-num-overlay">01</div>
-            </div>
-            <div class="mh-factor-body">
-              <div class="mh-factor-accent" style="--accent:#ef4444"></div>
-              <div class="mh-factor-tag" style="color:#dc2626;background:#fef2f2">Temperature</div>
-              <h3>Apparent temperature</h3>
-              <p>Accounts for humidity and wind chill, not just the air reading. Inner Melbourne regularly hits 36–40°C apparent on extreme summer days — significantly more dangerous than the official maximum.</p>
-              <div class="mh-factor-bar-wrap">
-                <div class="mh-factor-bar-labels">
-                  <span>0°C</span><span>20°C</span><span>30°C</span><span>40°C+</span>
-                </div>
-                <div class="mh-factor-track">
-                  <div class="mh-factor-fill" style="--pct:88%;--col:#ef4444"></div>
-                </div>
-                <p class="mh-factor-caption">36–40°C is the peak risk zone for older adults</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mh-factor mh-factor--flip" data-animate>
-            <div class="mh-factor-img">
-              <img src="/assets/original/tree.jpg" alt="Tree canopy providing shade" loading="lazy" />
-              <div class="mh-factor-num-overlay">02</div>
-            </div>
-            <div class="mh-factor-body">
-              <div class="mh-factor-accent" style="--accent:#16a34a"></div>
-              <div class="mh-factor-tag" style="color:#15803d;background:#f0fdf4">Tree Coverage</div>
-              <h3>Canopy cover percentage</h3>
-              <p>Suburbs with less than 15% tree canopy can feel 5–7°C hotter at street level. Shade is the single most effective passive cooling factor — MelbCool uses satellite-derived canopy maps updated quarterly.</p>
-              <div class="mh-factor-bar-wrap">
-                <div class="mh-factor-bar-labels">
-                  <span>0%</span><span>15%</span><span>30%</span><span>50%+</span>
-                </div>
-                <div class="mh-factor-track">
-                  <div class="mh-factor-fill" style="--pct:62%;--col:#16a34a"></div>
-                </div>
-                <p class="mh-factor-caption">Under 15% canopy cover raises risk significantly</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mh-factor" data-animate>
-            <div class="mh-factor-img">
-              <img src="/assets/original/uv.jpg" alt="UV sun rays" loading="lazy" />
-              <div class="mh-factor-num-overlay">03</div>
-              <div class="mh-uv-spin" aria-hidden="true">
-                <i class="fa-solid fa-sun"></i>
-              </div>
-            </div>
-            <div class="mh-factor-body">
-              <div class="mh-factor-accent" style="--accent:#7c3aed"></div>
-              <div class="mh-factor-tag" style="color:#6d28d9;background:#f5f3ff">UV Index</div>
-              <h3>Ultraviolet radiation level</h3>
-              <p>UV above 3 accelerates skin damage and compounds heat illness risk. Melbourne UV regularly peaks at 10–12 in summer, even on overcast days. Older skin burns faster and sweats less efficiently.</p>
-              <div class="mh-factor-bar-wrap">
-                <div class="mh-factor-bar-labels">
-                  <span>UV 0</span><span>UV 3</span><span>UV 7</span><span>UV 11+</span>
-                </div>
-                <div class="mh-factor-track">
-                  <div class="mh-factor-fill" style="--pct:76%;--col:#7c3aed"></div>
-                </div>
-                <p class="mh-factor-caption">UV 3+ triggers sun-protection requirements</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
+      </section>
 
       <!-- ══════════════════════════════════════════
            8. TIPS — with images
@@ -1096,4 +1293,3 @@ const navigateTo = (path) => {
     <Footer />
   </div>
 </template>
-

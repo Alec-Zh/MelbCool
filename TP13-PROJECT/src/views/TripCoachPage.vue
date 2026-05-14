@@ -700,16 +700,11 @@ function handleSelectAlt(params) {
 }
 
 .col-left {
-  position: sticky;
-  top: 76px;
-  max-height: calc(100vh - 96px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #ddd transparent;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding-bottom: 1rem;
+  align-self: start;
 }
 
 .summary-card {

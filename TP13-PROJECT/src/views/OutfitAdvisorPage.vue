@@ -75,6 +75,7 @@ const ALL_ITEMS = [
     heatAdj: -1.5,
     layer: 'lh',
     uvOnly: false,
+    slot: 'head',
   },
   {
     id: 'shirt',
@@ -92,6 +93,7 @@ const ALL_ITEMS = [
     heatAdj: -1.5,
     layer: 'ls',
     uvOnly: false,
+    slot: 'top',
   },
   {
     id: 'pants',
@@ -109,6 +111,7 @@ const ALL_ITEMS = [
     heatAdj: -1.0,
     layer: 'lp',
     uvOnly: false,
+    slot: 'bottom',
   },
   {
     id: 'sg',
@@ -124,6 +127,7 @@ const ALL_ITEMS = [
     heatAdj: -0.3,
     layer: 'lsg',
     uvOnly: true,
+    slot: null,
   },
   {
     id: 'water',
@@ -139,6 +143,7 @@ const ALL_ITEMS = [
     heatAdj: -0.8,
     layer: 'lw',
     uvOnly: false,
+    slot: null,
   },
   {
     id: 'sc',
@@ -154,6 +159,7 @@ const ALL_ITEMS = [
     heatAdj: -0.3,
     layer: 'lsc',
     uvOnly: true,
+    slot: null,
   },
   {
     id: 'warmjacket',
@@ -167,6 +173,7 @@ const ALL_ITEMS = [
     heatAdj: 1.5,
     layer: 'lj',
     uvOnly: false,
+    slot: 'top',
   },
   {
     id: 'jacket',
@@ -184,6 +191,7 @@ const ALL_ITEMS = [
     heatAdj: 3.5,
     layer: 'lj',
     uvOnly: false,
+    slot: 'top',
   },
   {
     id: 'dshirt',
@@ -201,6 +209,254 @@ const ALL_ITEMS = [
     heatAdj: 2.5,
     layer: 'ld',
     uvOnly: false,
+    slot: 'top',
+  },
+  {
+    id: 'longsleeve',
+    name: 'Light long-sleeve shirt',
+    icon: '🩱',
+    modes: { cool: 'good', mild: 'good' },
+    effect: {
+      cool: 'Adds warmth while keeping a breathable layer',
+      mild: 'Good coverage without overheating on a mild day',
+    },
+    explanation: {},
+    heatAdj: -0.5,
+    layer: 'llongsleeve',
+    uvOnly: false,
+    slot: 'top',
+  },
+  {
+    id: 'scarf',
+    name: 'Light scarf',
+    icon: '🧣',
+    modes: { cool: 'good' },
+    effect: {
+      cool: 'Protects the neck and face from cold wind',
+    },
+    explanation: {},
+    heatAdj: -0.8,
+    layer: 'lscarf',
+    uvOnly: false,
+    slot: null,
+  },
+  {
+    id: 'cap',
+    name: 'Baseball cap',
+    icon: '🧢',
+    modes: { hot: 'good', mild: 'good' },
+    effect: {
+      hot: 'Shields face from direct sun — lighter option than a wide-brim hat',
+      mild: 'Good sun cover for longer outdoor time on a mild day',
+    },
+    explanation: {},
+    heatAdj: -0.8,
+    layer: 'lcap',
+    uvOnly: true,
+    slot: 'head',
+  },
+  {
+    id: 'umbrella',
+    name: 'Sun umbrella',
+    icon: '☂️',
+    modes: { hot: 'good', mild: 'good' },
+    effect: {
+      hot: 'Creates portable shade — one of the most effective ways to reduce heat exposure',
+      mild: 'Useful if you\'ll be standing or walking in sun for a while',
+    },
+    explanation: {},
+    heatAdj: -1.2,
+    layer: 'lumbrella',
+    uvOnly: false,
+    slot: null,
+  },
+  {
+    id: 'flipflops',
+    name: 'Flip flops',
+    icon: '🩴',
+    modes: { hot: 'bad', mild: 'bad' },
+    effect: {
+      hot: 'No foot support and pavement can reach 60°C+ in direct sun',
+      mild: 'Minimal protection and unstable for longer walks',
+    },
+    explanation: {
+      hot: 'Flip flops offer no arch support and expose feet to extreme pavement heat.',
+      mild: 'Better to choose a shoe with grip and support for walking comfort.',
+    },
+    heatAdj: 0.5,
+    layer: 'lflipflops',
+    uvOnly: false,
+    slot: 'footwear',
+  },
+  {
+    id: 'hoodie',
+    name: 'Synthetic hoodie',
+    icon: '🧥',
+    modes: { cool: 'good', mild: 'bad', hot: 'bad' },
+    effect: {
+      cool: 'Warm and comfortable for cool conditions',
+      mild: 'Synthetic fabric traps warmth unnecessarily on a mild day',
+      hot: 'Synthetic layers trap heat and reduce sweat evaporation — dangerous today',
+    },
+    explanation: {
+      mild: 'Synthetic fabric blocks airflow and holds body heat longer than needed.',
+      hot: 'Hoodies in heat significantly raise body temperature and risk of heat stress.',
+    },
+    heatAdj: 2.0,
+    layer: 'lhoodie',
+    uvOnly: false,
+    slot: 'top',
+  },
+  {
+    id: 'jeans',
+    name: 'Tight dark jeans',
+    icon: '👖',
+    modes: { hot: 'bad', mild: 'bad' },
+    effect: {
+      hot: 'Dark tight fabric traps heat around the legs — very uncomfortable in the sun',
+      mild: 'Tight dark jeans absorb more heat than needed for today\'s temperature',
+    },
+    explanation: {
+      hot: 'Denim is heavy and non-breathable; dark colour absorbs sunlight significantly.',
+      mild: 'Looser or lighter fabric will be more comfortable and cooler.',
+    },
+    heatAdj: 1.2,
+    layer: 'ljeans',
+    uvOnly: false,
+    slot: 'bottom',
+  },
+  {
+    id: 'shorts',
+    name: 'Loose light shorts',
+    icon: '🩳',
+    modes: { hot: 'good', mild: 'good' },
+    effect: {
+      hot: 'Good airflow around the legs — pair with sunscreen for exposed skin',
+      mild: 'Comfortable in mild weather if you prefer them',
+    },
+    explanation: {},
+    heatAdj: -0.5,
+    layer: 'lshorts',
+    uvOnly: false,
+    slot: 'bottom',
+  },
+  {
+    id: 'runners',
+    name: 'Breathable runners',
+    icon: '👟',
+    modes: { cool: 'good', mild: 'good', hot: 'good' },
+    effect: {
+      cool: 'Supportive and comfortable for walking in cool conditions',
+      mild: 'Good support and breathability for a mild day walk',
+      hot: 'Breathable mesh keeps feet cooler than heavy footwear',
+    },
+    explanation: {},
+    heatAdj: -0.3,
+    layer: 'lrunners',
+    uvOnly: false,
+    slot: 'footwear',
+  },
+  {
+    id: 'sandals',
+    name: 'Supportive sandals',
+    icon: '🥿',
+    modes: { hot: 'good', mild: 'good' },
+    effect: {
+      hot: 'Open footwear keeps feet cooler — choose ones with arch support',
+      mild: 'Comfortable and breathable for shorter trips in mild weather',
+    },
+    explanation: {},
+    heatAdj: -0.4,
+    layer: 'lsandals',
+    uvOnly: false,
+    slot: 'footwear',
+  },
+  {
+    id: 'vest',
+    name: 'Light puffer vest',
+    icon: '🦺',
+    modes: { cool: 'good', mild: 'good' },
+    effect: {
+      cool: 'Adds core warmth without restricting arm movement',
+      mild: 'Lightweight layer for changeable weather — easy to carry',
+    },
+    explanation: {},
+    heatAdj: -0.6,
+    layer: 'lvest',
+    uvOnly: false,
+    slot: 'top',
+  },
+  {
+    id: 'linen',
+    name: 'Linen trousers',
+    icon: '👒',
+    modes: { hot: 'good', mild: 'good' },
+    effect: {
+      hot: 'Loose linen breathes well and protects legs from direct sun',
+      mild: 'Comfortable coverage without heat penalty in mild conditions',
+    },
+    explanation: {},
+    heatAdj: -0.7,
+    layer: 'llinen',
+    uvOnly: false,
+    slot: 'bottom',
+  },
+  {
+    id: 'coolingpatch',
+    name: 'Cooling neck patch',
+    icon: '🧊',
+    modes: { hot: 'good' },
+    effect: {
+      hot: 'Cooling patch on the neck reduces perceived heat significantly during outdoor activity',
+    },
+    explanation: {},
+    heatAdj: -1.0,
+    layer: 'lcoolingpatch',
+    uvOnly: false,
+    slot: null,
+  },
+  {
+    id: 'gloves',
+    name: 'Light gloves',
+    icon: '🧤',
+    modes: { cool: 'good' },
+    effect: {
+      cool: 'Protects hands from cold — important for older adults who feel the cold more',
+    },
+    explanation: {},
+    heatAdj: -0.5,
+    layer: 'lgloves',
+    uvOnly: false,
+    slot: null,
+  },
+  {
+    id: 'thermals',
+    name: 'Thermal base layer',
+    icon: '🥼',
+    modes: { cool: 'good' },
+    effect: {
+      cool: 'Traps body heat close to the skin — effective base layer in cold conditions',
+    },
+    explanation: {},
+    heatAdj: -1.0,
+    layer: 'lthermals',
+    uvOnly: false,
+    slot: 'top',
+  },
+  {
+    id: 'raincoat',
+    name: 'Light raincoat',
+    icon: '🌂',
+    modes: { cool: 'good', mild: 'good' },
+    effect: {
+      cool: 'Wind and rain protection without too much bulk in cool weather',
+      mild: 'Useful for unexpected showers — choose breathable fabric',
+    },
+    explanation: {},
+    heatAdj: 0.3,
+    layer: 'lraincoat',
+    uvOnly: false,
+    slot: 'top',
   },
 ]
 
@@ -219,16 +475,55 @@ const activeItems = computed(() => {
   }))
 })
 
-const goodItems = computed(() => activeItems.value.filter((i) => i.category === 'good'))
-const badItems = computed(() => activeItems.value.filter((i) => i.category === 'bad'))
+// ── Grouped items for all-items view ─────────────────────────────────────────
+const GROUPS = [
+  { key: 'head',      label: 'Head & Sun Protection', ids: ['hat', 'cap', 'sg', 'sc'] },
+  { key: 'top',       label: 'Top',                   ids: ['shirt', 'longsleeve', 'vest', 'warmjacket', 'jacket', 'hoodie', 'dshirt'] },
+  { key: 'bottom',    label: 'Bottom',                ids: ['pants', 'linen', 'shorts', 'jeans'] },
+  { key: 'footwear',  label: 'Footwear',              ids: ['runners', 'sandals', 'flipflops'] },
+  { key: 'accessory', label: 'Accessories',           ids: ['water', 'umbrella', 'coolingpatch', 'scarf', 'gloves', 'thermals', 'raincoat'] },
+]
+
+const groupedItems = computed(() => {
+  const mode = climateMode.value
+  return GROUPS.map((group) => ({
+    ...group,
+    items: group.ids
+      .map((id) => {
+        const raw = ALL_ITEMS.find((i) => i.id === id)
+        if (!raw) return null
+        if (raw.uvOnly && !uvHigh.value) return null
+        const cat = raw.modes[mode]
+        const fallbackMode = Object.keys(raw.modes)[0]
+        const displayMode = cat ? mode : fallbackMode
+        return {
+          ...raw,
+          category: cat ?? raw.modes[fallbackMode],
+          effect: raw.effect[displayMode] ?? Object.values(raw.effect)[0],
+          explanation: raw.explanation[displayMode] ?? null,
+          notForToday: !cat,
+        }
+      })
+      .filter(Boolean),
+  })).filter((g) => g.items.length > 0)
+})
 
 // ── Selection state (AC 4.2.3) ───────────────────────────────────────────────
 const selectedItems = ref(new Set())
 
 function toggleItem(id) {
   const next = new Set(selectedItems.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    const item = ALL_ITEMS.find((i) => i.id === id)
+    if (item?.slot) {
+      ALL_ITEMS.forEach((other) => {
+        if (other.slot === item.slot && other.id !== id) next.delete(other.id)
+      })
+    }
+    next.add(id)
+  }
   selectedItems.value = next
 }
 
@@ -398,7 +693,7 @@ const adviceItems = computed(() => {
   <div class="page">
     <NavBar />
 
-    <main class="content">
+    <div class="content">
       <!-- Page header -->
       <div class="page-header card">
         <h1 class="page-title">Outfit <span class="page-title-accent">Advisor</span></h1>
@@ -599,6 +894,127 @@ const adviceItems = computed(() => {
                   </text>
                   <rect x="24" y="128" width="9" height="2" rx="1" fill="white" opacity=".35" />
                 </g>
+                <!-- Cap -->
+                <g :style="{ display: isSelected('cap') ? '' : 'none' }">
+                  <ellipse cx="80" cy="32" rx="30" ry="7" fill="#e05a2b" />
+                  <rect x="59" y="20" width="42" height="18" rx="4" fill="#f07040" />
+                  <rect x="82" y="25" width="22" height="5" rx="2" fill="#c04020" />
+                  <rect x="59" y="32" width="42" height="4" fill="#c04020" />
+                </g>
+                <!-- Scarf -->
+                <g :style="{ display: isSelected('scarf') ? '' : 'none' }">
+                  <rect x="62" y="72" width="36" height="14" rx="6" fill="#c0392b" />
+                  <rect x="72" y="82" width="10" height="22" rx="4" fill="#c0392b" />
+                  <line x1="65" y1="76" x2="95" y2="76" stroke="#a93226" stroke-width="1.5" />
+                  <line x1="65" y1="80" x2="95" y2="80" stroke="#a93226" stroke-width="1.5" />
+                </g>
+                <!-- Long sleeve shirt -->
+                <g :style="{ display: isSelected('longsleeve') && !isSelected('jacket') && !isSelected('warmjacket') && !isSelected('hoodie') && !isSelected('raincoat') ? '' : 'none' }">
+                  <rect x="25" y="88" width="25" height="65" rx="9" fill="#7cb9a8" />
+                  <rect x="110" y="88" width="25" height="65" rx="9" fill="#7cb9a8" />
+                  <rect x="48" y="85" width="64" height="74" rx="9" fill="#7cb9a8" />
+                  <polygon points="80,85 68,106 92,106" fill="#5a9a8a" />
+                  <line x1="80" y1="106" x2="80" y2="158" stroke="#5a9a8a" stroke-width="2" />
+                </g>
+                <!-- Vest -->
+                <g :style="{ display: isSelected('vest') && !isSelected('jacket') && !isSelected('warmjacket') && !isSelected('hoodie') && !isSelected('raincoat') ? '' : 'none' }">
+                  <rect x="50" y="85" width="60" height="74" rx="9" fill="#8B6914" />
+                  <polygon points="80,85 68,106 92,106" fill="#6B4F10" />
+                  <line x1="80" y1="106" x2="80" y2="158" stroke="#6B4F10" stroke-width="2" />
+                  <rect x="51" y="86" width="6" height="72" rx="3" fill="#A07820" opacity=".4" />
+                </g>
+                <!-- Thermals -->
+                <g :style="{ display: isSelected('thermals') && !isSelected('jacket') && !isSelected('warmjacket') && !isSelected('hoodie') && !isSelected('raincoat') && !isSelected('shirt') && !isSelected('longsleeve') && !isSelected('vest') && !isSelected('dshirt') ? '' : 'none' }">
+                  <rect x="30" y="90" width="20" height="60" rx="8" fill="#dce8f5" />
+                  <rect x="110" y="90" width="20" height="60" rx="8" fill="#dce8f5" />
+                  <rect x="50" y="87" width="60" height="72" rx="8" fill="#dce8f5" />
+                  <line x1="80" y1="90" x2="80" y2="158" stroke="#b0c8e0" stroke-width="1.5" />
+                </g>
+                <!-- Hoodie -->
+                <g :style="{ display: isSelected('hoodie') && !isSelected('jacket') && !isSelected('warmjacket') ? '' : 'none' }">
+                  <rect x="21" y="85" width="30" height="70" rx="10" fill="#555" />
+                  <rect x="109" y="85" width="30" height="70" rx="10" fill="#555" />
+                  <rect x="44" y="82" width="72" height="80" rx="10" fill="#555" />
+                  <ellipse cx="80" cy="84" rx="16" ry="10" fill="#444" />
+                  <rect x="72" y="78" width="16" height="12" rx="5" fill="#444" />
+                  <rect x="68" y="118" width="24" height="14" rx="7" fill="#4a4a4a" />
+                  <line x1="80" y1="100" x2="80" y2="160" stroke="#444" stroke-width="2" />
+                </g>
+                <!-- Raincoat -->
+                <g :style="{ display: isSelected('raincoat') && !isSelected('jacket') && !isSelected('warmjacket') ? '' : 'none' }">
+                  <rect x="21" y="85" width="30" height="70" rx="10" fill="#e8c022" />
+                  <rect x="109" y="85" width="30" height="70" rx="10" fill="#e8c022" />
+                  <rect x="44" y="82" width="72" height="80" rx="10" fill="#e8c022" />
+                  <polygon points="80,82 62,110 80,118" fill="#c8a018" />
+                  <polygon points="80,82 98,110 80,118" fill="#c8a018" />
+                  <line x1="80" y1="118" x2="80" y2="162" stroke="#c8a018" stroke-width="2.5" />
+                </g>
+                <!-- Shorts -->
+                <g :style="{ display: isSelected('shorts') ? '' : 'none' }">
+                  <rect x="48" y="152" width="64" height="9" rx="3" fill="#4a7fc1" />
+                  <rect x="48" y="158" width="30" height="44" rx="9" fill="#5a8fd1" />
+                  <rect x="82" y="158" width="30" height="44" rx="9" fill="#5a8fd1" />
+                  <line x1="80" y1="158" x2="80" y2="200" stroke="#4a7fc1" stroke-width="1.5" />
+                </g>
+                <!-- Jeans -->
+                <g :style="{ display: isSelected('jeans') ? '' : 'none' }">
+                  <rect x="48" y="152" width="64" height="9" rx="3" fill="#2c3e6b" />
+                  <rect x="48" y="158" width="30" height="80" rx="9" fill="#2c4a8b" />
+                  <rect x="82" y="158" width="30" height="80" rx="9" fill="#2c4a8b" />
+                  <line x1="61" y1="165" x2="61" y2="235" stroke="#1e3060" stroke-width="1.5" stroke-dasharray="3,3" />
+                  <line x1="99" y1="165" x2="99" y2="235" stroke="#1e3060" stroke-width="1.5" stroke-dasharray="3,3" />
+                </g>
+                <!-- Linen trousers -->
+                <g :style="{ display: isSelected('linen') ? '' : 'none' }">
+                  <rect x="48" y="152" width="64" height="9" rx="3" fill="#c8b89a" />
+                  <rect x="48" y="158" width="30" height="80" rx="9" fill="#d8c8aa" />
+                  <rect x="82" y="158" width="30" height="80" rx="9" fill="#d8c8aa" />
+                  <line x1="80" y1="160" x2="80" y2="235" stroke="#b8a88a" stroke-width="1.5" />
+                </g>
+                <!-- Runners -->
+                <g :style="{ display: isSelected('runners') ? '' : 'none' }">
+                  <rect x="46" y="232" width="32" height="12" rx="5" fill="#e8e8e8" />
+                  <rect x="46" y="235" width="32" height="6" rx="3" fill="#4d9e5a" />
+                  <rect x="80" y="232" width="32" height="12" rx="5" fill="#e8e8e8" />
+                  <rect x="80" y="235" width="32" height="6" rx="3" fill="#4d9e5a" />
+                  <line x1="52" y1="234" x2="72" y2="234" stroke="#aaa" stroke-width="1" />
+                  <line x1="86" y1="234" x2="106" y2="234" stroke="#aaa" stroke-width="1" />
+                </g>
+                <!-- Sandals -->
+                <g :style="{ display: isSelected('sandals') ? '' : 'none' }">
+                  <rect x="46" y="238" width="32" height="6" rx="3" fill="#c8a060" />
+                  <rect x="52" y="232" width="20" height="4" rx="2" fill="#a07840" />
+                  <rect x="80" y="238" width="32" height="6" rx="3" fill="#c8a060" />
+                  <rect x="86" y="232" width="20" height="4" rx="2" fill="#a07840" />
+                </g>
+                <!-- Flip flops -->
+                <g :style="{ display: isSelected('flipflops') ? '' : 'none' }">
+                  <rect x="44" y="238" width="34" height="6" rx="3" fill="#e05a2b" />
+                  <path d="M58 238 Q62 230 66 238" stroke="#c04020" stroke-width="2" fill="none" />
+                  <rect x="78" y="238" width="34" height="6" rx="3" fill="#e05a2b" />
+                  <path d="M92 238 Q96 230 100 238" stroke="#c04020" stroke-width="2" fill="none" />
+                </g>
+                <!-- Gloves -->
+                <g :style="{ display: isSelected('gloves') ? '' : 'none' }">
+                  <ellipse cx="36" cy="148" rx="12" ry="10" fill="#8B4513" />
+                  <ellipse cx="124" cy="148" rx="12" ry="10" fill="#8B4513" />
+                  <rect x="26" y="140" width="20" height="12" rx="5" fill="#9B5523" />
+                  <rect x="114" y="140" width="20" height="12" rx="5" fill="#9B5523" />
+                </g>
+                <!-- Umbrella -->
+                <g :style="{ display: isSelected('umbrella') ? '' : 'none' }">
+                  <line x1="130" y1="70" x2="130" y2="170" stroke="#555" stroke-width="2.5" stroke-linecap="round" />
+                  <path d="M105 70 Q130 40 155 70" fill="#e05a2b" opacity=".9" />
+                  <path d="M105 70 Q117 60 130 70" fill="#c04020" opacity=".5" />
+                  <path d="M130 70 Q143 60 155 70" fill="#c04020" opacity=".5" />
+                  <path d="M128 168 Q128 175 122 175" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round" />
+                </g>
+                <!-- Cooling patch -->
+                <g :style="{ display: isSelected('coolingpatch') ? '' : 'none' }">
+                  <rect x="68" y="76" width="24" height="10" rx="4" fill="#a0d8ef" />
+                  <rect x="70" y="78" width="20" height="6" rx="3" fill="#70b8df" opacity=".7" />
+                  <text x="80" y="84" text-anchor="middle" font-size="4" fill="#2060a0" font-family="sans-serif" font-weight="bold">COOL</text>
+                </g>
               </svg>
 
               <!-- Heat exposure score display -->
@@ -629,30 +1045,29 @@ const adviceItems = computed(() => {
           </div>
           <!-- end left-col -->
 
-          <!-- Item list (AC 4.1.1, 4.3.1, 4.3.2, 4.3.3) -->
+          <!-- Item list — grouped by category -->
           <div class="items-col">
-            <!-- Good choices section (AC 4.3.1) -->
-            <p class="section-label section-label--good">Good choices</p>
-            <div class="items-list">
-              <OutfitItemCard
-                v-for="item in goodItems"
-                :key="item.id"
-                :item="item"
-                :selected="isSelected(item.id)"
-                @toggle="toggleItem"
-              />
+            <!-- Based on banner -->
+            <div class="basis-row">
+              <p class="recommendation-basis">
+                Based on
+                <span class="basis-tag">{{ climateMode }} weather</span>
+                <span v-if="uvHigh"> · <span class="basis-tag">UV {{ Math.round(selectedSuburb?.uv_index ?? 0) }}</span></span>
+                <span v-else> · <span class="basis-tag basis-tag--muted">UV not a factor</span></span>
+              </p>
             </div>
 
-            <!-- Avoid today section (AC 4.3.1) -->
-            <p class="section-label section-label--bad">Avoid today</p>
-            <div class="items-list">
-              <OutfitItemCard
-                v-for="item in badItems"
-                :key="item.id"
-                :item="item"
-                :selected="isSelected(item.id)"
-                @toggle="toggleItem"
-              />
+            <div v-for="group in groupedItems" :key="group.key" class="item-group">
+              <p class="section-label section-label--group">{{ group.label }}</p>
+              <div class="items-list">
+                <OutfitItemCard
+                  v-for="item in group.items"
+                  :key="item.id"
+                  :item="item"
+                  :selected="isSelected(item.id)"
+                  @toggle="toggleItem"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -709,7 +1124,7 @@ const adviceItems = computed(() => {
           </RouterLink>
         </div>
       </template>
-    </main>
+    </div>
 
     <Footer />
   </div>
@@ -725,9 +1140,16 @@ const adviceItems = computed(() => {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 1.25rem 1.5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: block;
+}
+
+.content > * + * {
+  margin-top: 1rem;
+}
+
+/* main-grid needs block context for sticky to work */
+.main-grid-wrap {
+  display: block;
 }
 
 .card {
@@ -843,17 +1265,27 @@ const adviceItems = computed(() => {
 /* Main grid */
 .main-grid {
   display: grid;
-  grid-template-columns: 156px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
+  align-self: stretch;
 }
 
-/* Left column — mannequin only */
+/* Left column — sticky so mannequin stays visible while scrolling items */
 .left-col {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: sticky;
+  top: 80px;
   align-self: start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.left-col::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mannequin column */
@@ -925,7 +1357,7 @@ const adviceItems = computed(() => {
 
 .mannequin-svg {
   width: 100%;
-  max-width: 120px;
+  max-width: 190px;
 }
 
 /* Score display */
@@ -999,6 +1431,38 @@ const adviceItems = computed(() => {
   gap: 6px;
 }
 
+
+/* Based on row */
+.basis-row {
+  margin-bottom: 4px;
+}
+
+.recommendation-basis {
+  font-size: 13px;
+  color: #9e9890;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.basis-tag {
+  background: #f4faf8;
+  border: 1px solid #d8eae6;
+  color: #2d7a3a;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+
+.basis-tag--muted {
+  color: #9e9890;
+  background: #f5f5f5;
+  border-color: #e5e5e5;
+}
+
 /* Navigation links at bottom of items-col */
 .nav-links {
   display: flex;
@@ -1055,13 +1519,15 @@ const adviceItems = computed(() => {
   padding-top: 4px;
 }
 
-.section-label--good {
-  color: #2d7a3a;
+.section-label--group {
+  color: #185FA5;
+  margin-top: 8px;
 }
 
-.section-label--bad {
-  color: #c0392b;
-  margin-top: 6px;
+.item-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .items-list {

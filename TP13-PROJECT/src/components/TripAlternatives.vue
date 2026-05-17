@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue'
+
 defineProps({
   alternatives: { type: Array, required: true },
   baseScore: { type: Number, required: true },
@@ -6,192 +8,167 @@ defineProps({
 
 const emit = defineEmits(['select-alt'])
 
-function pctLabel(pct) {
-  return pct < 0 ? `↓ ${Math.abs(pct)}% safer` : `↑ ${Math.abs(pct)}% riskier`
-}
-function pctClass(pct) {
-  return pct < 0 ? 'safer' : 'worse'
+const expanded = ref(null)
+
+function toggle(i) {
+  expanded.value = expanded.value === i ? null : i
 }
 
-function miniWidths(legs) {
-  const total = legs.reduce((s, l) => s + l.score, 0) || 1
-  return legs.map((l) => Math.round((l.score / total) * 100))
+function pctLabel(pct) {
+  return pct < 0 ? `${Math.abs(pct)}% safer` : `${Math.abs(pct)}% riskier`
 }
 </script>
 
 <template>
-  <div class="section">
-    <h2 class="section-title">Could you make this trip safer?</h2>
-    <p class="subtitle">Here are some options that would lower your heat exposure.</p>
+  <div class="alts-section card">
+    <p class="alts-heading">💡 Could this trip be safer?</p>
 
-    <div class="alt-list">
-      <div
+    <div class="alt-pills">
+      <button
         v-for="(alt, i) in alternatives"
         :key="i"
-        class="alt-card"
-        :style="{ borderLeft: `4px solid ${alt.riskColor}` }"
+        class="alt-pill"
+        :class="{ active: expanded === i, safer: alt.pctChange < 0, riskier: alt.pctChange >= 0 }"
+        @click="toggle(i)"
       >
-        <div class="alt-header">
-          <div class="alt-rank">#{{ i + 1 }}</div>
-          <div class="alt-title">{{ alt.title }}</div>
-          <div class="pct-pill" :class="pctClass(alt.pctChange)">
-            {{ pctLabel(alt.pctChange) }}
-          </div>
-        </div>
-
-        <div class="alt-score-row">
-          <span class="alt-score" :style="{ color: alt.riskColor }">
-            {{ alt.score }}<span class="out-of"> / 100</span>
-          </span>
-          <span class="alt-badge" :style="{ background: alt.riskColor }"
-            >{{ alt.riskLabel }} Risk</span
-          >
-        </div>
-
-        <div class="mini-bar">
-          <div
-            v-for="(leg, j) in alt.legs"
-            :key="j"
-            class="mini-seg"
-            :style="{ width: miniWidths(alt.legs)[j] + '%', background: leg.color }"
-            :title="`${leg.label}: ${leg.score}`"
-          />
-        </div>
-
-        <p class="alt-explanation">{{ alt.explanation }}</p>
-
-        <button class="alt-action" @click="emit('select-alt', alt.params)">
-          {{ alt.action }}
-        </button>
-      </div>
+        <span class="pill-title">{{ alt.title }}</span>
+        <span class="pill-badge" :class="alt.pctChange < 0 ? 'badge-safer' : 'badge-riskier'">{{
+          pctLabel(alt.pctChange)
+        }}</span>
+      </button>
     </div>
+
+    <transition name="expand">
+      <div v-if="expanded !== null" class="alt-detail">
+        <p class="alt-detail-text">{{ alternatives[expanded].explanation }}</p>
+        <div class="alt-detail-footer">
+          <span class="alt-detail-score" :style="{ color: alternatives[expanded].riskColor }">
+            Score {{ alternatives[expanded].score }}/100 ·
+            <strong>{{ alternatives[expanded].riskLabel }} Risk</strong>
+          </span>
+          <button class="alt-action" @click="emit('select-alt', alternatives[expanded].params)">
+            {{ alternatives[expanded].action }} →
+          </button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.alts-section {
+  padding: 1.1rem 1.25rem;
 }
-.section-title {
-  font-size: 1.05rem;
+.alts-heading {
+  font-size: 0.82rem;
   font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 0.2rem;
+  color: #5a6e6a;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 0.75rem;
 }
-.subtitle {
-  font-size: 0.88rem;
-  color: #888;
-  margin: 0;
-}
-.alt-list {
+.alt-pills {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 
-.alt-card {
-  background: #fff;
+.alt-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.65rem 1rem;
   border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  border: 2px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  text-align: left;
+}
+.alt-pill:hover,
+.alt-pill.active {
+  border-color: #2d7a3a;
+  background: #f5fdf6;
+}
+.alt-pill.active {
+  box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.15);
+}
+
+.pill-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1c2e2a;
+}
+
+.pill-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+}
+.badge-safer {
+  background: #eef6f1;
+  color: #2d7a3a;
+}
+.badge-riskier {
+  background: #f5f5f5;
+  color: #888;
+}
+.alt-detail {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e8f0ee;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
-.alt-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.alt-rank {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #888;
-  background: #f0f0f0;
-  border-radius: 20px;
-  padding: 0.15rem 0.5rem;
-}
-.alt-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #1a1a1a;
-  flex: 1;
-}
-.pct-pill {
-  font-size: 0.82rem;
-  font-weight: 700;
-  padding: 0.2rem 0.65rem;
-  border-radius: 20px;
-  white-space: nowrap;
-}
-.pct-pill.safer {
-  background: #eef6f1;
-  color: #4a7c59;
-}
-.pct-pill.worse {
-  background: #fdecea;
-  color: #d9534f;
-}
-
-.alt-score-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.alt-score {
-  font-size: 1.9rem;
-  font-weight: 800;
-  line-height: 1;
-}
-.out-of {
+.alt-detail-text {
   font-size: 0.9rem;
-  font-weight: 500;
-  color: #888;
-}
-.alt-badge {
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: 700;
-  padding: 0.3rem 0.75rem;
-  border-radius: 20px;
-}
-.mini-bar {
-  display: flex;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  gap: 2px;
-}
-.mini-seg {
-  border-radius: 3px;
-  transition: width 0.4s ease;
-}
-
-.alt-explanation {
-  font-size: 0.9rem;
-  color: #444;
+  color: #3a4e4a;
   line-height: 1.6;
   margin: 0;
 }
+.alt-detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.alt-detail-score {
+  font-size: 0.88rem;
+}
 .alt-action {
-  align-self: flex-start;
   background: none;
-  border: 2px solid var(--color-primary, #1a6eb5);
-  color: var(--color-primary, #1a6eb5);
+  border: 2px solid currentColor;
   border-radius: 8px;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
+  color: #2d7a3a;
   transition:
-    background 0.2s,
-    color 0.2s;
+    background 0.15s,
+    color 0.15s;
 }
 .alt-action:hover {
-  background: var(--color-primary, #1a6eb5);
+  background: #2d7a3a;
   color: #fff;
+}
+.expand-enter-active,
+.expand-leave-active {
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

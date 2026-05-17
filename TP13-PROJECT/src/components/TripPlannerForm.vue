@@ -50,7 +50,7 @@ function clearSuburb() {
   dropdownOpen.value = false
 }
 
-// ── Transport options ─────────────────────────────────────────────────────────
+// ── Transport ─────────────────────────────────────────────────────────────────
 const transportOptions = [
   { value: 'walk', label: 'Walk', icon: '🚶' },
   { value: 'tram', label: 'Tram', icon: '🚃' },
@@ -58,9 +58,13 @@ const transportOptions = [
   { value: 'drive', label: 'Drive', icon: '🚗' },
 ]
 
-// ── Duration options ──────────────────────────────────────────────────────────
+// ── Duration stepper ──────────────────────────────────────────────────────────
+function stepDuration(delta) {
+  const next = Math.min(120, Math.max(5, props.durationMins + delta))
+  emit('update:durationMins', next)
+}
 
-// ── Time slider ───────────────────────────────────────────────────────────────
+// ── Departure time ────────────────────────────────────────────────────────────
 const sliderMin = 540
 const sliderMax = 1200
 const sliderStep = 10
@@ -80,13 +84,18 @@ const sliderFill = computed(
   () => ((props.departureMinutes - sliderMin) / (sliderMax - sliderMin)) * 100,
 )
 
+const timePresets = [
+  { label: 'Morning', sublabel: '9:00 am', mins: 540, icon: '🌅' },
+  { label: 'Midday', sublabel: '12:00 pm', mins: 720, icon: '☀️' },
+  { label: 'Afternoon', sublabel: '3:00 pm', mins: 900, icon: '🌤' },
+  { label: 'Evening', sublabel: '5:00 pm', mins: 1020, icon: '🌇' },
+]
+
 const sliderTicks = [
   { mins: 540, label: '9am' },
-  { mins: 660, label: '11am' },
-  { mins: 780, label: '1pm' },
+  { mins: 720, label: '12pm' },
   { mins: 900, label: '3pm' },
   { mins: 1020, label: '5pm' },
-  { mins: 1140, label: '7pm' },
   { mins: 1200, label: '8pm' },
 ]
 
@@ -97,9 +106,12 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
   <div class="card">
     <h2 class="section-title">Plan your trip</h2>
 
-    <!-- Destination -->
+    <!-- 1. Destination -->
     <div class="field">
-      <label class="field-label">Where are you going?</label>
+      <label class="field-label">
+        <span class="step-num">1</span>
+        Where are you going?
+      </label>
       <div class="search-wrap" @blur.capture="onBlur">
         <div
           v-if="selectedSuburb && !dropdownOpen"
@@ -109,8 +121,8 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
           <span class="selected-name">{{ selectedSuburb.suburb_name }}</span>
           <button class="clear-btn" @click.stop="clearSuburb" aria-label="Clear selection">
             <svg
-              width="14"
-              height="14"
+              width="15"
+              height="15"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -125,8 +137,8 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
         <div v-else class="input-wrap">
           <svg
             class="search-icon"
-            width="16"
-            height="16"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -160,9 +172,12 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
       </div>
     </div>
 
-    <!-- Transport mode -->
+    <!-- 2. Transport -->
     <div class="field">
-      <span class="field-label">How are you getting there?</span>
+      <span class="field-label">
+        <span class="step-num">2</span>
+        How are you getting there?
+      </span>
       <div class="toggle-group">
         <button
           v-for="opt in transportOptions"
@@ -178,96 +193,139 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
       </div>
     </div>
 
-    <!-- Duration -->
+    <!-- 3. Duration — stepper -->
     <div class="field">
       <span class="field-label">
+        <span class="step-num">3</span>
         How long will the trip take?
-        <span class="field-value-badge">{{ durationMins }} min</span>
       </span>
-      <input
-        type="range"
-        class="duration-slider"
-        :value="durationMins"
-        min="5"
-        max="120"
-        step="5"
-        @input="emit('update:durationMins', Number($event.target.value))"
-      />
-      <div class="slider-ticks">
-        <span>5 min</span>
-        <span>30 min</span>
-        <span>60 min</span>
-        <span>90 min</span>
-        <span>120 min</span>
+      <div class="stepper">
+        <button
+          class="stepper-btn"
+          :disabled="durationMins <= 5"
+          @click="stepDuration(-5)"
+          aria-label="Decrease by 5 minutes"
+        >
+          −
+        </button>
+        <div class="stepper-display">
+          <span class="stepper-value">{{ durationMins }}</span>
+          <span class="stepper-unit">min</span>
+        </div>
+        <button
+          class="stepper-btn"
+          :disabled="durationMins >= 120"
+          @click="stepDuration(5)"
+          aria-label="Increase by 5 minutes"
+        >
+          +
+        </button>
       </div>
+      <div class="stepper-hint">Tap − or + to change in 5-minute steps</div>
     </div>
 
-    <!-- Departure time -->
+    <!-- 4. Departure time — presets + fine slider -->
     <div class="field">
-      <label class="field-label">
+      <span class="field-label">
+        <span class="step-num">4</span>
         What time are you leaving?
-        <span class="time-badge">{{ departureLabel }}</span>
-      </label>
-      <div class="slider-wrap">
-        <input
-          type="range"
-          class="slider"
-          :min="sliderMin"
-          :max="sliderMax"
-          :step="sliderStep"
-          :value="departureMinutes"
-          :style="{ '--fill': sliderFill + '%' }"
-          @input="emit('update:departureMinutes', Number($event.target.value))"
-        />
-        <div class="slider-ticks">
-          <span
-            v-for="tick in sliderTicks"
-            :key="tick.mins"
-            :style="{ left: ((tick.mins - sliderMin) / (sliderMax - sliderMin)) * 100 + '%' }"
-            >{{ tick.label }}</span
-          >
+      </span>
+
+      <div class="time-presets">
+        <button
+          v-for="p in timePresets"
+          :key="p.mins"
+          class="preset-btn"
+          :class="{ active: departureMinutes === p.mins }"
+          @click="emit('update:departureMinutes', p.mins)"
+        >
+          <span class="preset-icon">{{ p.icon }}</span>
+          <span class="preset-label">{{ p.label }}</span>
+          <span class="preset-sub">{{ p.sublabel }}</span>
+        </button>
+      </div>
+
+      <div class="time-fine">
+        <div class="time-fine-label">
+          Fine-tune: <strong>{{ departureLabel }}</strong>
+        </div>
+        <div class="slider-wrap">
+          <input
+            type="range"
+            class="slider"
+            :min="sliderMin"
+            :max="sliderMax"
+            :step="sliderStep"
+            :value="departureMinutes"
+            :style="{ '--fill': sliderFill + '%' }"
+            @input="emit('update:departureMinutes', Number($event.target.value))"
+          />
+          <div class="slider-ticks">
+            <span
+              v-for="tick in sliderTicks"
+              :key="tick.mins"
+              :style="{ left: ((tick.mins - sliderMin) / (sliderMax - sliderMin)) * 100 + '%' }"
+              >{{ tick.label }}</span
+            >
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Submit -->
     <button class="submit-btn" :disabled="!isFormValid" @click="emit('submit')">
-      Check my trip risk →
+      Check my trip →
     </button>
+    <p v-if="!isFormValid" class="submit-hint">Please choose a suburb to continue</p>
   </div>
 </template>
 
 <style scoped>
 .card {
   background: #fff;
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 14px;
+  padding: 1.75rem 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
 .section-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--color-text, #1a1a1a);
-  margin: 0 0 1.5rem;
+  color: #1c2e2a;
+  margin: 0 0 1.75rem;
 }
+
+/* Step label */
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
-.field:last-child {
+.field:last-of-type {
   margin-bottom: 0;
 }
 .field-label {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 0.65rem;
+  gap: 0.55rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1c2e2a;
+  margin-bottom: 0.85rem;
   flex-wrap: wrap;
 }
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #2d7a3a;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
 
-/* Searchable dropdown */
+/* Suburb search */
 .search-wrap {
   position: relative;
 }
@@ -275,39 +333,39 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--color-primary, #1a6eb5);
-  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  border: 2.5px solid #2d7a3a;
+  border-radius: 10px;
   cursor: pointer;
-  background: #fff;
+  background: #f5fdf6;
 }
 .selected-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #1c2e2a;
 }
 .clear-btn {
-  background: #f0f0f0;
+  background: #e8f0ee;
   border: none;
   border-radius: 50%;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #666;
+  color: #5a6e6a;
   flex-shrink: 0;
 }
 .clear-btn:hover {
-  background: #e0e0e0;
+  background: #d0e8e4;
 }
 .input-wrap {
   position: relative;
 }
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.85rem;
   top: 50%;
   transform: translateY(-50%);
   color: #888;
@@ -315,17 +373,17 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
 }
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.2rem;
+  padding: 0.9rem 1rem 0.9rem 2.6rem;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  border-radius: 10px;
+  font-size: 1.05rem;
   color: #222;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s;
 }
 .search-input:focus {
-  border-color: var(--color-primary, #1a6eb5);
+  border-color: #2d7a3a;
 }
 .dropdown {
   position: absolute;
@@ -334,46 +392,46 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
   right: 0;
   background: #fff;
   border: 1.5px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   list-style: none;
   margin: 0;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   z-index: 100;
-  max-height: 240px;
+  max-height: 260px;
   overflow-y: auto;
 }
 .dropdown-empty {
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
   color: #888;
 }
 .dropdown-item {
-  padding: 0.7rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #1a1a1a;
   cursor: pointer;
   transition: background 0.15s;
 }
 .dropdown-item:hover {
-  background: #f5f5f5;
+  background: #f0faf2;
 }
 
-/* Toggles */
+/* Transport toggles */
 .toggle-group {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
-  flex-wrap: wrap;
 }
 .toggle-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.6rem 1rem;
-  border: 2px solid #ddd;
-  border-radius: 10px;
+  gap: 0.3rem;
+  padding: 0.85rem 0.5rem;
+  border: 2.5px solid #ddd;
+  border-radius: 12px;
   background: #fff;
   cursor: pointer;
   color: #555;
@@ -381,87 +439,158 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
     border-color 0.15s,
     background 0.15s,
     color 0.15s;
-  min-width: 68px;
 }
 .toggle-btn:hover {
-  border-color: var(--color-primary, #1a6eb5);
-  color: var(--color-primary, #1a6eb5);
+  border-color: #2d7a3a;
+  color: #2d7a3a;
 }
 .toggle-btn.active {
-  border-color: var(--color-primary, #1a6eb5);
-  background: var(--color-primary, #1a6eb5);
+  border-color: #2d7a3a;
+  background: #2d7a3a;
   color: #fff;
 }
 .toggle-icon {
-  font-size: 1.25rem;
+  font-size: 1.6rem;
 }
 .toggle-label {
-  font-weight: 600;
-  font-size: 0.82rem;
-}
-.field-value-badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  background: #2d7a3a;
-  color: #fff;
-  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.15rem 0.6rem;
-  border-radius: 50px;
-  vertical-align: middle;
+  font-size: 0.9rem;
 }
 
-.duration-slider {
-  width: 100%;
-  accent-color: #2d7a3a;
-  height: 6px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-.slider-ticks {
+/* Duration stepper */
+.stepper {
   display: flex;
-  justify-content: space-between;
-  font-size: 0.72rem;
+  align-items: center;
+  gap: 0;
+  max-width: 260px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.stepper-btn {
+  background: #f5f5f5;
+  border: none;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1;
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  color: #2d7a3a;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.stepper-btn:hover:not(:disabled) {
+  background: #e8f5ea;
+}
+.stepper-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+.stepper-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0.5rem;
+  border-left: 2px solid #eee;
+  border-right: 2px solid #eee;
+}
+.stepper-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1c2e2a;
+  line-height: 1;
+}
+.stepper-unit {
+  font-size: 0.85rem;
+  color: #7a9490;
+  font-weight: 600;
+}
+.stepper-hint {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
   color: #9ab5b2;
-  margin-top: 0.3rem;
 }
 
-/* Slider */
+/* Time presets */
+.time-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.75rem 0.25rem;
+  border: 2.5px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.preset-btn:hover {
+  border-color: #2d7a3a;
+}
+.preset-btn.active {
+  border-color: #2d7a3a;
+  background: #f0faf2;
+}
+.preset-icon {
+  font-size: 1.4rem;
+}
+.preset-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1c2e2a;
+}
+.preset-sub {
+  font-size: 0.72rem;
+  color: #7a9490;
+}
+
+/* Fine-tune slider */
+.time-fine {
+  border-top: 1px solid #e8f0ee;
+  padding-top: 0.85rem;
+}
+.time-fine-label {
+  font-size: 0.9rem;
+  color: #5a6e6a;
+  margin-bottom: 0.6rem;
+}
+.time-fine-label strong {
+  color: #1c2e2a;
+  font-size: 1rem;
+}
 .slider-wrap {
   position: relative;
-  padding-bottom: 1.5rem;
+  padding-bottom: 1.4rem;
 }
 .slider {
   width: 100%;
-  height: 6px;
+  height: 8px;
   appearance: none;
   border-radius: 4px;
-  background: linear-gradient(
-    to right,
-    var(--color-primary, #1a6eb5) var(--fill, 0%),
-    #ddd var(--fill, 0%)
-  );
+  background: linear-gradient(to right, #2d7a3a var(--fill, 0%), #ddd var(--fill, 0%));
   outline: none;
   cursor: pointer;
 }
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--color-primary, #1a6eb5);
+  background: #2d7a3a;
   border: 3px solid #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-}
-.time-badge {
-  font-size: 0.85rem;
-  font-weight: 700;
-  background: var(--color-primary, #1a6eb5);
-  color: #fff;
-  padding: 0.1rem 0.55rem;
-  border-radius: 20px;
 }
 .slider-ticks {
   position: absolute;
@@ -473,32 +602,39 @@ const isFormValid = computed(() => !!props.selectedSuburbId && !!props.transport
 .slider-ticks span {
   position: absolute;
   transform: translateX(-50%);
-  font-size: 0.72rem;
-  color: #888;
+  font-size: 0.78rem;
+  color: #9ab5b2;
   white-space: nowrap;
 }
 
 /* Submit */
 .submit-btn {
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.9rem;
-  background: var(--color-primary, #1a6eb5);
+  margin-top: 1.25rem;
+  padding: 1.1rem;
+  background: #2d7a3a;
   color: #fff;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition:
     filter 0.2s,
     opacity 0.2s;
+  letter-spacing: 0.01em;
 }
 .submit-btn:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 .submit-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
+}
+.submit-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9ab5b2;
+  margin: 0.5rem 0 0;
 }
 </style>

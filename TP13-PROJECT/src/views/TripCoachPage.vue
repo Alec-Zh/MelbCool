@@ -36,6 +36,7 @@ const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
 const showResults = ref(false)
+const showDetail = ref(false)
 
 const router = useRouter()
 
@@ -281,6 +282,7 @@ async function handleSubmit() {
 
 function handleReset() {
   showResults.value = false
+  showDetail.value = false
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -289,8 +291,26 @@ function handleSelectAlt(params) {
   durationMins.value = params.duration
   departureMinutes.value = params.departMins
   showResults.value = false
+  showDetail.value = false
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+const verdictMessage = computed(() => {
+  if (!overallBand.value) return ''
+  const label = overallBand.value.label
+  const mode = transportMode.value
+  const temp = forecastTemp.value
+  if (label === 'Low')
+    return `This trip looks fine. ${temp}°C is manageable and your exposure is low.`
+  if (label === 'Moderate')
+    return `Take water and stay in shade where you can. Heat exposure is moderate.`
+  if (label === 'High') {
+    if (mode === 'walk')
+      return `Walking in this heat carries real risk. Consider driving or going later.`
+    return `Heat exposure is high. Try leaving earlier or switching transport.`
+  }
+  return `This trip is very risky in current conditions. Strongly consider alternatives below.`
+})
 </script>
 
 <template>
@@ -375,115 +395,57 @@ function handleSelectAlt(params) {
                 </div>
               </div>
               <p class="tc-note">Less time outdoors = lower heat exposure</p>
-              <div class="tc-refs">
-                <p class="tc-refs-title">Sources</p>
-                <ul>
-                  <li>
-                    Currie &amp; Delbosc (2011). Modelling the social exclusion pedestrian catchment
-                    area of urban transit. <em>Journal of Transport Geography.</em>
-                  </li>
-                  <li>
-                    AustRoads (2020). Pedestrian access to car parks: typical walk distance
-                    estimates.
-                  </li>
-                  <li>Open-Meteo (2024). Apparent temperature API — hourly forecast data.</li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
 
         <!-- Page 2 — results -->
         <div v-else class="results-wrap">
-          <!-- Left: trip summary + methodology (sticky) -->
-          <div class="col-left">
-            <div class="summary-card card">
-              <p class="summary-heading">Your trip</p>
-              <div class="summary-row">
-                <span class="summary-label">Going to</span>
-                <span class="summary-value">{{ selectedSuburb.suburb_name }}</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">How</span>
-                <span class="summary-value">
-                  {{ TRANSPORT_ICONS[transportMode] }}
-                  {{ transportMode.charAt(0).toUpperCase() + transportMode.slice(1) }}
-                </span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">How long</span>
-                <span class="summary-value">{{ durationMins }} min</span>
-              </div>
-              <div class="summary-row">
-                <span class="summary-label">Leaving at</span>
-                <span class="summary-value">{{ departureLabel }}</span>
-              </div>
-              <button class="reset-btn" @click="handleReset">← Plan a different trip</button>
+          <!-- Go back button -->
+          <button class="go-back-btn" @click="handleReset">← Plan a different trip</button>
 
-              <div class="trip-nav-links">
-                <RouterLink to="/heatmap" class="trip-nav-btn trip-nav-btn--green">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="2" y1="12" x2="22" y2="12" />
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                    />
-                  </svg>
-                  Heat map
-                </RouterLink>
-                <button class="trip-nav-btn trip-nav-btn--teal" @click="goToOutfitAdvisor">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"
-                    />
-                  </svg>
-                  Outfit advisor
-                </button>
+          <!-- ① Verdict card — first thing user sees -->
+          <div
+            class="verdict-card card"
+            :style="{ borderTop: `5px solid ${overallBand.color}`, background: overallBand.bg }"
+          >
+            <div class="verdict-left">
+              <div class="verdict-chips">
+                <span class="verdict-chip chip-dest"
+                  >{{ TRANSPORT_ICONS[transportMode] }} {{ selectedSuburb.suburb_name }}</span
+                >
+                <span class="verdict-chip chip-time"
+                  >{{ departureLabel }} · {{ durationMins }} min</span
+                >
+                <span class="verdict-chip chip-temp">Feels like {{ forecastTemp }}°C</span>
               </div>
+              <p class="verdict-advice">{{ verdictMessage }}</p>
             </div>
-
-            <!-- Results guide -->
-            <div class="guide-card card">
-              <p class="guide-title">Reading your results</p>
-              <ul class="guide-list">
-                <li>
-                  The <strong>risk score</strong> shows how much heat stress this trip may cause
-                </li>
-                <li>
-                  <strong>Time outdoors</strong> is the part that matters most — that's when your
-                  body heats up
-                </li>
-                <li>
-                  Check the <strong>safer options</strong> below if your score is High or Very High
-                </li>
-              </ul>
+            <div class="verdict-right">
+              <p class="verdict-score-label">Risk score</p>
+              <p class="verdict-score" :style="{ color: overallBand.color }">
+                {{ overallScore }}<span class="verdict-outof">/100</span>
+              </p>
+              <span class="verdict-badge" :style="{ background: overallBand.color }"
+                >{{ overallBand.label }} Risk</span
+              >
             </div>
-
-            <TripMethodology />
           </div>
 
-          <!-- Right: results -->
-          <div class="col-right">
+          <!-- ② Alternatives — compact pills, expand on click -->
+          <TripAlternatives
+            v-if="alternatives.length"
+            :alternatives="alternatives"
+            :baseScore="overallScore"
+            @select-alt="handleSelectAlt"
+          />
+
+          <!-- ③ Detail toggle -->
+          <button class="detail-toggle" @click="showDetail = !showDetail">
+            {{ showDetail ? '▲ Hide breakdown' : '▼ See how this was calculated' }}
+          </button>
+
+          <template v-if="showDetail">
             <TripForecastBar
               :suburbName="selectedSuburb.suburb_name"
               :forecastTemp="forecastTemp"
@@ -492,19 +454,50 @@ function handleSelectAlt(params) {
               :transportMode="transportMode"
               :durationMins="durationMins"
             />
-            <TripExposureScore
-              :score="overallScore"
-              :riskLabel="overallBand.label"
-              :riskColor="overallBand.color"
-              :riskBg="overallBand.bg"
-            />
             <TripLegBreakdown :legs="tripLegs" :transportMode="transportMode" />
-            <TripAlternatives
-              v-if="alternatives.length"
-              :alternatives="alternatives"
-              :baseScore="overallScore"
-              @select-alt="handleSelectAlt"
-            />
+            <TripMethodology />
+          </template>
+
+          <!-- Nav links at bottom -->
+          <div class="trip-nav-links">
+            <RouterLink to="/heatmap" class="trip-nav-btn trip-nav-btn--green">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path
+                  d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                />
+              </svg>
+              Heat map
+            </RouterLink>
+            <button class="trip-nav-btn trip-nav-btn--teal" @click="goToOutfitAdvisor">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"
+                />
+              </svg>
+              Outfit advisor
+            </button>
           </div>
         </div>
       </template>
@@ -568,32 +561,41 @@ function handleSelectAlt(params) {
 
 /* Guide card */
 .guide-card {
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.25rem;
 }
 .guide-title {
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #2d7a3a;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.75rem;
 }
 .guide-list {
-  list-style: disc;
-  padding-left: 1.1rem;
+  list-style: none;
+  padding-left: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.65rem;
 }
 .guide-list li {
-  font-size: 0.875rem;
-  color: #5a6e6a;
-  line-height: 1.5;
+  font-size: 1rem;
+  color: #3a4e4a;
+  line-height: 1.55;
+  padding-left: 1.1rem;
+  position: relative;
+}
+.guide-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #2d7a3a;
+  font-weight: 700;
 }
 .guide-list li strong {
   color: #1c2e2a;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Page 1 — two column */
@@ -627,150 +629,203 @@ function handleSelectAlt(params) {
   gap: 0.6rem;
 }
 .tc-mode {
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #1c2e2a;
-  width: 58px;
+  width: 66px;
   flex-shrink: 0;
 }
 .tc-bar-wrap {
   flex: 1;
-  height: 10px;
+  height: 12px;
   background: #f0f5f4;
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .tc-bar {
   height: 100%;
-  border-radius: 5px;
+  border-radius: 6px;
   transition: width 0.4s ease;
 }
 .tc-pct {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #5a6e6a;
-  width: 34px;
+  width: 38px;
   text-align: right;
   flex-shrink: 0;
 }
 .tc-note {
-  font-size: 0.76rem;
+  font-size: 0.9rem;
   color: #5a6e6a;
-  margin: 0.5rem 0 0;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e8f0ee;
-  font-style: italic;
-}
-.tc-refs {
-  margin-top: 0.75rem;
+  margin: 0.6rem 0 0;
   padding-top: 0.6rem;
   border-top: 1px solid #e8f0ee;
-}
-.tc-refs-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #2d7a3a;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 0.4rem;
-}
-.tc-refs ul {
-  list-style: disc;
-  padding-left: 1rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.tc-refs li {
-  font-size: 0.72rem;
-  color: #5a6e6a;
-  line-height: 1.5;
-}
-.tc-refs em {
   font-style: italic;
 }
-
-/* Page 2 */
-.results-wrap {
-  display: grid;
-  grid-template-columns: 280px 1fr;
+/* Verdict card */
+.verdict-card {
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1.5rem;
-  align-items: start;
+  flex-wrap: wrap;
+}
+.verdict-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 200px;
+}
+.verdict-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.verdict-chip {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+}
+.chip-dest {
+  background: #e8f0ee;
+  color: #1c2e2a;
+}
+.chip-time {
+  background: #eef0f8;
+  color: #2a2e50;
+}
+.chip-temp {
+  background: #fef3ec;
+  color: #8b4000;
 }
 
-.col-left {
+.verdict-advice {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1c2e2a;
+  line-height: 1.5;
+  margin: 0;
+}
+.verdict-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 100px;
+}
+.verdict-score-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a9490;
+  margin: 0;
+}
+.verdict-score {
+  font-size: 3.8rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+.verdict-outof {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #aaa;
+}
+.verdict-badge {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Results — single column, centred */
+.results-wrap {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding-bottom: 1rem;
-  align-self: start;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.summary-card {
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.summary-heading {
-  font-size: 0.72rem;
+/* Go back button */
+.go-back-btn {
+  align-self: flex-start;
+  background: #fff;
+  border: 2px solid #c8ddd9;
+  border-radius: 10px;
+  padding: 0.65rem 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b8f8c;
-  margin: 0 0 0.1rem;
-}
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #f0f5f4;
-  padding-bottom: 0.5rem;
-}
-.summary-row:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.summary-label {
-  color: #7a9490;
-}
-.summary-value {
-  font-weight: 600;
   color: #1c2e2a;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.go-back-btn:hover {
+  border-color: #2d7a3a;
+  background: #f5fdf6;
+  color: #2d7a3a;
 }
 
-.col-right {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.reset-btn {
+/* Detail toggle */
+.detail-toggle {
   background: none;
   border: 1.5px solid #c8ddd9;
-  color: #5a6e6a;
   border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-size: 0.88rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: #5a6e6a;
   cursor: pointer;
+  align-self: flex-start;
+  font-family: inherit;
   transition:
     border-color 0.2s,
     color 0.2s;
-  width: 100%;
-  margin-top: 0.25rem;
 }
-.reset-btn:hover {
+.detail-toggle:hover {
   border-color: #2d7a3a;
   color: #2d7a3a;
 }
 
+/* Nav links */
 .trip-nav-links {
   display: flex;
   gap: 8px;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.summary-card {
+  display: none; /* no longer used */
+}
+
+@media (max-width: 600px) {
+  .verdict-card {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .verdict-right {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .verdict-score {
+    font-size: 2.8rem;
+  }
 }
 
 .trip-nav-btn {
@@ -826,14 +881,6 @@ function handleSelectAlt(params) {
 }
 
 @media (max-width: 860px) {
-  .results-wrap {
-    grid-template-columns: 1fr;
-  }
-  .col-left {
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-  }
   .plan-wrap {
     grid-template-columns: 1fr;
   }

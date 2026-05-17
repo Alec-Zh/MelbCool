@@ -183,6 +183,10 @@ html{scroll-behavior:smooth}
 .mh-icard--orange:hover{box-shadow:0 16px 40px rgba(249,115,22,.2)}
 .mh-icard--blue:hover{box-shadow:0 16px 40px rgba(59,130,246,.2)}
 .mh-icard--teal:hover{box-shadow:0 16px 40px rgba(20,184,166,.2)}
+.mh-expand-icon{display:inline-block;margin-top:.5rem;font-size:.72rem;color:rgba(255,255,255,.45);text-align:center;cursor:pointer;transition:color .2s,transform .2s;user-select:none;align-self:center}
+.mh-icard:hover .mh-expand-icon{color:rgba(255,255,255,.8)}
+.mh-icard .mh-data-visual,.mh-icard .mh-viz-note{transition:opacity .25s ease}
+.mh-icard .mh-data-visual,.mh-icard .mh-viz-note{overflow:hidden}
 /* Icon badge container */
 .mh-icard-badge{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem;font-size:1.6rem;animation:iconBounce 3s ease-in-out infinite;flex-shrink:0}
 .mh-icard:nth-child(2) .mh-icard-badge{animation-delay:.5s}

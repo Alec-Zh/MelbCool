@@ -1,1631 +1,1309 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
-import EmergencyAlertModal from '../components/AlertModal.vue'
 import Footer from '../components/Footer.vue'
+// import './codex-homepage.css'
+const router = useRouter()
 
-const showAlertModal = ref(false)
+const expandedCards = ref([false, false, false, false])
+
+const toggleCard = (index) => {
+  expandedCards.value[index] = !expandedCards.value[index]
+}
+
+// Scroll animation
+onMounted(() => {
+  const animEls = document.querySelectorAll('[data-animate]')
+  const animObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible')
+          animObs.unobserve(e.target)
+        }
+      })
+    },
+    { threshold: 0.08, rootMargin: '0px 0px -50px 0px' },
+  )
+  animEls.forEach((el) => animObs.observe(el))
+
+  // Stagger children
+  document.querySelectorAll('.mh-stagger').forEach((container) => {
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          Array.from(e.target.children).forEach((c, i) =>
+            setTimeout(() => c.classList.add('is-visible'), i * 130),
+          )
+        })
+      },
+      { threshold: 0.05 },
+    ).observe(container)
+  })
+
+  // Count-up
+  document.querySelectorAll('.mh-count').forEach((el) => {
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          const target = +el.dataset.target
+          let cur = 0
+          const t = setInterval(() => {
+            cur = Math.min(cur + target / 40, target)
+            el.textContent = Math.round(cur)
+            if (cur >= target) clearInterval(t)
+          }, 35)
+        })
+      },
+      { threshold: 0.5 },
+    ).observe(el)
+  })
+
+  // Interactive impact cards
+  document.querySelectorAll('.mh-icard').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      const rect = card.getBoundingClientRect()
+      card.style.setProperty('--mx', `${event.clientX - rect.left}px`)
+      card.style.setProperty('--my', `${event.clientY - rect.top}px`)
+    })
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--mx')
+      card.style.removeProperty('--my')
+    })
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.mh-icard.is-focused').forEach((activeCard) => {
+        if (activeCard !== card) activeCard.classList.remove('is-focused')
+      })
+      card.classList.toggle('is-focused')
+    })
+  })
+
+  // Navbar compact on scroll
+  const nav = document.getElementById('mhNav')
+  if (nav) {
+    window.addEventListener(
+      'scroll',
+      () => {
+        nav.classList.toggle('mh-nav--scrolled', window.scrollY > 80)
+      },
+      { passive: true },
+    )
+  }
+})
+
+const navigateTo = (path) => {
+  router.push(path)
+}
 </script>
 
 <template>
-  <div class="app">
-    <NavBar @alertClick="showAlertModal = true" />
+  <div>
+    <NavBar :show-alert-button="false" />
 
-    <main class="main-content">
-      <div class="heroWrip">
-         <div class="hero">
-        <div class="hero-left">
-          <h1 class="hero-title" v-hover-scale="1.05">
-            Stay Safe and<br />
-            <span class="highlight">Cool in Melbourne</span>
-          </h1>
-          <p class="hero-description" v-hover-scale="1.05">
-           MelbCool enables older adults (60+) to make safer decisions during extreme heat. Through intelligent heat mapping and route guidance, it identifies high-risk zones, prioritises shaded paths, and directs users to nearby cooling spaces—supporting independence, safety, and everyday mobility.
-          </p>
-          <div class="hero-buttons">
-            <button class="btn-primary" @click="$router.push('/cool-refuges')">
-              <span class="icon" v-hover-scale="1.2">❄️ Find Cool Refuges</span>
-            </button>
-             <button class="btn-secondary" @click="$router.push('/heatmap')">
-              <span class="icon" v-hover-scale="1.2">📃 View Heat Map</span></button>
+    <main>
+      <!-- ══════════════════════════════════════════
+           1. HERO — full bleed bg.jpg + frosted panel
+      ══════════════════════════════════════════ -->
+      <section class="mh-hero mh-hero--welcome" aria-label="Homepage hero">
+        <!-- Background image + gradient overlay -->
+        <div class="mh-hero-bg" aria-hidden="true"></div>
+
+        <!-- Orbs sit ABOVE the overlay, below the content -->
+        <div class="mh-orb mh-orb--1" aria-hidden="true"></div>
+        <div class="mh-orb mh-orb--2" aria-hidden="true"></div>
+        <div class="mh-orb mh-orb--3" aria-hidden="true"></div>
+
+        <!-- ── Floating ambient badges — continuous up/down animation ── -->
+        <div class="mh-fb mh-fb--1" aria-hidden="true">
+          <span class="mh-fb-icon">🗺️</span>
+          <div class="mh-fb-text">
+            <strong>Heat Map</strong>
+            <span>Compare suburb signals</span>
           </div>
         </div>
-      </div>
-      </div>
-     
-
-      <!-- <section class="heat-impact-section">
-        <h2 class="heat-impact-title" v-hover-scale="1.5">Heat Impact in Numbers</h2>
-        <div class="heat-impact-grid">
-          <div class="impact-card blue" >
-            <div class="impact-icon">👴</div>
-            <div class="impact-number" v-hover-scale="1.2">120k+</div>
-            <div class="impact-label" v-hover-scale="1.2">residents live in high-risk zones</div>
-          </div>
-          <div class="impact-card red" >
-            <div class="impact-icon">🔥</div>
-            <div class="impact-number" v-hover-scale="1.2">40%</div>
-            <div class="impact-label" v-hover-scale="1.2">of heat-related deaths are older adults</div>
-          </div>
-          <div class="impact-card orange" >
-            <div class="impact-icon">🌡️</div>
-            <div class="impact-number" v-hover-scale="1.2">38°C</div>
-            <div class="impact-label" v-hover-scale="1.2">during peak heatwaves in urban areas</div>
-          </div>
-          <div class="impact-card green" >
-            <div class="impact-icon">🌳</div>
-            <div class="impact-number" v-hover-scale="1.2">+7°C</div>
-            <div class="impact-label" v-hover-scale="1.2">hotter in areas without sufficient shade</div>
+        <div class="mh-fb mh-fb--2" aria-hidden="true">
+          <span class="mh-fb-icon">🏛️</span>
+          <div class="mh-fb-text">
+            <strong>Cool Refuges</strong>
+            <span>Find indoor places</span>
           </div>
         </div>
-      </section> -->
-
-      <section class="why-matters-section">
-        <h2 class="why-matters-title" v-hover-scale="1.2">Why Heat Protection Matters</h2>
-        <p class="why-matters-subtitle" v-hover-scale="1.2">
-          Older adults (60+) are more sensitive to heat and at higher risk during hot weather. Staying cool and hydrated is important.
-        </p>
-        <div class="why-matters-grid">
-          <div class="matter-card" >
-            <div class="matter-number blue" v-hover-scale="1.2">80%</div>
-            <div class="matter-content">
-              <h3 v-hover-scale="1.2">of heat-related hospital stays are for adults over 65.</h3>
-              <p v-hover-scale="1.2">
-                Older bodies hold heat longer, making it harder to recover from a hot afternoon
-                without help.
-              </p>
-              <div class="matter-visual people">
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person filled">👤</span>
-                <span class="person empty">👤</span>
-                <span class="person empty">👤</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="matter-card" >
-            <div class="matter-number red" v-hover-scale="1.2">30%</div>
-            <div class="matter-content">
-              <h3 v-hover-scale="1.2">reduction in the body's natural ability to cool down.</h3>
-              <p v-hover-scale="1.2">
-                As we age, our sweat glands are less active. This means we feel the heat more
-                intensely than we used to.
-              </p>
-              <div class="matter-visual bar-chart">
-                <div class="bar-labels">
-                  <span class="bar-label" v-hover-scale="1.2">Cooling Power</span>
-                  <span class="bar-value" v-hover-scale="1.2">30% Decrease</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 70%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="matter-card">
-            <div class="matter-number blue" v-hover-scale="1.2">+10°C</div>
-            <div class="matter-content">
-              <h3 v-hover-scale="1.2">Night temperatures in cities can be significantly higher.</h3>
-              <p v-hover-scale="1.2">
-                Urban heat islands give senior bodies less time to recover from daytime stress,
-                leading to cumulative fatigue.
-              </p>
-              <div class="matter-visual temp-slider">
-                <div class="temp-labels">
-                  <span class="temp-icon" v-hover-scale="1.2">🌙</span>
-                  <span class="temp-label" v-hover-scale="1.2">CITY</span>
-                </div>
-                <div class="slider-bar">
-                  <div class="slider-fill" style="width: 80%"></div>
-                </div>
-                <span class="temp-high" v-hover-scale="1.2">+10°C Higher Risk</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="matter-card" >
-            <div class="matter-number green" v-hover-scale="1.2">2X</div>
-            <div class="matter-content">
-              <h3 v-hover-scale="1.2">Faster hydration loss during dangerous heatwaves.</h3>
-              <p v-hover-scale="1.2">
-                Seniors lose hydration twice as fast as younger adults, often without even feeling
-                thirsty until it's critical.
-              </p>
-              <div class="matter-visual hydration">
-                <div class="hydration-box normal">
-                  <span class="drop-icon" v-hover-scale="1.2">💧</span>
-                  <span class="hydration-label" v-hover-scale="1.2">NORMAL</span>
-                </div>
-                <div class="hydration-box senior">
-                  <span class="drop-icon" v-hover-scale="1.2">💧💧</span>
-                  <span class="hydration-label" v-hover-scale="1.2">SENIOR (2X RATE)</span>
-                </div>
-              </div>
-            </div>
+        <div class="mh-fb mh-fb--3" aria-hidden="true">
+          <span class="mh-fb-icon">🧭</span>
+          <div class="mh-fb-text">
+            <strong>Trip Coach</strong>
+            <span>Plan a better route</span>
           </div>
         </div>
-      </section>
+        <div class="mh-fb mh-fb--4" aria-hidden="true">
+          <span class="mh-fb-icon">👕</span>
+          <div class="mh-fb-text">
+            <strong>Clothing</strong>
+            <span>Choose safer layers</span>
+          </div>
+        </div>
+        <div class="mh-fb mh-fb--5" aria-hidden="true">
+          <span class="mh-fb-icon">📝</span>
+          <div class="mh-fb-text">
+            <strong>Safety Plan</strong>
+            <span>Prepare before going out</span>
+          </div>
+        </div>
 
-      <section class="info-section">
-        <div class="info-grid">
-          <div class="info-left">
-            <span class="tag vulnerability" v-hover-scale="1.2">VULNERABILITY AWARENESS</span>
-            <h2 class="section-title" v-hover-scale="1.05">Heat Vulnerability Map</h2>
-            <p class="section-description" v-hover-scale="1.05">
-              The Heat Vulnerability Map shows heat risk levels across Melbourne based on temperature, tree coverage, and elderly population density, highlighting areas where older adults may be more vulnerable.
+        <div class="mh-hero-inner">
+          <!-- Left: copy -->
+          <div class="mh-hero-copy mh-welcome-copy">
+            <p class="mh-label">For older adults, families, and carers</p>
+            <h1>Feel ready for<br /><em>hot Melbourne days.</em></h1>
+            <p class="mh-hero-desc">
+              MelbCool is a calm guide for checking heat, finding a cool place, and making a simple
+              plan before the day gets too hot.
             </p>
-            <div class="map-image">
-              <img src="/reli2.png" alt="Heat Vulnerability Map of Melbourne" />
+            <div class="mh-hero-ctas">
+              <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#"
+                >Create My Safety Plan</a
+              >
+              <a class="mh-btn outline" @click.prevent="navigateTo('/cool-refuges')" href="#"
+                >Find a Cool Place</a
+              >
             </div>
-             <RouterLink class="explore-link" to="/heatmap"  v-hover-scale="1.05">Explore Heat Map →</RouterLink>
-          </div>
-
-          <div class="info-right">
-            <div class="risk-level-card">
-              <h3 class="risk-level-title" v-hover-scale="1.2">Risk Level</h3>
-              <div class="risk-levels">
-                <div>
-                  <div class="risk-level-item">
-                    <span class="risk-dot green"></span>
-                    <span class="risk-label" v-hover-scale="1.2">Low</span>
-                  </div>
-                  <span class="risk-desc" v-hover-scale="1.1">Lower temperatures and greater tree cover; older adults are less affected by heat.</span>
-                </div>
-                <div >
-                  <div class="risk-level-item">
-                    <span class="risk-dot yellow"></span>
-                    <span class="risk-label" v-hover-scale="1.2">Moderate</span>
-                  </div>
-                
-                  <span class="risk-desc" v-hover-scale="1.1">Higher temperatures or limited shade; older adults should take precautions against heat.</span>
-                </div>
-                <div>
-                  <div  class="risk-level-item">
-                    <span class="risk-dot red"></span>
-                    <span class="risk-label" v-hover-scale="1.2">High</span>
-                  </div>
-                 
-                  <span class="risk-desc" v-hover-scale="1.1">High temperatures, low tree cover, and a larger older population; older adults are more vulnerable to heat.</span>
-                </div>
-                <!-- <div class="risk-level-item">
-                  <span class="risk-dot red"></span>
-                  <span class="risk-label" v-hover-scale="1.2">Very High</span>
-                  <span class="risk-desc" v-hover-scale="1.1">Extremely high temperatures, low tree cover, and a large population density.</span>
-                </div> -->
+            <!-- <div class="mh-welcome-steps" aria-label="How MelbCool helps">
+              <div>
+                <strong>1</strong>
+                <span>Check today's heat</span>
               </div>
-            </div>
-
-            <!-- <div class="high-risk-stats">
-              <h3 class="stats-title" v-hover-scale="1.2">Risk Areas:</h3>
-              <div class="stat-item">
-                <span class="stat-icon" v-hover-scale="1.2">👤</span>
-                <div class="stat-content">
-                  <span class="stat-number" v-hover-scale="1.2">29%</span>
-                  <span class="stat-label" v-hover-scale="1.2">average elderly<br />population</span>
-                </div>
+              <div>
+                <strong>2</strong>
+                <span>Choose shade or a cool refuge</span>
               </div>
-              <div class="stat-item">
-                <span class="stat-icon" v-hover-scale="1.2">🌡️</span>
-                <div class="stat-content">
-                  <span class="stat-number" v-hover-scale="1.2">36°C</span>
-                  <span class="stat-label" v-hover-scale="1.2">avg surface<br />temperature</span>
-                </div>
+              <div>
+                <strong>3</strong>
+                <span>Share a simple plan</span>
               </div>
             </div> -->
+            <div class="mh-hero-chips">
+              <div class="mh-chip">
+                <strong>5</strong>
+                <span>connected tools for hot days</span>
+              </div>
+              <div class="mh-chip">
+                <strong>12</strong>
+                <span>simple safety-plan questions</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: friendly support card -->
+          <div
+            class="mh-hero-panel mh-welcome-card"
+            aria-label="Welcoming MelbCool support preview"
+          >
+            <div class="mh-welcome-photo">
+              <img
+                src="/assets/generated-home/hero-welcome.png"
+                alt="Older adults and a carer preparing calmly for a hot Melbourne day"
+              />
+            </div>
+            <div class="mh-care-note">
+              <span>Today's gentle reminder</span>
+              <strong>Plan before the hottest part of the day.</strong>
+              <ul>
+                <li>Drink water early.</li>
+                <li>Call or message someone.</li>
+                <li>Keep a cool indoor option ready.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="mh-hero-scroll" aria-hidden="true"><span></span></div>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+           FEATURE RIBBON — continuously scrolling
+      ══════════════════════════════════════════ -->
+      <div class="mh-ticker" aria-hidden="true">
+        <div class="mh-ticker-track">
+          <!-- duplicated for seamless loop -->
+          <span class="mh-tick mh-tick--high">🗺️ Heat Map · suburb overview</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuges · indoor places</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">🧭 Trip Coach · route guidance</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--low">👕 Clothing Advisor · outfit choices</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--safe">📝 Safety Plan · simple questions</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--high">📞 Check-in · share your plan</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">💧 Reminders · drink and rest</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--safe">🌳 Shade · avoid exposed streets</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--high">🧊 Cooling · prepare early</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">👥 Carers · support older adults</span>
+          <span class="mh-tick-sep">·</span>
+          <!-- duplicate for seamless wrap -->
+          <span class="mh-tick mh-tick--high">🗺️ Heat Map · suburb overview</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuges · indoor places</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">🧭 Trip Coach · route guidance</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--low">👕 Clothing Advisor · outfit choices</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--safe">📝 Safety Plan · simple questions</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--high">📞 Check-in · share your plan</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">💧 Reminders · drink and rest</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--safe">🌳 Shade · avoid exposed streets</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--high">🧊 Cooling · prepare early</span>
+          <span class="mh-tick-sep">·</span>
+          <span class="mh-tick mh-tick--mod">👥 Carers · support older adults</span>
+          <span class="mh-tick-sep">·</span>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           2. IMPACT NUMBERS — stat cards with visualizations
+      ══════════════════════════════════════════ -->
+      <section class="mh-impact" aria-label="Key heat statistics">
+        <div class="mh-impact-head" data-animate>
+          <p class="mh-label">By the numbers</p>
+          <h2>Why heat hits older adults <em>harder</em></h2>
+        </div>
+        <div class="mh-impact-grid mh-stagger" data-animate>
+          <div
+            class="mh-icard mh-icard--red mh-icard--age"
+            tabindex="0"
+            aria-label="80 percent of heat hospital stays involve adults over 65"
+            @click="toggleCard(0)"
+          >
+            <span class="mh-icard-kicker">Hospital stays</span>
+            <strong class="mh-icard-num"><span class="mh-count" data-target="80">0</span>%</strong>
+            <p class="mh-icard-label">of heat hospital stays involve adults over 65</p>
+            <div v-show="expandedCards[0]" class="mh-data-visual mh-age-orbit" aria-hidden="true">
+              <div class="mh-age-ring"><span>8 of 10</span></div>
+              <div class="mh-age-dots">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><b></b><b></b>
+              </div>
+            </div>
+            <span v-show="expandedCards[0]" class="mh-viz-note">Hover or tap to spotlight the older-adult share</span>
+            <span class="mh-expand-icon">{{ expandedCards[0] ? '▲' : '▼' }}</span>
+          </div>
+
+          <div
+            class="mh-icard mh-icard--orange mh-icard--street"
+            tabindex="0"
+            aria-label="Tree shade changes how comfortable a street feels"
+            @click="toggleCard(1)"
+          >
+            <span class="mh-icard-kicker">Street heat</span>
+            <strong class="mh-icard-num">Shade</strong>
+            <p class="mh-icard-label">tree canopy can make outdoor movement feel safer</p>
+            <div v-show="expandedCards[1]" class="mh-data-visual mh-street-scene" aria-hidden="true">
+              <div class="mh-park-zone">
+                <span>Shaded<br />rest</span><i></i>
+              </div>
+              <div class="mh-heat-wave"><span></span><span></span><span></span></div>
+              <div class="mh-street-zone">
+                <span>Exposed<br />street</span><i></i><i></i><i></i>
+              </div>
+            </div>
+            <span v-show="expandedCards[1]" class="mh-viz-note">Move across the card to compare shade and exposure</span>
+            <span class="mh-expand-icon">{{ expandedCards[1] ? '▲' : '▼' }}</span>
+          </div>
+
+          <div
+            class="mh-icard mh-icard--blue mh-icard--water"
+            tabindex="0"
+            aria-label="Hydration loss can be twice as fast for seniors during heatwaves"
+            @click="toggleCard(2)"
+          >
+            <span class="mh-icard-kicker">Hydration</span>
+            <strong class="mh-icard-num"><span class="mh-count" data-target="2">0</span>×</strong>
+            <p class="mh-icard-label">faster hydration loss for seniors during heatwaves</p>
+            <div v-show="expandedCards[2]" class="mh-data-visual mh-water-visual" aria-hidden="true">
+              <div class="mh-water-glass mh-water-glass--normal"><span></span><em>Others</em></div>
+              <div class="mh-water-flow"><i></i><i></i><i></i></div>
+              <div class="mh-water-glass mh-water-glass--senior"><span></span><em>Seniors</em></div>
+            </div>
+            <span v-show="expandedCards[2]" class="mh-viz-note">Animated water level shows why reminders matter</span>
+            <span class="mh-expand-icon">{{ expandedCards[2] ? '▲' : '▼' }}</span>
+          </div>
+
+          <div
+            class="mh-icard mh-icard--teal mh-icard--cooling"
+            tabindex="0"
+            aria-label="Natural cooling ability can reduce by 30 percent with age"
+            @click="toggleCard(3)"
+          >
+            <span class="mh-icard-kicker">Cooling ability</span>
+            <strong class="mh-icard-num"><span class="mh-count" data-target="30">0</span>%</strong>
+            <p class="mh-icard-label">
+              reduction in the body's natural ability to cool down with age
+            </p>
+            <div v-show="expandedCards[3]" class="mh-data-visual mh-cooling-dial" aria-hidden="true">
+              <div class="mh-dial">
+                <span></span>
+                <b>70%</b>
+              </div>
+              <div class="mh-cooling-beads"><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <span v-show="expandedCards[3]" class="mh-viz-note"
+              >The dial compares younger cooling capacity with senior capacity</span
+            >
+            <span class="mh-expand-icon">{{ expandedCards[3] ? '▲' : '▼' }}</span>
           </div>
         </div>
       </section>
 
-      <!-- <section class="cool-refuges-section">
-        <div class="cool-refuges-container">
-          <span class="tag safe" v-hover-scale="1.2">SAFE SPACES</span>
-          <h2 class="cool-refuges-title" v-hover-scale="1.2">Find Your Local Cool Refuges</h2>
-          <p class="cool-refuges-description" v-hover-scale="1.2">
-            Looking for a cool place to go? Cool spaces like libraries, community centers, and
-            shopping malls are free, close by, and air-conditioned.
-          </p>
-
-          <div class="cool-refuges-content">
-            <div class="refuges-left">
-              <div class="refuge-stats">
-                <div class="refuge-stat-card blue">
-                  <span class="stat-icon-large" v-hover-scale="1.2">🌡️</span>
-                  <div class="stat-text">
-                    <span class="stat-value" v-hover-scale="1.2">20°F</span>
-                    <span class="stat-desc" v-hover-scale="1.2">Cooler<br />than outside</span>
-                  </div>
-                </div>
-                <div class="refuge-stat-card green">
-                  <span class="stat-icon-large" v-hover-scale="1.2">📍</span>
-                  <div class="stat-text">
-                    <span class="stat-value" v-hover-scale="1.2">Nearby</span>
-                    <span class="stat-desc" v-hover-scale="1.2">Many easy-<br />to-reach places</span>
-                  </div>
-                </div>
+      <!-- ══════════════════════════════════════════
+           3. SUBURB RISK COMPARISON
+      ══════════════════════════════════════════ -->
+      <section class="mh-suburbs" aria-label="Suburb heat risk">
+        <div class="mh-suburbs-inner">
+          <div class="mh-two-col">
+            <div class="mh-section-copy" data-animate="from-left">
+              <p class="mh-label">How the tools connect</p>
+              <h2>Choose the feature<br /><em>that helps next.</em></h2>
+              <p>
+                The homepage explains the journey. Open the feature pages when you want actual
+                suburb readings, weather conditions, route timing, or a personal plan.
+              </p>
+              <div class="mh-copy-stats">
+                <div class="mh-copy-stat"><strong>60+</strong><span>suburbs tracked</span></div>
+                <div class="mh-copy-stat"><strong>5</strong><span>linked safety tools</span></div>
               </div>
-
-              <div class="refuge-types">
-                <div class="refuge-type-item">
-                  <span class="type-icon" v-hover-scale="1.2">📚</span>
-                  <div class="type-info">
-                    <h4 v-hover-scale="1.2">Public Libraries</h4>
-                    <p v-hover-scale="1.2">Quiet, air-conditioned spaces and free books.</p>
-                  </div>
-                </div>
-                <div class="refuge-type-item">
-                  <span class="type-icon" v-hover-scale="1.2">🏘️</span>
-                  <div class="type-info">
-                    <h4 v-hover-scale="1.2">Community Hubs</h4>
-                    <p v-hover-scale="1.2">Meet others in an air-conditioned place.</p>
-                  </div>
-                </div>
-                <div class="refuge-type-item">
-                  <span class="type-icon" v-hover-scale="1.2">🛍️</span>
-                  <div class="type-info">
-                    <h4 v-hover-scale="1.2">Shopping Malls</h4>
-                    <p v-hover-scale="1.2">Large, air-conditioned places to walk around.</p>
-                  </div>
-                </div>
-              </div>
+              <a
+                class="mh-btn primary"
+                @click.prevent="navigateTo('/heatmap')"
+                href="#"
+                style="margin-top: 1.75rem"
+                >Open Full Heat Map →</a
+              >
             </div>
 
-            <div class="refuges-right">
-              <div class="refuge-image">
-                <img src="/pic1.jpg" alt="Senior reading in library" />
+            <div
+              class="mh-tool-orbit"
+              data-animate="from-right"
+              aria-label="MelbCool feature flow preview"
+            >
+              <div class="mh-tool-rings" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="mh-tool-core">
+                <span>MelbCool</span>
+                <strong>Choose next step</strong>
+              </div>
+              <a
+                class="mh-tool-node mh-tool-node--map"
+                @click.prevent="navigateTo('/heatmap')"
+                href="#"
+              >
+                <b>01</b><strong>Heat Map</strong><span>Suburb overview</span>
+              </a>
+              <a
+                class="mh-tool-node mh-tool-node--refuge"
+                @click.prevent="navigateTo('/cool-refuges')"
+                href="#"
+              >
+                <b>02</b><strong>Cool Refuges</strong><span>Nearby places</span>
+              </a>
+              <a
+                class="mh-tool-node mh-tool-node--trip"
+                @click.prevent="navigateTo('/trip-coach')"
+                href="#"
+              >
+                <b>03</b><strong>Trip Coach</strong><span>Safer movement</span>
+              </a>
+              <a
+                class="mh-tool-node mh-tool-node--clothes"
+                @click.prevent="navigateTo('/outfit-advisor')"
+                href="#"
+              >
+                <b>04</b><strong>Clothing Advisor</strong><span>Outfit support</span>
+              </a>
+              <a
+                class="mh-tool-node mh-tool-node--plan"
+                @click.prevent="navigateTo('/safety-plan')"
+                href="#"
+              >
+                <b>05</b><strong>Safety Plan</strong><span>Personal steps</span>
+              </a>
+              <div class="mh-tool-note">
+                Feature previews only. Open each tool for real suburb, weather, and personal
+                recommendations.
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="refuge-action">
-            <p class="action-hint" v-hover-scale="1.2">👉 Tap to quickly find a nearby cool refuge</p>
-            <button class="btn-find-refuge">
-              <span class="btn-icon" v-hover-scale="1.2">❄️  Find Cool Refuges Near Me</span>
-            </button>
+      <!-- ══════════════════════════════════════════
+           4. TRIP TIMING PREVIEW
+      ══════════════════════════════════════════ -->
+      <!-- <section class="mh-timing" aria-label="Trip timing preview">
+        <div class="mh-timing-inner">
+          <div class="mh-timing-head" data-animate>
+            <div>
+              <p class="mh-label light">Time your trips right</p>
+              <h2>Preview safer<br /><em>planning windows.</em></h2>
+              <p>This homepage shows the idea only. Trip Coach calculates the actual timing for the selected suburb, route, and transport mode.</p>
+            </div>
+            <a class="mh-btn outline" @click.prevent="navigateTo('/trip-coach')" href="#">Plan My Trip →</a>
+          </div>
+
+          <div class="mh-window-map" data-animate aria-label="Conceptual trip planning window preview">
+            <div class="mh-window-ribbon" aria-hidden="true"></div>
+            <article class="mh-window-card mh-window-card--easy">
+              <b>1</b>
+              <strong>Start early</strong>
+              <span>Prepare, leave slowly, and keep the trip simple.</span>
+            </article>
+            <article class="mh-window-card mh-window-card--care">
+              <b>2</b>
+              <strong>Check first</strong>
+              <span>Look for shade, transport wait time, and rest stops.</span>
+            </article>
+            <article class="mh-window-card mh-window-card--avoid">
+              <b>3</b>
+              <strong>Pause the trip</strong>
+              <span>If the day feels harsh, choose indoor tasks instead.</span>
+            </article>
+            <article class="mh-window-card mh-window-card--better">
+              <b>4</b>
+              <strong>Try later</strong>
+              <span>Re-check the route when conditions start easing.</span>
+            </article>
+            <div class="mh-window-key">
+              <span class="good">Easier window</span>
+              <span class="watch">Check first</span>
+              <span class="delay">Delay if needed</span>
+            </div>
           </div>
         </div>
       </section> -->
 
-      <section class="risk-section">
-        <h2 class="risk-title" v-hover-scale="1.2">How We Calculate Risk</h2>
-        <p class="risk-description" v-hover-scale="1.2">
-          Three key factors determine the heat safety level for each suburb of Melbourne.
-        </p>
-        <div class="risk-calculate-cards">
-          <div class="risk-calc-card temp">
-            <div class="card-image">
-              <img src="/temperature.png" alt="Temperature" />
+      <section class="mh-timing" aria-label="Hourly heat pattern">
+        <div class="mh-timing-inner">
+          <div class="mh-timing-head" data-animate>
+            <div>
+              <p class="mh-label light">Time your trips right</p>
+              <h2>When is it<br /><em>safe to go out?</em></h2>
+              <p>
+                Melbourne heat peaks between 10am and 4pm. Trip Coach tells you exactly when
+                conditions are safer for your specific suburb and route.
+              </p>
             </div>
-            <div class="calc-header">
-              <div class="calc-title-group">
-                <span class="calc-label" v-hover-scale="1.2">Temperature</span>
-                <span class="calc-value orange" v-hover-scale="1.2">36-40°C</span>
-              </div>
-            </div>
-            <ul class="calc-list">
-              <li v-hover-scale="1.1"><span class="dot red"></span> 10-15 extreme heat days/year</li>
-              <li v-hover-scale="1.1"><span class="dot red"></span> Higher night temperatures increase health risk</li>
-            </ul>
+            <a class="mh-btn outline" href="/trip-coach">Plan My Trip →</a>
           </div>
-          <div class="risk-calc-card tree">
-            <div class="card-image">
-              <img src="/tree.jpg" alt="Tree Coverage" />
+
+          <div class="mh-hourly mh-hourly-chart" data-animate>
+            <div class="mh-best-window" aria-label="Best window to go out">
+              ✓ Best window to go out
             </div>
-            <div class="calc-header">
-              <div class="calc-title-group">
-                <span class="calc-label" v-hover-scale="1.2">Tree Coverage</span>
-                <span class="calc-value green" v-hover-scale="1.2">&lt; 15%</span>
+            <!-- Animated sun cursor sweeps across the chart -->
+            <div class="mh-sun-cursor" aria-hidden="true">
+              <i class="fa-solid fa-sun mh-sun-icon"></i>
+              <div class="mh-sun-line"></div>
+            </div>
+            <div
+              class="mh-hourly-bars"
+              role="img"
+              aria-label="Example heat pattern on a hot Melbourne day"
+            >
+              <div class="mh-hbar-group" style="--col: #22c55e; --h: 26%; --d: 0s">
+                <span class="mh-hbar-temp">22°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">6am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #4ade80; --h: 34%; --d: 0.1s">
+                <span class="mh-hbar-temp">25°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">8am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #fbbf24; --h: 50%; --d: 0.2s">
+                <span class="mh-hbar-temp">30°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">10am</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #f97316; --h: 65%; --d: 0.3s">
+                <span class="mh-hbar-temp">34°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">12pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #ef4444; --h: 90%; --d: 0.4s">
+                <span class="mh-hbar-temp">38°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">2pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #ef4444; --h: 82%; --d: 0.5s">
+                <span class="mh-hbar-temp">37°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">4pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #f97316; --h: 56%; --d: 0.6s">
+                <span class="mh-hbar-temp">32°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">6pm</span>
+              </div>
+              <div class="mh-hbar-group" style="--col: #84cc16; --h: 38%; --d: 0.7s">
+                <span class="mh-hbar-temp">27°</span>
+                <div class="mh-hbar-fill"></div>
+                <span class="mh-hbar-hour">8pm</span>
               </div>
             </div>
-            <ul class="calc-list">
-              <li v-hover-scale="1.1"><span class="dot green"></span> Low canopy = 5-7°C hotter</li>
-              <li v-hover-scale="1.1"><span class="dot green"></span> Less shade means higher body heat and dehydration risk</li>
-              <li v-hover-scale="1.1"><span class="dot green"></span> Less shade means higher body heat and dehydration risk
-              </li>
-            </ul>
-          </div>
-          <div class="risk-calc-card uv">
-            <div class="card-image">
-              <img src="/uv.jpg" alt="UV Levels" />
+            <div class="mh-timing-legend">
+              <span style="color: #4ade80">● Safe — before 9am or after 7pm</span>
+              <span style="color: #fbbf24">● Caution — 9am–11am</span>
+              <span style="color: #ef4444">● Danger — 11am–6pm peak heat</span>
             </div>
-            <div class="calc-header">
-              <div class="calc-title-group">
-                <span class="calc-label" v-hover-scale="1.2">UV Levels</span>
-                <span class="calc-value purple" v-hover-scale="1.2">3</span>
-              </div>
-            </div>
-           <ul class="calc-list">
-              <li v-hover-scale="1.1">🟢 Low — Safe conditions, ideal for outdoor activities</li>
-              <li v-hover-scale="1.1">🟡 Moderate — May need extra support to stay safe and cool</li>
-              <li v-hover-scale="1.1">🔴 High — Take precautions to avoid heat-related illness</li>
-          </ul>
           </div>
         </div>
       </section>
 
-      <section class="stay-healthy-section">
-        <h2 class="stay-healthy-title" v-hover-scale="1.2">Stay Cool, Stay Healthy</h2>
-        <p class="stay-healthy-subtitle" v-hover-scale="1.2">
-          Simple actions can make a big difference. Protect yourself and check on others.
-        </p>
-        <div class="healthy-cards">
-          <div class="healthy-card">
-            <div class="healthy-card-header">
-              <span class="healthy-icon blue" v-hover-scale="1.2">🏠</span>
-              <h3 v-hover-scale="1.2">Stay Indoors</h3>
-            </div>
-            <ul class="healthy-list">
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Close curtains or blinds</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Stay inside between 12-4 PM</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Use fans or air conditioning</li>
-            </ul>
-          </div>
+      <!-- ══════════════════════════════════════════
+           5. FEATURE SECTIONS — full-width alternating
+      ══════════════════════════════════════════ -->
 
-          <div class="healthy-card">
-            <div class="healthy-card-header">
-              <span class="healthy-icon cyan" v-hover-scale="1.2">💧</span>
-              <h3 v-hover-scale="1.2">Drink Water</h3>
-            </div>
-            <ul class="healthy-list">
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Drink a glass every hour</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Avoid alcohol and caffeine</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Eat light meals, fruits and vegetables</li>
-            </ul>
+      <!-- 5A — Heat Map -->
+      <section class="mh-feature" id="feat-heatmap" aria-label="Heat Map tool">
+        <div class="mh-feature-inner">
+          <div class="mh-feature-visual" data-animate="from-left">
+            <img src="/assets/original/reli2.png" alt="Melbourne suburb heat map" loading="lazy" />
+            <div class="mh-feature-img-tag"><span class="mh-pulse-dot"></span> Feature preview</div>
           </div>
-
-          <div class="healthy-card">
-            <div class="healthy-card-header">
-              <span class="healthy-icon green" v-hover-scale="1.2">🌳</span>
-              <h3 v-hover-scale="1.2">Find Cool Places</h3>
+          <div class="mh-feature-copy" data-animate="from-right">
+            <span class="mh-feature-num">01</span>
+            <p class="mh-label">Heat Map</p>
+            <h2>Explore suburb heat patterns clearly.</h2>
+            <p>
+              The Heat Map page is where users open the real suburb view. The homepage only explains
+              what the map helps them compare.
+            </p>
+            <div class="mh-simple-risk" aria-label="Heat Map feature preview">
+              <div class="mh-risk-row">
+                <span class="mh-risk-dot" style="background: #0d9488"></span>
+                <span class="mh-risk-name">Suburb comparison</span>
+                <span class="mh-risk-level" style="color: #0f766e; background: #ecfdf5">Map</span>
+              </div>
+              <div class="mh-risk-row">
+                <span class="mh-risk-dot" style="background: #65a30d"></span>
+                <span class="mh-risk-name">Tree canopy context</span>
+                <span class="mh-risk-level" style="color: #65a30d; background: #f7fee7">Shade</span>
+              </div>
+              <div class="mh-risk-row">
+                <span class="mh-risk-dot" style="background: #2563eb"></span>
+                <span class="mh-risk-name">Older-adult support</span>
+                <span class="mh-risk-level" style="color: #2563eb; background: #eff6ff">Care</span>
+              </div>
             </div>
-            <ul class="healthy-list">
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Visit a cool refuge nearby</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Spend time in shaded areas</li>
-              <li v-hover-scale="1.2"><span class="check" >✓</span> Check on family, friends and neighbours</li>
-            </ul>
-          </div>
-
-          <div class="healthy-card help-card">
-            <div class="healthy-card-header">
-              <span class="healthy-icon red" v-hover-scale="1.2">📞</span>
-              <h3 v-hover-scale="1.2">Need Help?</h3>
-            </div>
-            <ul class="help-list">
-              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🚨</span> Call 000 in an emergency</li>
-              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">👨‍⚕️</span> Nurse-on-Call: 1300 60 60 24</li>
-              <li v-hover-scale="1.2"><span class="help-icon" v-hover-scale="1.2">🌐</span> Translation: 131 450</li>
-            </ul>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/heatmap')" href="#"
+              >Open Heat Map →</a
+            >
           </div>
         </div>
       </section>
 
-      <Footer />
+      <!-- 5B — Cool Refuges (alt bg, flipped) -->
+      <section
+        class="mh-feature mh-feature--alt mh-feature--flip"
+        id="feat-refuges"
+        aria-label="Cool Refuges tool"
+      >
+        <div class="mh-feature-inner">
+          <div class="mh-feature-visual" data-animate="from-right">
+            <img
+              src="/assets/generated-home/cool-refuge.png"
+              alt="Welcoming cool indoor refuge for older adults"
+              loading="lazy"
+            />
+            <div class="mh-feature-img-tag" style="background: rgba(14, 116, 144, 0.9)">
+              ❄️ Air conditioned
+            </div>
+          </div>
+          <div class="mh-feature-copy" data-animate="from-left">
+            <span class="mh-feature-num">02</span>
+            <p class="mh-label">Cool Refuges</p>
+            <h2>Find your nearest cool space in seconds.</h2>
+            <p>
+              Libraries, community hubs, shopping centres, parks, and museums — every type of public
+              cooling space, mapped, filtered, and ranked by how close and how accessible they are.
+            </p>
+            <div class="mh-refuge-list" aria-label="Example cool refuges">
+              <div class="mh-refuge-row">
+                <img src="/assets/generated-home/cool-refuge.png" alt="" />
+                <div>
+                  <strong>State Library Victoria</strong>
+                  <span>Library seating · water access · free entry</span>
+                </div>
+              </div>
+              <div class="mh-refuge-row">
+                <img src="/assets/generated-home/personal-needs.png" alt="" />
+                <div>
+                  <strong>Neighbourhood Community Hub</strong>
+                  <span>Community support · toilets · seating</span>
+                </div>
+              </div>
+              <div class="mh-refuge-row">
+                <img src="/assets/generated-home/shade-signal.png" alt="" />
+                <div>
+                  <strong>Indoor Shopping Centre</strong>
+                  <span>Indoor walking · rest areas · food nearby</span>
+                </div>
+              </div>
+            </div>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/cool-refuges')" href="#"
+              >Find Cool Refuges →</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- 5C — Trip Coach -->
+      <section class="mh-feature" id="feat-trip" aria-label="Trip Coach tool">
+        <div class="mh-feature-inner">
+          <div class="mh-feature-visual" data-animate="from-left">
+            <img
+              src="/assets/generated-home/trip-coach.png"
+              alt="Older adult and carer planning a shaded route"
+              loading="lazy"
+            />
+          </div>
+          <div class="mh-feature-copy" data-animate="from-right">
+            <span class="mh-feature-num">03</span>
+            <p class="mh-label">Trip Coach</p>
+            <h2>Leave at the right moment, every time.</h2>
+            <p>
+              Your trip is broken into legs — walk, wait, ride, arrive. Each leg gets an exposure
+              score based on shade, transport type, and the time of day. Trip Coach tells you when
+              and how to travel with the least heat exposure.
+            </p>
+            <div class="mh-time-blocks" aria-label="Safe and unsafe travel windows">
+              <div class="mh-time-block mh-time-block--safe">
+                <span class="mh-time-icon">🌅</span>
+                <div>
+                  <strong>Before 9am</strong>
+                  <span>Start early and reduce outdoor exposure</span>
+                </div>
+              </div>
+              <div class="mh-time-block mh-time-block--danger">
+                <span class="mh-time-icon">☀️</span>
+                <div>
+                  <strong>10am – 4pm</strong>
+                  <span>Consider delaying if conditions are harsh</span>
+                </div>
+              </div>
+              <div class="mh-time-block mh-time-block--safe">
+                <span class="mh-time-icon">🌆</span>
+                <div>
+                  <strong>After 6pm</strong>
+                  <span>Check the tool before leaving</span>
+                </div>
+              </div>
+            </div>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/trip-coach')" href="#"
+              >Plan My Trip →</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- 5D — Clothing Advisor (alt, flipped) -->
+      <section
+        class="mh-feature mh-feature--alt mh-feature--flip"
+        id="feat-clothing"
+        aria-label="Clothing Advisor tool"
+      >
+        <div class="mh-feature-inner">
+          <div class="mh-feature-visual" data-animate="from-right">
+            <img
+              src="/assets/generated-home/clothing-advisor.png"
+              alt="Older adult choosing lightweight heat-safe clothing"
+              loading="lazy"
+            />
+          </div>
+          <div class="mh-feature-copy" data-animate="from-left">
+            <span class="mh-feature-num">04</span>
+            <p class="mh-label">Clothing Advisor</p>
+            <h2>Dressed right for the day you are planning.</h2>
+            <p>
+              The Clothing Advisor page uses the actual conditions. The homepage only shows the kind
+              of choices it helps older adults make.
+            </p>
+            <div class="mh-clothing-check" aria-label="Clothing checklist preview">
+              <p class="mh-clothing-header">Preview · clothing choices</p>
+              <div class="mh-check-row">
+                <span class="mh-check-yes">✓</span>
+                <span>Lightweight, light-coloured fabrics</span>
+              </div>
+              <div class="mh-check-row">
+                <span class="mh-check-yes">✓</span>
+                <span>UPF 50+ sun shirt or loose long sleeves</span>
+              </div>
+              <div class="mh-check-row">
+                <span class="mh-check-yes">✓</span>
+                <span>Wide-brimmed hat (min. 7.5cm brim)</span>
+              </div>
+              <div class="mh-check-row">
+                <span class="mh-check-no">✗</span>
+                <span>Dark, synthetic, or tight-fitting layers</span>
+              </div>
+            </div>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/outfit-advisor')" href="#"
+              >Get Recommendations →</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- 5E — Safety Plan (dark full-width) -->
+      <section class="mh-feature mh-feature--dark" id="feat-plan" aria-label="Safety Plan tool">
+        <div class="mh-feature-inner">
+          <div class="mh-feature-visual" data-animate="from-left">
+            <img
+              src="/assets/generated-home/safety-plan.png"
+              alt="Older adult and carer reviewing a personal heat safety plan"
+              loading="lazy"
+            />
+            <div
+              class="mh-feature-img-tag"
+              style="
+                background: rgba(163, 247, 125, 0.18);
+                color: #a3f77d;
+                border: 1px solid rgba(163, 247, 125, 0.3);
+              "
+            >
+              📋 Printable plan
+            </div>
+          </div>
+          <div class="mh-feature-copy mh-feature-copy--light" data-animate="from-right">
+            <span class="mh-feature-num" style="color: rgba(163, 247, 125, 0.6)">05</span>
+            <p class="mh-label">Personal Safety Plan</p>
+            <h2>6 questions.<br />One personalised plan.</h2>
+            <p>
+              Answer 6 simple questions about your suburb, health, and daily routine. Get a calm,
+              clear plan with your risk level, safest time window, nearest cool refuge, and
+              emergency contacts — all printable.
+            </p>
+            <div class="mh-plan-flow" aria-label="Plan creation steps">
+              <div class="mh-plan-step">
+                <span class="mh-plan-step-num">1</span>
+                <span>Your suburb & health</span>
+              </div>
+              <div class="mh-plan-arr">→</div>
+              <div class="mh-plan-step">
+                <span class="mh-plan-step-num">2</span>
+                <span>Risk level</span>
+              </div>
+              <div class="mh-plan-arr">→</div>
+              <div class="mh-plan-step">
+                <span class="mh-plan-step-num">3</span>
+                <span>Your plan</span>
+              </div>
+            </div>
+            <a class="mh-btn primary" @click.prevent="navigateTo('/safety-plan')" href="#"
+              >Create My Plan →</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+           6. TRANSPORT RISK
+      ══════════════════════════════════════════ -->
+      <!-- <section class="mh-transport" aria-label="Transport heat exposure">
+        <div class="mh-transport-inner">
+          <div class="mh-section-center" data-animate>
+            <p class="mh-label light">Getting around on hot days</p>
+            <h2>How you travel<br /><em>changes your risk.</em></h2>
+            <p>The same trip can feel very different depending on shade, waiting time, and transport mode. The detailed route calculation belongs in Trip Coach.</p>
+          </div>
+          <div class="mh-transport-grid mh-stagger">
+            <div class="mh-tcard">
+              <div class="mh-tcard-top" style="background:rgba(239,68,68,0.12)">
+                <div class="mh-tcard-mark mh-tcard-mark--walk" aria-label="Walking">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M25 10c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5Z" />
+                    <path d="M22 23 17 34l-6 4" />
+                    <path d="m25 23 6 7 6 2" />
+                    <path d="m21 28 8 10" />
+                  </svg>
+                </div>
+                <span class="mh-tbadge" style="color:#dc2626;background:rgba(220,38,38,0.12)">High Risk</span>
+              </div>
+              <h3>Walking</h3>
+              <p>Direct sun and no shelter can make this the hardest option. Use Trip Coach before choosing a walking route.</p>
+              <div class="mh-route-viz mh-route-viz--high" aria-hidden="true">
+                <div class="mh-route-path">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="mh-route-tags">
+                  <span>Open sun</span><span>No rest</span><span>Long walk</span>
+                </div>
+              </div>
+              <span class="mh-tcard-score">Highest exposure pattern</span>
+            </div>
+            <div class="mh-tcard mh-tcard--featured">
+              <div class="mh-tcard-top" style="background:rgba(234,88,12,0.12)">
+                <div class="mh-tcard-mark mh-tcard-mark--stop" aria-label="Public transport stop">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M15 14h18a5 5 0 0 1 5 5v12a5 5 0 0 1-5 5H15a5 5 0 0 1-5-5V19a5 5 0 0 1 5-5Z" />
+                    <path d="M16 22h16" />
+                    <path d="M17 36v4" />
+                    <path d="M31 36v4" />
+                    <path d="M17 29h.2" />
+                    <path d="M31 29h.2" />
+                    <path d="M20 9h8" />
+                  </svg>
+                </div>
+                <span class="mh-tbadge" style="color:#c2410c;background:rgba(194,65,12,0.12)">Moderate</span>
+              </div>
+              <h3>Tram / Bus</h3>
+              <p>Indoor travel can help, but waiting outside still matters. Plan around a shaded stop and shorter transfer.</p>
+              <div class="mh-route-viz mh-route-viz--medium" aria-hidden="true">
+                <div class="mh-route-path">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="mh-route-tags">
+                  <span>Stop wait</span><span>Short shade</span><span>Transfer</span>
+                </div>
+              </div>
+              <span class="mh-tcard-score">Medium exposure pattern</span>
+            </div>
+            <div class="mh-tcard">
+              <div class="mh-tcard-top" style="background:rgba(34,197,94,0.12)">
+                <div class="mh-tcard-mark mh-tcard-mark--door" aria-label="Door-to-door travel">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M14 40V10h17l5 4v26" />
+                    <path d="M20 40V16h16" />
+                    <path d="M30 27h.2" />
+                    <path d="M10 40h30" />
+                  </svg>
+                </div>
+                <span class="mh-tbadge" style="color:#16a34a;background:rgba(22,163,74,0.12)">Low Risk</span>
+              </div>
+              <h3>Driving</h3>
+              <p>Door-to-door travel can reduce outdoor exposure. Park in shade and make the trip easier for older passengers.</p>
+              <div class="mh-route-viz mh-route-viz--low" aria-hidden="true">
+                <div class="mh-route-path">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="mh-route-tags">
+                  <span>Door</span><span>Shade</span><span>Rest ready</span>
+                </div>
+              </div>
+              <span class="mh-tcard-score">Lower exposure pattern</span>
+            </div>
+          </div>
+          <p class="mh-transport-note">
+            Trip Coach calculates exposure for your specific route, time, and transport mode. &nbsp;<a @click.prevent="navigateTo('/trip-coach')" href="#">Plan my trip →</a>
+          </p>
+        </div>
+      </section> -->
+
+      <!-- ══════════════════════════════════════════
+           7. RISK FACTORS — editorial horizontal cards
+      ══════════════════════════════════════════ -->
+      <!-- <section class="mh-risk" aria-label="How heat risk is calculated">
+        <div class="mh-risk-inner">
+          <div class="mh-risk-lead" data-animate>
+            <p class="mh-label">Evidence-based</p>
+            <h2>Three signals.<br />One clearer decision.</h2>
+            <p>This homepage explains the inputs at a high level. The feature pages show the actual readings and calculations.</p>
+          </div>
+
+          <div class="mh-factors">
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img src="/assets/generated-home/conditions-signal.png" alt="Melbourne street conditions and shaded resting area" loading="lazy" />
+                <div class="mh-factor-num-overlay">01</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent:#ef4444"></div>
+                <div class="mh-factor-tag" style="color:#dc2626;background:#fef2f2">Weather signal</div>
+                <h3>Current conditions</h3>
+                <p>The feature pages use actual weather conditions to help decide when to rest, travel, dress differently, or choose an indoor place.</p>
+                <div class="mh-signal-steps" aria-label="Weather signal steps">
+                  <span>Check</span><span>Plan</span><span>Act</span><span>Review</span>
+                  <p class="mh-factor-caption">Exact readings are shown inside the feature pages</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor mh-factor--flip" data-animate>
+              <div class="mh-factor-img">
+                <img src="/assets/generated-home/shade-signal.png" alt="Older adult resting under tree canopy shade" loading="lazy" />
+                <div class="mh-factor-num-overlay">02</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent:#16a34a"></div>
+                <div class="mh-factor-tag" style="color:#15803d;background:#f0fdf4">Tree Coverage</div>
+                <h3>Canopy cover percentage</h3>
+                <p>Tree canopy helps the map explain where a route may feel more exposed and where shade or indoor cooling might be easier to find.</p>
+                <div class="mh-canopy-grid" aria-label="Tree canopy coverage preview">
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                  <p class="mh-factor-caption">Under 15% canopy cover raises risk significantly</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img src="/assets/generated-home/personal-needs.png" alt="Carer checking in with an older adult at home" loading="lazy" />
+                <div class="mh-factor-num-overlay">03</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent:#7c3aed"></div>
+                <div class="mh-factor-tag" style="color:#6d28d9;background:#f5f3ff">Personal needs</div>
+                <h3>Older-adult context</h3>
+                <p>Health, mobility, living situation, cooling access, and check-ins change what advice is useful for each person.</p>
+                <div class="mh-support-orbit" aria-label="Personal support context preview">
+                  <strong>Plan</strong>
+                  <span class="mh-support-orbit-home">Home</span>
+                  <span class="mh-support-orbit-health">Health</span>
+                  <span class="mh-support-orbit-mobility">Mobility</span>
+                  <span class="mh-support-orbit-support">Support</span>
+                  <p class="mh-factor-caption">Personal questions belong in the Safety Plan tool</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> -->
+
+      <!-- ══════════════════════════════════════════
+         6. TRANSPORT RISK
+    ══════════════════════════════════════════ -->
+      <section class="mh-transport" aria-label="Transport heat exposure">
+        <div class="mh-transport-inner">
+          <div class="mh-section-center" data-animate>
+            <p class="mh-label light">Getting around on hot days</p>
+            <h2>How you travel<br /><em>changes your risk.</em></h2>
+            <p>
+              On a 38°C day, the same 20-minute journey carries very different heat exposure
+              depending on how you get there.
+            </p>
+          </div>
+          <div class="mh-transport-grid mh-stagger">
+            <!-- Walking — heat haze effect -->
+            <div class="mh-tcard mh-tcard--walk">
+              <div class="mh-heat-haze" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mh-tcard-top" style="background: rgba(239, 68, 68, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--red mh-ticon--bounce">
+                  <i class="fa-solid fa-person-walking"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #dc2626; background: rgba(220, 38, 38, 0.12)"
+                  >High Risk</span
+                >
+              </div>
+              <h3>Walking</h3>
+              <p>
+                Direct sun, no shelter, maximum heat absorption. The highest-exposure option during
+                extreme heat — avoid between 10am and 5pm.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ef4444"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">8 of 10 · High exposure</span>
+            </div>
+            <div class="mh-tcard mh-tcard--featured">
+              <div class="mh-tcard-top" style="background: rgba(234, 88, 12, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--orange mh-ticon--sway">
+                  <i class="fa-solid fa-train-subway"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #c2410c; background: rgba(194, 65, 12, 0.12)"
+                  >Moderate</span
+                >
+              </div>
+              <h3>Tram / Bus</h3>
+              <p>
+                Air-conditioned cabin significantly reduces exposure, but outdoor waiting time adds
+                risk. Plan around a shaded stop and travel mid-trip.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #ea580c"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">5 of 10 · Moderate exposure</span>
+            </div>
+            <div class="mh-tcard">
+              <div class="mh-tcard-top" style="background: rgba(34, 197, 94, 0.12)">
+                <div class="mh-tcard-icon mh-icard-badge mh-icard-badge--teal mh-ticon--drive">
+                  <i class="fa-solid fa-car-side"></i>
+                </div>
+                <span class="mh-tbadge" style="color: #16a34a; background: rgba(22, 163, 74, 0.12)"
+                  >Low Risk</span
+                >
+              </div>
+              <h3>Driving</h3>
+              <p>
+                Air-conditioned, door-to-door — the lowest-exposure option during extreme heat. Park
+                in shade and pre-cool the car before elderly passengers board.
+              </p>
+              <div class="mh-tcard-dots">
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--on" style="--tc: #22c55e"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+                <i class="fa-solid fa-sun mh-tdot mh-tdot--off"></i>
+              </div>
+              <span class="mh-tcard-score">3 of 10 · Low exposure</span>
+            </div>
+          </div>
+          <p class="mh-transport-note">
+            Trip Coach calculates exposure for your specific route, time, and transport mode.
+            &nbsp;<a href="trip-coach.html">Plan my trip →</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+         7. RISK FACTORS — editorial horizontal cards
+    ══════════════════════════════════════════ -->
+      <section class="mh-risk" aria-label="How heat risk is calculated">
+        <div class="mh-risk-inner">
+          <div class="mh-risk-lead" data-animate>
+            <p class="mh-label">Evidence-based</p>
+            <h2>Three factors.<br />One clear risk score.</h2>
+            <p>
+              Every suburb's risk score is calculated from three real-world data sources updated
+              throughout the day.
+            </p>
+          </div>
+
+          <div class="mh-factors">
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img
+                  src="/assets/original/temperature.png"
+                  alt="Temperature gauge"
+                  loading="lazy"
+                />
+                <div class="mh-factor-num-overlay">01</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #ef4444"></div>
+                <div class="mh-factor-tag" style="color: #dc2626; background: #fef2f2">
+                  Temperature
+                </div>
+                <h3>Apparent temperature</h3>
+                <p>
+                  Accounts for humidity and wind chill, not just the air reading. Inner Melbourne
+                  regularly hits 36–40°C apparent on extreme summer days — significantly more
+                  dangerous than the official maximum.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>0°C</span><span>20°C</span><span>30°C</span><span>40°C+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 88%; --col: #ef4444"></div>
+                  </div>
+                  <p class="mh-factor-caption">36–40°C is the peak risk zone for older adults</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor mh-factor--flip" data-animate>
+              <div class="mh-factor-img">
+                <img
+                  src="/assets/original/tree.jpg"
+                  alt="Tree canopy providing shade"
+                  loading="lazy"
+                />
+                <div class="mh-factor-num-overlay">02</div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #16a34a"></div>
+                <div class="mh-factor-tag" style="color: #15803d; background: #f0fdf4">
+                  Tree Coverage
+                </div>
+                <h3>Canopy cover percentage</h3>
+                <p>
+                  Suburbs with less than 15% tree canopy can feel 5–7°C hotter at street level.
+                  Shade is the single most effective passive cooling factor — MelbCool uses
+                  satellite-derived canopy maps updated quarterly.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>0%</span><span>15%</span><span>30%</span><span>50%+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 62%; --col: #16a34a"></div>
+                  </div>
+                  <p class="mh-factor-caption">Under 15% canopy cover raises risk significantly</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mh-factor" data-animate>
+              <div class="mh-factor-img">
+                <img src="/assets/original/uv.jpg" alt="UV sun rays" loading="lazy" />
+                <div class="mh-factor-num-overlay">03</div>
+                <div class="mh-uv-spin" aria-hidden="true">
+                  <i class="fa-solid fa-sun"></i>
+                </div>
+              </div>
+              <div class="mh-factor-body">
+                <div class="mh-factor-accent" style="--accent: #7c3aed"></div>
+                <div class="mh-factor-tag" style="color: #6d28d9; background: #f5f3ff">
+                  UV Index
+                </div>
+                <h3>Ultraviolet radiation level</h3>
+                <p>
+                  UV above 3 accelerates skin damage and compounds heat illness risk. Melbourne UV
+                  regularly peaks at 10–12 in summer, even on overcast days. Older skin burns faster
+                  and sweats less efficiently.
+                </p>
+                <div class="mh-factor-bar-wrap">
+                  <div class="mh-factor-bar-labels">
+                    <span>UV 0</span><span>UV 3</span><span>UV 7</span><span>UV 11+</span>
+                  </div>
+                  <div class="mh-factor-track">
+                    <div class="mh-factor-fill" style="--pct: 76%; --col: #7c3aed"></div>
+                  </div>
+                  <p class="mh-factor-caption">UV 3+ triggers sun-protection requirements</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════
+           8. TIPS — with images
+      ══════════════════════════════════════════ -->
+      <!-- <section class="mh-tips" aria-label="Heat safety tips">
+        <div class="mh-tips-inner">
+          <div class="mh-tips-head" data-animate>
+            <p class="mh-label">Simple actions</p>
+            <h2>What to do<br />on a hot day.</h2>
+            <p>These actions can reduce your heat risk significantly — especially for adults over 65.</p>
+          </div>
+          <div class="mh-tips-grid mh-stagger">
+            <div class="mh-tip">
+              <div class="mh-tip-img">
+                <img src="/assets/generated-home/tip-cool-room.png" alt="Cool indoor room prepared for an older adult" loading="lazy" />
+              </div>
+              <div class="mh-tip-body">
+                <h3>🏠 Stay Indoors</h3>
+                <ul>
+                  <li>Close curtains before midday</li>
+                  <li>Stay inside between 12 – 4 PM</li>
+                  <li>Use fans or air conditioning</li>
+                  <li>Block direct sunlight on west-facing windows</li>
+                </ul>
+              </div>
+            </div>
+            <div class="mh-tip">
+              <div class="mh-tip-img">
+                <img src="/assets/generated-home/tip-water.png" alt="Water and hydration support for hot days" loading="lazy" />
+              </div>
+              <div class="mh-tip-body">
+                <h3>💧 Drink Water</h3>
+                <ul>
+                  <li>One glass every hour — even without thirst</li>
+                  <li>Avoid alcohol and caffeine</li>
+                  <li>Eat light — fruit, salads, cold foods</li>
+                  <li>Keep a water bottle visible as a reminder</li>
+                </ul>
+              </div>
+            </div>
+            <div class="mh-tip">
+              <div class="mh-tip-img">
+                <img src="/assets/generated-home/tip-checkin.png" alt="Older adult receiving a supportive check-in call" loading="lazy" />
+              </div>
+              <div class="mh-tip-body">
+                <h3>🌳 Find Cool Places</h3>
+                <ul>
+                  <li>Visit a library or community hub</li>
+                  <li>Use shaded paths when outside</li>
+                  <li>Check on neighbours and family</li>
+                  <li>Call ahead to confirm access before going</li>
+                </ul>
+              </div>
+            </div>
+            <div class="mh-tip mh-tip--urgent">
+              <div class="mh-tip-img">
+                <img src="/assets/generated-home/tip-warning.png" alt="Carer checking on an older adult for warning signs" loading="lazy" />
+              </div>
+              <div class="mh-tip-body">
+                <h3>📞 Emergency Signs</h3>
+                <ul>
+                  <li>Confusion or sudden dizziness</li>
+                  <li>Very hot, dry skin — no sweating</li>
+                  <li>Fainting, collapse, or unconscious</li>
+                </ul>
+                <a class="mh-tip-cta" href="tel:000">Call 000 immediately</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> -->
+
+      <!-- ══════════════════════════════════════════
+           9. FINAL CTA
+      ══════════════════════════════════════════ -->
+      <!-- <section class="mh-cta" aria-label="Get started with your safety plan">
+        <div class="mh-cta-img-bg" aria-hidden="true">
+          <img src="/assets/generated-home/hero-welcome.png" alt="" />
+          <div class="mh-cta-img-overlay"></div>
+        </div>
+        <div class="mh-cta-inner" data-animate>
+          <div class="mh-cta-copy">
+            <p class="mh-label light">Ready when you are</p>
+            <h2>Start with one safe choice today.</h2>
+            <p>Takes about 3 minutes. You'll walk away with a personalised plan covering your suburb's risk, safest time windows, nearest cool space, and emergency contacts — all in one printable sheet.</p>
+          </div>
+          <div class="mh-cta-actions">
+            <a class="mh-btn primary large" @click.prevent="navigateTo('/safety-plan')" href="#">Make My Plan</a>
+            <a class="mh-btn ghost large" @click.prevent="navigateTo('/heatmap')" href="#">Check My Suburb</a>
+          </div>
+        </div>
+        <div class="mh-emergency-strip">
+          <span>Emergency signs: confusion, fainting, very hot dry skin →</span>
+          <a href="tel:000">Call 000</a>
+          <a href="tel:1300606024">Nurse-on-Call</a>
+        </div>
+      </section> -->
     </main>
 
-    <!-- Emergency Alert Modal -->
-    <EmergencyAlertModal :show="showAlertModal" @close="showAlertModal = false" />
+    <Footer />
   </div>
 </template>
-
-<style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.app {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.main-content {
-  min-height: calc(100vh - 80px);
- 
-  /* background-size: cover; */
-  /* background-position: center; */
-  /* background-attachment: fixed; */
-}
-.heroWrip{
-   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/bg.jpg');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-.hero {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 4rem;
-
-  min-height: calc(100vh - 160px);
-}
-
-.hero-left {
-  flex: 1;
-  max-width: 600px;
-}
-
-.hero-title {
-  font-size: 4rem;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
-}
-
-.hero-title .highlight {
-  color: #a3f77d;
-}
-
-.hero-description {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-primary {
-  background-color: #0d3a8f;
-  color: #ffffff;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-primary:hover {
-  background-color: #1a4bb8;
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  backdrop-filter: blur(10px);
-}
-
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.info-section {
-  background-color: #ffffff;
-  /* border-radius: 16px; */
-  padding: 2rem;
-  text-align: left;
-  display: flex;
-  gap: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.info-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 4rem;
-}
-
-.info-left,
-.info-right {
-  display: flex;
- 
-  flex-direction: column;
-}
-.info-right{
- margin-top: 115px;
-}
-
-.risk-level-card {
-  background-color: #f8f9ff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #e0e7ff;
-}
-
-.risk-level-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 1rem;
-}
-
-.risk-levels {
-  display: flex;
-  flex-direction: column;
-  gap: 2.8rem;
-}
-
-.risk-level-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 0.75rem;
-}
-
-.risk-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.risk-dot.green {
-  background-color: #22c55e;
-}
-
-.risk-dot.yellow {
-  background-color: #eab308;
-}
-
-.risk-dot.orange {
-  background-color: #f97316;
-}
-
-.risk-dot.red {
-  background-color: #dc2626;
-}
-
-.risk-desc{
-  padding-left: 20px;
-}
-.risk-label {
-  font-size: 1rem;
-  color: #1a1a1a;
-  font-weight: bold;
-}
-
-.high-risk-stats {
-  background-color: #f8f9ff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid #e0e7ff;
-}
-
-.stats-title {
-  color: #1a1a1a;
-  margin-bottom: 1.5rem;
-  line-height: 1.3;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.stat-item:last-child {
-  margin-bottom: 0;
-}
-
-.stat-icon {
-  font-size: 2rem;
-  color: #dc2626;
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-number {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #1a1a1a;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: #666;
-  line-height: 1.3;
-  margin-top: 0.25rem;
-}
-
-.tag {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-bottom: 1rem;
-  align-self: flex-start;
-}
-
-.tag.vulnerability {
-  background-color: #ffe4cc;
-  color: #c2410c;
-}
-
-.tag.safe {
-  background-color: #bbf7d0;
-  color: #15803d;
-}
-
-.section-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 1rem;
-}
-
-.section-description {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-}
-
-.map-image {
-  border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.map-image img {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  display: block;
-}
-
-.explore-link {
-  color: #1a3a8f;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.explore-link:hover {
-  color: #0d3a8f;
-}
-
-.refuge-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.refuge-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #f8f9ff;
-  border-radius: 12px;
-  transition: background-color 0.3s ease;
-}
-
-.refuge-item:hover {
-  background-color: #eef1ff;
-}
-
-.refuge-icon {
-  font-size: 1.5rem;
-}
-
-.refuge-info h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 0.25rem;
-}
-
-.refuge-info p {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0;
-}
-
-.cool-refuges-section {
-  background-color: #f0f7ff;
-  padding: 5rem 2rem;
-}
-
-.cool-refuges-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.cool-refuges-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 1rem 0 1rem;
-}
-
-.cool-refuges-description {
-  font-size: 1.1rem;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 700px;
-}
-
-.cool-refuges-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.refuges-left {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.refuge-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.refuge-stat-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.refuge-stat-card.blue {
-  border: 2px solid #dbeafe;
-}
-
-.refuge-stat-card.green {
-  border: 2px solid #bbf7d0;
-}
-
-.stat-icon-large {
-  font-size: 2rem;
-}
-
-.stat-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.stat-desc {
-  font-size: 0.8rem;
-  color: #666;
-  line-height: 1.3;
-}
-
-.refuge-types {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.refuge-type-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.type-icon {
-  font-size: 1.75rem;
-}
-
-.type-info h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.25rem;
-}
-
-.type-info p {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0;
-}
-
-.refuges-right {
-  display: flex;
-  align-items: stretch;
-}
-
-.refuge-image {
-  width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.refuge-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.refuge-action {
-  text-align: center;
-  padding-top: 1rem;
-}
-
-.action-hint {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.btn-find-refuge {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  padding: 1rem 3rem;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.btn-find-refuge:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-}
-
-.btn-icon {
-  font-size: 1.25rem;
-}
-
-@media (max-width: 768px) {
-  .cool-refuges-content {
-    grid-template-columns: 1fr;
-  }
-
-  .refuges-right {
-    order: -1;
-  }
-
-  .refuge-image {
-    height: 250px;
-  }
-}
-
-.why-matters-section {
-  background-color: #f0f7ff;
-  padding: 5rem 2rem;
-  text-align: center;
-}
-
-.why-matters-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.75rem;
-}
-
-.why-matters-subtitle {
-  font-size: 1rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto 3rem;
-  line-height: 1.5;
-}
-
-.why-matters-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.matter-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: left;
-  display: flex;
-  gap: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.matter-number {
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.matter-number.blue {
-  color: #1e40af;
-}
-
-.matter-number.red {
-  color: #dc2626;
-}
-
-.matter-number.green {
-  color: #16a34a;
-}
-
-.matter-content h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
-  line-height: 1.3;
-}
-
-.matter-content p {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-}
-
-.matter-visual {
-  margin-top: 1rem;
-}
-
-.matter-visual.people {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
-}
-
-.person {
-  font-size: 1.25rem;
-}
-
-.person.filled {
-  opacity: 1;
-}
-
-.person.empty {
-  opacity: 0.3;
-}
-
-.bar-chart {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-}
-
-.bar-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.8rem;
-}
-
-.bar-label {
-  background-color: #dc2626;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.bar-value {
-  color: #666;
-}
-
-.progress-bar {
-  height: 8px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background-color: #dc2626;
-  border-radius: 4px;
-}
-
-.temp-slider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.temp-labels {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.temp-icon {
-  font-size: 1.25rem;
-}
-
-.temp-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #666;
-}
-
-.slider-bar {
-  flex: 1;
-  height: 8px;
-  background-color: #dbeafe;
-  border-radius: 4px;
-  position: relative;
-}
-
-.slider-fill {
-  height: 100%;
-  background-color: #1e40af;
-  border-radius: 4px;
-}
-
-.temp-high {
-  font-size: 0.75rem;
-  color: #1e40af;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.hydration {
-  display: flex;
-  gap: 1rem;
-}
-
-.hydration-box {
-  flex: 1;
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
-  /* border: 2px solid #e5e7eb; */
-}
-
-
-
-/* .hydration-box.senior {
-  background-color: #16a34a;
-  border-color: #16a34a;
-} */
-
-.hydration-box.senior .hydration-label {
-  color: #16a34a;
-}
-
-.drop-icon {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.hydration-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #666;
-}
-
-@media (max-width: 768px) {
-  .why-matters-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .matter-card {
-    flex-direction: column;
-  }
-
-  .matter-number {
-    font-size: 2.5rem;
-  }
-}
-
-.heat-impact-section {
-  background-color: #ffffff;
-  padding: 5rem 2rem;
-  text-align: center;
-}
-
-.heat-impact-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 2rem;
-}
-
-.heat-impact-grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-}
-
-.impact-card {
-  background-color: #f8f9ff;
-  border-radius: 16px;
-  padding: 2rem 1.5rem;
-  text-align: center;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.impact-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-}
-
-.impact-card.blue {
-  background-color: #eff6ff;
-}
-
-.impact-card.red {
-  background-color: #fef2f2;
-}
-
-.impact-card.orange {
-  background-color: #fff7ed;
-}
-
-.impact-card.green {
-  background-color: #f0fdf4;
-}
-
-.impact-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.impact-number {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.impact-card.blue .impact-number {
-  color: #2563eb;
-}
-
-.impact-card.red .impact-number {
-  color: #dc2626;
-}
-
-.impact-card.orange .impact-number {
-  color: #ea580c;
-}
-
-.impact-card.green .impact-number {
-  color: #16a34a;
-}
-
-.impact-label {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.4;
-}
-
-@media (max-width: 1024px) {
-  .heat-impact-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .heat-impact-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.risk-section {
-  background-color: #f0f7ff;
-  padding: 5rem 2rem;
-  text-align: center;
-}
-
-.risk-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.75rem;
-}
-
-.risk-description {
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto 3rem;
-}
-
-.risk-calculate-cards {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.risk-calc-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  text-align: left;
-  border: 2px solid #e5e7eb;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  overflow: hidden;
-}
-
-.risk-calc-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.risk-calc-card.temp {
-  border-color: #fed7aa;
-  background-color: #fff7ed;
-}
-
-.risk-calc-card.tree {
-  border-color: #bbf7d0;
-  background-color: #f0fdf4;
-}
-
-.risk-calc-card.uv {
-  border-color: #ddd6fe;
-  background-color: #faf5ff;
-}
-
-.card-image {
-  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-  overflow: hidden;
-}
-
-.card-image img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-.calc-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  /* margin-bottom: 1rem; */
-}
-
-.calc-icon {
-  font-size: 2rem;
-}
-
-.calc-title-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.calc-label {
-  font-size: 20px;
-  color: #666;
-  font-weight: bold;
-}
-
-.calc-value {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #ea580c;
-  margin: 10px 0;
-}
-
-.calc-value.green {
-  color: #16a34a;
-}
-
-.calc-value.purple {
-  color: #7c3aed;
-}
-
-.calc-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.calc-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.calc-list .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 0.375rem;
-}
-
-.calc-list .dot.red {
-  background-color: #ef4444;
-}
-
-.calc-list .dot.green {
-  background-color: #16a34a;
-}
-
-.calc-list .dot.purple {
-  background-color: #7c3aed;
-}
-
-.stay-healthy-section {
-  background-color: #fff;
-  padding: 5rem 2rem;
-  text-align: center;
-}
-
-.stay-healthy-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.75rem;
-}
-
-.stay-healthy-subtitle {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 2.5rem;
-}
-
-.healthy-cards {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-}
-
-.healthy-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  text-align: left;
-  border: 2px solid #e5e7eb;
-}
-
-.healthy-card.help-card {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-}
-
-.healthy-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.healthy-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-}
-
-.healthy-icon.blue {
-  background-color: #dbeafe;
-}
-
-.healthy-icon.cyan {
-  background-color: #cffafe;
-}
-
-.healthy-icon.green {
-  background-color: #bbf7d0;
-}
-
-.healthy-icon.red {
-  background-color: #fecaca;
-}
-
-.healthy-card-header h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.healthy-list,
-.help-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.healthy-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.healthy-list .check {
-  color: #16a34a;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.help-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.help-icon {
-  font-size: 1rem;
-}
-
-@media (max-width: 1024px) {
-  .risk-calculate-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .healthy-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .risk-calculate-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .healthy-cards {
-    grid-template-columns: 1fr;
-  }
-}
-
-.health-section {
-  display: none;
-}
-
-.health-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 4rem;
-  align-items: start;
-}
-
-.health-left {
-  padding-top: 1rem;
-}
-
-.health-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 1rem;
-}
-
-.health-description {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.health-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-
-.health-card {
-  background-color: #ffffff;
-  border-radius: 24px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.card-icon {
-  font-size: 2rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.health-card h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0c2d6e;
-  margin-bottom: 1.5rem;
-}
-
-.tips-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.tips-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
-  color: #333;
-  line-height: 1.6;
-}
-
-.tips-list li:last-child {
-  margin-bottom: 0;
-}
-
-.check {
-  color: #16a34a;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-</style>

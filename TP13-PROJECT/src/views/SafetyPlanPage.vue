@@ -855,7 +855,7 @@ function pictureFor(type = 'map') {
       'stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"',
     f = 'fill="currentColor"'
   const scenes = {
-    map: `<svg ${c}><path ${s} d="M18 54V20l20-8 20 8 20-8v34l-20 8-20-8-20 8Z"/><path ${s} d="M38 12v34M58 20v34"/><circle ${f} cx="48" cy="33" r="6"/></svg>`,
+    map: `<img src="/temperature.png" class="question-cover" />`,
     building: `<svg ${c}><path ${s} d="M22 58V18h24v40M50 58V26h24v32M16 58h64"/><path ${s} d="M31 28h6M31 40h6M59 36h6M59 48h6"/></svg>`,
     water: `<svg ${c}><path ${s} d="M48 12c12 16 20 27 20 38 0 10-8 16-20 16s-20-6-20-16c0-11 8-22 20-38Z"/></svg>`,
     person: `<svg ${c}><circle ${s} cx="48" cy="19" r="9"/><path ${s} d="M28 58c2-14 10-23 20-23s18 9 20 23"/></svg>`,
@@ -902,12 +902,12 @@ onMounted(() => {})
           <h2>Make a heat plan in simple steps</h2>
           <p>Tap one answer. The next question opens by itself.</p>
         </div>
-        <div class="care-hero-picture" aria-hidden="true">
+        <!-- <div class="care-hero-picture" aria-hidden="true">
           <div class="care-sun"></div>
           <div class="care-house"></div>
           <div class="care-tree"></div>
           <div class="care-path"></div>
-        </div>
+        </div> -->
       </section>
 
       <section v-if="!planGenerated" class="gentle-wizard">
@@ -936,7 +936,10 @@ onMounted(() => {})
 
         <section class="question-stage">
           <div class="question-card gentle-question-card">
-            <div class="question-visual" v-html="pictureFor(currentQuestion.visual)"></div>
+            <!-- {{ currentQuestion.visual }} -->
+            <div class="question-visual">
+              <img :src="'/question' + currentQuestion.visual + 'Cover.png'" class="question-cover"
+            </div>
             <div class="question-kicker">
               <span>{{ String(stepNumber).padStart(2, '0') }}</span>
               <strong>{{ currentQuestion.category }}</strong>
@@ -946,19 +949,20 @@ onMounted(() => {})
             <p class="tap-note">Tap one answer to continue</p>
             <div class="answer-grid picture-answer-grid">
               <button
-                v-for="opt in questionOptions"
+                v-for="(opt, i) in questionOptions"
                 :key="opt.value"
                 class="answer-option"
                 :class="{ selected: answers[currentQuestion.id] === opt.value }"
                 @click="selectAnswer(currentQuestion.id, opt.value)"
               >
-                <span
+              <!-- {{ '/question'+ currentQuestion.visual+ Number(i+1) + '.png' }} -->
+                <img
                   class="option-picture"
-                  v-html="pictureFor(opt.visual || currentQuestion.visual)"
-                ></span>
+                  :src="'/question' + currentQuestion.visual + Number(i+1)+'.png'"
+                ></img>
                 <span class="answer-copy">
                   <strong>{{ opt.label }}</strong>
-                  <small>{{ opt.detail }}</small>
+                  <!-- <small>{{ opt.detail }}</small> -->
                 </span>
               </button>
             </div>
@@ -972,9 +976,7 @@ onMounted(() => {})
       <article v-if="planGenerated && planData" class="care-plan">
         <section class="care-plan-hero" :class="planData.band.toLowerCase()">
           <div class="care-plan-picture">
-            <div class="plan-sun"></div>
-            <div class="plan-person"></div>
-            <div class="plan-shade"></div>
+            <img :src="'/band' + planData.band + '.png'" class="band-picture"
           </div>
           <div>
             <p class="plan-small-label">Your heat plan</p>
@@ -999,7 +1001,10 @@ onMounted(() => {})
               class="dashboard-action"
               :class="action.tone"
             >
-              <span class="action-picture" v-html="pictureFor(action.visual)"></span>
+            {{ action.visual }}
+            <div class="plan-card-picture">
+                <img  :src="'/actions' + action.visual + '.png'"></img>
+            </div>
               <strong>{{ action.label }}</strong>
               <small>{{ action.detail }}</small>
             </div>
@@ -1008,7 +1013,9 @@ onMounted(() => {})
 
         <section class="visual-plan-grid">
           <div class="visual-plan-card time-card">
-            <span class="plan-card-picture" v-html="pictureFor('clock')"></span>
+            <div class="plan-card-picture">
+                <img  :src="'/besttime.png'"></img>
+            </div>
             <span>Best time</span>
             <strong>{{ planData.timing.title }}</strong>
             <p>{{ planData.timing.text }}</p>
@@ -1029,7 +1036,9 @@ onMounted(() => {})
           </div>
 
           <div class="visual-plan-card refuge-card">
-            <span class="plan-card-picture" v-html="pictureFor('refuge')"></span>
+            <div class="plan-card-picture">
+                <img  :src="'/coolplace.png'"></img>
+            </div>
             <span>Cool place</span>
             <strong>{{ planData.refuge.name }}</strong>
             <p>
@@ -1039,7 +1048,9 @@ onMounted(() => {})
           </div>
 
           <div class="visual-plan-card heat-card">
-            <span class="plan-card-picture" v-html="pictureFor('sun')"></span>
+            <div class="plan-card-picture">
+                <img  :src="'/todayoutside.png'"></img>
+            </div>
             <span>Today outside</span>
             <strong>{{ planData.suburb.name }} - {{ planData.band }}</strong>
             <p>
@@ -1051,7 +1062,10 @@ onMounted(() => {})
 
         <section class="picture-route">
           <div v-for="(item, i) in planData.route" :key="i" class="route-card">
-            <span class="route-picture" v-html="pictureFor(item.visual)"></span>
+            {{ item.visual }}
+              <div  class="route-picture">
+                  <img :src="'/route' + item.visual + '.png'"></img>
+              </div>
             <span>{{ item.stage }}</span>
             <strong>{{ item.title }}</strong>
             <div>{{ item.metric }}</div>
@@ -1093,12 +1107,12 @@ onMounted(() => {})
           </div>
         </section>
 
-        <div class="dashboard-actions simple-plan-actions">
+        <!-- <div class="dashboard-actions simple-plan-actions">
           <button @click="printPlan">Print</button>
           <button @click="sharePlan">Share</button>
           <button @click="copyPlan">Copy</button>
           <button @click="savePlan">Save</button>
-        </div>
+        </div> -->
         <p class="plan-status">{{ planStatusText }}</p>
       </article>
     </main>
@@ -1108,6 +1122,11 @@ onMounted(() => {})
 </template>
 
 <style scoped>
+.question-cover{
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
 .page {
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -1441,7 +1460,7 @@ onMounted(() => {})
 .option-picture {
   width: 96px;
   height: 88px;
-  border-radius: 22px;
+  /* border-radius: 22px; */
   background: linear-gradient(135deg, #eff9fb, #ecf8f0);
   display: grid;
   place-items: center;
@@ -1636,7 +1655,7 @@ onMounted(() => {})
 }
 
 .action-picture {
-  width: 100%;
+   width: 100%;
   height: 86px;
   margin-bottom: 0.55rem;
   border-radius: 22px;
@@ -1644,6 +1663,11 @@ onMounted(() => {})
   display: grid;
   place-items: center;
   color: #0b7f79;
+}
+
+.action-picture img {
+  width: 76px;
+  height: 58px;
 }
 
 .action-picture :deep(svg) {
@@ -1690,6 +1714,11 @@ onMounted(() => {})
   display: grid;
   place-items: center;
   color: #0b7f79;
+}
+
+.plan-card-picture img {
+  width: 108px;
+  height: 78px;
 }
 
 .plan-card-picture :deep(svg) {
@@ -1774,6 +1803,12 @@ onMounted(() => {})
   display: grid;
   place-items: center;
   color: #0b7f79;
+}
+
+.route-picture img {
+  width: 86px;
+  height: 64px;
+  margin: 0 auto;
 }
 
 .route-picture :deep(svg) {

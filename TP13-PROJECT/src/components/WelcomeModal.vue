@@ -134,7 +134,7 @@ const closeModal = () => {
 .modal-header {
   text-align: center;
   padding: 2rem 2rem 1rem;
-  background: linear-gradient(135deg, #0d3a8f 0%, #1e4a9e 100%);
+  background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88)), linear-gradient(45deg, rgba(255, 255, 255, 0.12) 25%, transparent 25% 50%, rgba(255, 255, 255, 0.12) 50% 75%, transparent 75%);
   color: white;
   border-radius: 20px 20px 0 0;
 }

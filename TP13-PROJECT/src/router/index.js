@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/codex-homepage.vue'
+import HomePage from '../views/HomePage.vue'
 import HeatMapPage from '../views/HeatMapPage.vue'
 import CoolRefugePage from '../views/CoolRefugePage.vue'
 import TripCoachPage from '../views/TripCoachPage.vue'

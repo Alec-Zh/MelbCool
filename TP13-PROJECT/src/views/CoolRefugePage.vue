@@ -964,6 +964,7 @@ onMounted(async () => {
 
 .header-top {
   display: flex;
+  border-radius: 14px;
   background:
     linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88)),
     linear-gradient(
@@ -1444,23 +1445,23 @@ onMounted(async () => {
 }
 
 .refuge-card.library {
-  border-left: 4px solid #3b82f6;
+  border-top: 4px solid #3b82f6;
 }
 
 .refuge-card.museum {
-  border-left: 4px solid #8b5cf6;
+  border-top: 4px solid #8b5cf6;
 }
 
 .refuge-card.park {
-  border-left: 4px solid #22c55e;
+  border-top: 4px solid #22c55e;
 }
 
 .refuge-card.community {
-  border-left: 4px solid #f59e0b;
+  border-top: 4px solid #f59e0b;
 }
 
 .refuge-card.shopping {
-  border-left: 4px solid #ec4899;
+  border-top: 4px solid #ec4899;
 }
 
 .refuge-image-wrapper {
@@ -1502,8 +1503,8 @@ onMounted(async () => {
 }
 
 .refuge-image {
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;

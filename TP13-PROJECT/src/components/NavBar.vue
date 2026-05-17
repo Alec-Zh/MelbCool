@@ -19,7 +19,7 @@ const closeMenu = () => {
       <nav class="mh-links" aria-label="Main navigation">
         <RouterLink to="/" exact-active-class="active">Home</RouterLink>
         <RouterLink to="/heatmap" exact-active-class="active">Heat Map</RouterLink>
-        <RouterLink to="/cool-refuges" exact-active-class="active">Cool Refuges</RouterLink>
+        <RouterLink to="/cool-refuges" exact-active-class="active">Cool Refuge</RouterLink>
         <RouterLink to="/trip-coach" exact-active-class="active">Trip Coach</RouterLink>
         <RouterLink to="/outfit-advisor" exact-active-class="active">Outfit Advisor</RouterLink>
         <RouterLink to="/safety-plan" exact-active-class="active">Safety Plan</RouterLink>

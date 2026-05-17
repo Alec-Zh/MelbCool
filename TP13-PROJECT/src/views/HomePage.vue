@@ -1088,7 +1088,7 @@ const navigateTo = (path) => {
           </div>
           <p class="mh-transport-note">
             Trip Coach calculates exposure for your specific route, time, and transport mode.
-            &nbsp;<a href="trip-coach.html">Plan my trip →</a>
+            &nbsp; <RouterLink to="/trip-coach">Plan my trip →</RouterLink>
           </p>
         </div>
       </section>

@@ -127,7 +127,7 @@ const navigateTo = (path) => {
         <div class="mh-fb mh-fb--2" aria-hidden="true">
           <span class="mh-fb-icon">🏛️</span>
           <div class="mh-fb-text">
-            <strong>Cool Refuges</strong>
+            <strong>Cool Refuge</strong>
             <span>Find indoor places</span>
           </div>
         </div>
@@ -229,7 +229,7 @@ const navigateTo = (path) => {
           <!-- duplicated for seamless loop -->
           <span class="mh-tick mh-tick--high">🗺️ Heat Map · suburb overview</span>
           <span class="mh-tick-sep">·</span>
-          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuges · indoor places</span>
+          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuge · indoor places</span>
           <span class="mh-tick-sep">·</span>
           <span class="mh-tick mh-tick--mod">🧭 Trip Coach · route guidance</span>
           <span class="mh-tick-sep">·</span>
@@ -250,7 +250,7 @@ const navigateTo = (path) => {
           <!-- duplicate for seamless wrap -->
           <span class="mh-tick mh-tick--high">🗺️ Heat Map · suburb overview</span>
           <span class="mh-tick-sep">·</span>
-          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuges · indoor places</span>
+          <span class="mh-tick mh-tick--mod">🏛️ Cool Refuge · indoor places</span>
           <span class="mh-tick-sep">·</span>
           <span class="mh-tick mh-tick--mod">🧭 Trip Coach · route guidance</span>
           <span class="mh-tick-sep">·</span>
@@ -415,7 +415,7 @@ const navigateTo = (path) => {
                 @click.prevent="navigateTo('/cool-refuges')"
                 href="#"
               >
-                <b>02</b><strong>Cool Refuges</strong><span>Nearby places</span>
+                <b>02</b><strong>Cool Refuge</strong><span>Nearby places</span>
               </a>
               <a
                 class="mh-tool-node mh-tool-node--trip"
@@ -632,7 +632,7 @@ const navigateTo = (path) => {
           </div>
           <div class="mh-feature-copy" data-animate="from-left">
             <span class="mh-feature-num">02</span>
-            <p class="mh-label">Cool Refuges</p>
+            <p class="mh-label">Cool Refuge</p>
             <h2>Find your nearest cool space in seconds.</h2>
             <p>
               Libraries, community hubs, shopping centres, parks, and museums — every type of public
@@ -662,7 +662,7 @@ const navigateTo = (path) => {
               </div>
             </div>
             <a class="mh-btn primary" @click.prevent="navigateTo('/cool-refuges')" href="#"
-              >Find Cool Refuges →</a
+              >Find Cool Refuge →</a
             >
           </div>
         </div>

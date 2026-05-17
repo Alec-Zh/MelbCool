@@ -20,7 +20,7 @@ const closeModal = () => {
       
       <div class="modal-header">
         <span class="welcome-icon">❄️</span>
-        <h2 class="modal-title">Welcome to Cool Refuges</h2>
+        <h2 class="modal-title">Welcome to Cool Refuge</h2>
       </div>
       
       <div class="modal-body">

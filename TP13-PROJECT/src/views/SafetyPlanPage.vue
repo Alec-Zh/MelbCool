@@ -291,7 +291,7 @@ const questions = [
     id: 'outdoorActivity',
     category: 'Trip',
     visual: 'walk',
-    title: 'Do they need to go out?',
+    title: 'Do you need to go out?',
     hint: 'Choose the closest plan.',
     options: [
       { value: 'none', label: 'No trip', detail: 'Stay inside', tag: 'IN', visual: 'home' },
@@ -322,7 +322,7 @@ const questions = [
     id: 'plannedTime',
     category: 'Timing',
     visual: 'clock',
-    title: 'When would they go?',
+    title: 'When would you go?',
     hint: 'Morning and evening are often safer.',
     options: [
       {
@@ -384,7 +384,7 @@ const questions = [
     id: 'fluidMobility',
     category: 'Mobility',
     visual: 'water',
-    title: 'Can they drink and move?',
+    title: 'Can you drink and move?',
     hint: 'This helps set water and support advice.',
     options: [
       { value: 'ok', label: 'Yes', detail: 'Can drink and move', tag: 'OK', visual: 'water' },
@@ -472,6 +472,10 @@ async function fetchSuburbWeather(lat, lng) {
     hourly: data.hourly.apparent_temperature.map(Math.round),
     weatherSource: 'Live Open-Meteo weather',
   }
+}
+
+const downloadPlan=()=>{
+  location.reload();
 }
 
 function deriveWeatherRisk(suburb) {
@@ -979,6 +983,9 @@ onMounted(() => {})
             <img :src="'/band' + planData.band + '.png'" class="band-picture"
           </div>
           <div>
+            <button class="back-btn" @click="downloadPlan">
+              Back
+            </button>
             <p class="plan-small-label">Your heat plan</p>
             <h2>{{ planData.band }}</h2>
             <p>{{ riskCopy[planData.band] }}</p>
@@ -1001,7 +1008,7 @@ onMounted(() => {})
               class="dashboard-action"
               :class="action.tone"
             >
-            {{ action.visual }}
+            <!-- {{ action.visual }} -->
             <div class="plan-card-picture">
                 <img  :src="'/actions' + action.visual + '.png'"></img>
             </div>
@@ -1062,7 +1069,7 @@ onMounted(() => {})
 
         <section class="picture-route">
           <div v-for="(item, i) in planData.route" :key="i" class="route-card">
-            {{ item.visual }}
+            <!-- {{ item.visual }} -->
               <div  class="route-picture">
                   <img :src="'/route' + item.visual + '.png'"></img>
               </div>
@@ -1127,6 +1134,17 @@ onMounted(() => {})
   height: 150px;
   object-fit: cover;
 }
+.back-btn{
+background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88));
+    padding: 1rem;
+    border-radius: 16px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: 110px;
+    font-size: 20px;
+}
+
 .page {
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -1696,7 +1714,8 @@ onMounted(() => {})
 
 .visual-plan-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -1717,8 +1736,9 @@ onMounted(() => {})
 }
 
 .plan-card-picture img {
-  width: 108px;
-  height: 78px;
+   width: 100%;
+   height: 108px;
+   object-fit: cover;
 }
 
 .plan-card-picture :deep(svg) {
@@ -1791,7 +1811,6 @@ onMounted(() => {})
 
 .route-card {
   padding: 1rem;
-  border-left: 5px solid #0b7f79;
 }
 
 .route-picture {
@@ -1806,9 +1825,9 @@ onMounted(() => {})
 }
 
 .route-picture img {
-  width: 86px;
-  height: 64px;
-  margin: 0 auto;
+    width: 100%;
+    height: 108px;
+    object-fit: cover;
 }
 
 .route-picture :deep(svg) {

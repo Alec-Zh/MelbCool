@@ -16,7 +16,7 @@
         <p>Navigate</p>
         <RouterLink to="/" class="active">Home</RouterLink>
         <RouterLink to="/heatmap">Heat Map</RouterLink>
-        <RouterLink to="/cool-refuges">Cool Refuges</RouterLink>
+        <RouterLink to="/cool-refuges">Cool Refuge</RouterLink>
         <RouterLink to="/trip-coach">Trip Coach</RouterLink>
         <RouterLink to="/safety-plan">Safety Plan</RouterLink>
       </div>

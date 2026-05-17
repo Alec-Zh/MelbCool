@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
 import TripPlannerForm from '../components/TripPlannerForm.vue'
@@ -29,23 +28,13 @@ const TRANSPORT_NAMES = {
   bus: 'taking the bus',
   drive: 'driving',
 }
-const TRANSPORT_LABELS = { walk: 'Walk', tram: 'Tram', bus: 'Bus', drive: 'Drive' }
+const TRANSPORT_LABELS = { walk: '🚶 Walk', tram: '🚃 Tram', bus: '🚌 Bus', drive: '🚗 Drive' }
 const TRANSPORT_ICONS = { walk: '🚶', tram: '🚃', bus: '🚌', drive: '🚗' }
 
 const allSuburbs = ref([])
 const loading = ref(true)
 const error = ref(null)
 const showResults = ref(false)
-
-const router = useRouter()
-
-function goToOutfitAdvisor() {
-  if (selectedSuburbId.value) {
-    router.push({ path: '/outfit-advisor', query: { suburbId: selectedSuburbId.value } })
-  } else {
-    router.push('/outfit-advisor')
-  }
-}
 
 onMounted(async () => {
   try {
@@ -99,23 +88,6 @@ const forecastTemp = computed(() => {
   return getTempAtMinutes(departureMinutes.value)
 })
 
-// ── Exposure-based leg model ────────────────────────────────────────────────
-// Outdoor exposure ratios based on:
-//   Walk: 100% outdoor (full trip)
-//   Tram/Bus: 25% outdoor — based on PTV average walk+wait share of total trip time
-//     (Currie & Delbosc, 2011, "Modelling the social exclusion pedestrian catchment")
-//   Drive: 10% outdoor — AustRoads parking walk estimate ~1–2 min each end
-//
-// Outdoor segment uses full apparent_temperature + shade_score heat model.
-// Sheltered segment applies temperature reduction (vehicle air conditioning assumed).
-
-const EXPOSURE = {
-  walk: { outdoorRatio: 1.0, tempMod: 0, shadeMod: 0 },
-  tram: { outdoorRatio: 0.25, tempMod: -5, shadeMod: -30 },
-  bus: { outdoorRatio: 0.25, tempMod: -5, shadeMod: -30 },
-  drive: { outdoorRatio: 0.1, tempMod: -8, shadeMod: -40 },
-}
-
 function legScore(temp, shadeScore) {
   let base
   if (temp >= 35) base = Math.min(Math.round((temp - 35) * 3 + 70), 100)
@@ -125,10 +97,10 @@ function legScore(temp, shadeScore) {
 }
 
 function riskBand(score) {
-  if (score >= 75) return { label: 'Very High', color: '#e8735a', bg: '#fdecea' }
-  if (score >= 50) return { label: 'High', color: '#e07b39', bg: '#fef3ec' }
-  if (score >= 25) return { label: 'Moderate', color: '#8b8000', bg: '#fefbe6' }
-  return { label: 'Low', color: '#4a7c59', bg: '#eef6f1' }
+  if (score >= 75) return { label: 'Very High', color: '#e8735a', bg: '#fdecea' } // coral
+  if (score >= 50) return { label: 'High', color: '#e07b39', bg: '#fef3ec' } // orange
+  if (score >= 25) return { label: 'Moderate', color: '#8b8000', bg: '#fefbe6' } // olive
+  return { label: 'Low', color: '#4a7c59', bg: '#eef6f1' } // green
 }
 
 function weightedScore(legs) {
@@ -136,39 +108,40 @@ function weightedScore(legs) {
   return Math.round(legs.reduce((s, l) => s + l.score * l.minutes, 0) / totalMins)
 }
 
+const LEG_COLORS = ['#e07b39', '#c8a800', '#d9534f', '#5b8dd9']
+
 function buildLegs(mode, totalMins, temp, shade) {
-  const exp = EXPOSURE[mode] ?? EXPOSURE.walk
-  const outdoorMins = Math.max(Math.round(totalMins * exp.outdoorRatio), 1)
-  const shelteredMins = totalMins - outdoorMins
-
-  const outdoorScore = legScore(temp, shade)
-  const legs = [
-    {
-      label: 'Time outdoors',
-      minutes: outdoorMins,
-      score: outdoorScore,
-      color: '#e07b39',
-      riskLabel: riskBand(outdoorScore).label,
-      isOutdoor: true,
-    },
-  ]
-
-  if (shelteredMins > 0) {
-    const shelteredScore = legScore(
-      Math.max(temp + exp.tempMod, 10),
-      Math.max(shade + exp.shadeMod, 0),
-    )
-    legs.push({
-      label: mode === 'drive' ? 'Time in car' : 'Time on vehicle',
-      minutes: shelteredMins,
-      score: shelteredScore,
-      color: '#5b8dd9',
-      riskLabel: riskBand(shelteredScore).label,
-      isOutdoor: false,
-    })
+  const transit = Math.max(totalMins - 10, 5)
+  const defs = {
+    walk: [{ label: 'Walking', minutes: totalMins, tempMod: 0, shadeMod: 0 }],
+    tram: [
+      { label: 'Walk to stop', minutes: 5, tempMod: 0, shadeMod: 0 },
+      { label: 'Wait at stop', minutes: 5, tempMod: 0, shadeMod: -15 },
+      { label: 'On tram', minutes: transit - 5, tempMod: -5, shadeMod: -30 },
+      { label: 'Walk from stop', minutes: 5, tempMod: 0, shadeMod: 0 },
+    ],
+    bus: [
+      { label: 'Walk to stop', minutes: 5, tempMod: 0, shadeMod: 0 },
+      { label: 'Wait at stop', minutes: 5, tempMod: 0, shadeMod: -15 },
+      { label: 'On bus', minutes: transit - 5, tempMod: -5, shadeMod: -30 },
+      { label: 'Walk from stop', minutes: 5, tempMod: 0, shadeMod: 0 },
+    ],
+    drive: [
+      { label: 'Walk to car', minutes: 3, tempMod: 0, shadeMod: 0 },
+      { label: 'Driving', minutes: totalMins - 6, tempMod: -8, shadeMod: -40 },
+      { label: 'Walk to dest.', minutes: 3, tempMod: 0, shadeMod: 0 },
+    ],
   }
-
-  return legs
+  return (defs[mode] ?? defs.walk).map((leg, i) => {
+    const score = legScore(Math.max(temp + leg.tempMod, 10), Math.max(shade + leg.shadeMod, 0))
+    return {
+      label: leg.label,
+      minutes: Math.max(leg.minutes, 1),
+      score,
+      color: LEG_COLORS[i % LEG_COLORS.length],
+      riskLabel: riskBand(score).label,
+    }
+  })
 }
 
 const tripLegs = computed(() => {
@@ -219,7 +192,6 @@ const alternatives = computed(() => {
   const suburb = selectedSuburb.value.suburb_name
   const alts = []
 
-  // Earlier departure
   const earlierDepart = Math.max(curDepart - 120, 540)
   if (earlierDepart !== curDepart) {
     const timeStr = minutesToLabel(earlierDepart)
@@ -229,13 +201,12 @@ const alternatives = computed(() => {
       curDur,
       earlierDepart,
       `Leave at ${timeStr}`,
-      `At ${timeStr}, ${suburb} feels like ${altTemp}°C — cooler than your current departure time. Leaving earlier can make your trip more comfortable.`,
+      `At ${timeStr}, ${suburb} feels like ${altTemp}°C — cooler than your current departure time. Leaving earlier can make your trip much more comfortable.`,
       `Leave at ${timeStr}`,
     )
     if (alt) alts.push(alt)
   }
 
-  // After 5pm
   if (curDepart < 1020) {
     const altTemp = getTempAtMinutes(1020)
     const alt = buildAlt(
@@ -249,7 +220,6 @@ const alternatives = computed(() => {
     if (alt) alts.push(alt)
   }
 
-  // Different transport mode (drive first as it minimises outdoor exposure)
   const modePriority = ['drive', 'tram', 'bus', 'walk'].filter((m) => m !== curMode)
   for (const mode of modePriority) {
     const alt = buildAlt(
@@ -257,13 +227,27 @@ const alternatives = computed(() => {
       curDur,
       curDepart,
       `Switch to ${TRANSPORT_LABELS[mode]}`,
-      `${TRANSPORT_LABELS[mode]} means less time outdoors in ${forecastTemp.value}°C heat. You'll spend more of your trip in a cooler, sheltered space.`,
+      `${TRANSPORT_LABELS[mode].split(' ')[1]} means less time walking in ${forecastTemp.value}°C heat. You'll spend more of your trip in a cooler, sheltered space.`,
       `Switch to ${TRANSPORT_LABELS[mode]}`,
     )
     if (alt && alt.score < base) {
       alts.push(alt)
       break
     }
+  }
+
+  if (curDur > 15) {
+    const shorter = curDur === 60 ? 30 : 15
+    const saved = curDur - shorter
+    const alt = buildAlt(
+      curMode,
+      shorter,
+      curDepart,
+      `Shorten trip to ${shorter} min`,
+      `Cutting ${saved} minutes off your trip means ${saved} fewer minutes in the heat. Even a small reduction in time outdoors helps your body cope better.`,
+      `Plan a ${shorter}-minute trip`,
+    )
+    if (alt) alts.push(alt)
   }
 
   return alts
@@ -298,23 +282,17 @@ function handleSelectAlt(params) {
     <NavBar />
 
     <main class="content">
-      <!-- Page header -->
-      <div class="page-header card">
-        <div class="page-header-text">
-          <h1 class="page-title">Trip <span class="page-title-accent">Coach</span></h1>
-          <p class="page-desc">
-            Tell us about your trip and we'll show you
-            <strong>how much heat you'll be exposed to</strong> — so you can decide the safest time
-            and way to travel.
-          </p>
-        </div>
+      <!-- Page header — same structure as HeatMapPage -->
+      <div class="page-header">
+        <h1 class="page-title">🧭 Trip Coach</h1>
+        <p class="page-desc">Plan your trip and see how safe it is in the heat</p>
       </div>
 
       <div v-if="loading" class="status-msg">Loading suburb data…</div>
       <div v-else-if="error" class="status-msg error">{{ error }}</div>
 
       <template v-else>
-        <!-- Page 1 — two column: form left, guide right -->
+        <!-- Page 1 — centred form -->
         <div v-if="!showResults" class="plan-wrap">
           <TripPlannerForm
             :suburbs="allSuburbs"
@@ -325,79 +303,13 @@ function handleSelectAlt(params) {
             :loading="loading"
             @submit="handleSubmit"
           />
-          <div class="plan-right">
-            <div class="guide-card card">
-              <p class="guide-title">How it works</p>
-              <ul class="guide-list">
-                <li>
-                  Choose your <strong>destination</strong> and
-                  <strong>how you're travelling</strong>
-                </li>
-                <li>
-                  Tell us <strong>how long</strong> the trip takes and <strong>when</strong> you're
-                  leaving
-                </li>
-                <li>We'll show how much time you'll spend <strong>outdoors in the heat</strong></li>
-                <li>We'll suggest <strong>safer options</strong> if your trip looks risky</li>
-              </ul>
-            </div>
-
-            <div class="guide-card card">
-              <p class="guide-title">Time spent outdoors by transport</p>
-              <div class="transport-compare">
-                <div class="tc-row">
-                  <span class="tc-mode">🚶 Walk</span>
-                  <div class="tc-bar-wrap">
-                    <div class="tc-bar" style="width: 100%; background: #c0392b"></div>
-                  </div>
-                  <span class="tc-pct">100%</span>
-                </div>
-                <div class="tc-row">
-                  <span class="tc-mode">🚃 Tram</span>
-                  <div class="tc-bar-wrap">
-                    <div class="tc-bar" style="width: 25%; background: #e8903a"></div>
-                  </div>
-                  <span class="tc-pct">~25%</span>
-                </div>
-                <div class="tc-row">
-                  <span class="tc-mode">🚌 Bus</span>
-                  <div class="tc-bar-wrap">
-                    <div class="tc-bar" style="width: 25%; background: #e8903a"></div>
-                  </div>
-                  <span class="tc-pct">~25%</span>
-                </div>
-                <div class="tc-row">
-                  <span class="tc-mode">🚗 Drive</span>
-                  <div class="tc-bar-wrap">
-                    <div class="tc-bar" style="width: 10%; background: #4d9e5a"></div>
-                  </div>
-                  <span class="tc-pct">~10%</span>
-                </div>
-              </div>
-              <p class="tc-note">Less time outdoors = lower heat exposure</p>
-              <div class="tc-refs">
-                <p class="tc-refs-title">Sources</p>
-                <ul>
-                  <li>
-                    Currie &amp; Delbosc (2011). Modelling the social exclusion pedestrian catchment
-                    area of urban transit. <em>Journal of Transport Geography.</em>
-                  </li>
-                  <li>
-                    AustRoads (2020). Pedestrian access to car parks: typical walk distance
-                    estimates.
-                  </li>
-                  <li>Open-Meteo (2024). Apparent temperature API — hourly forecast data.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Page 2 — results -->
+        <!-- Page 2 — two columns -->
         <div v-else class="results-wrap">
           <!-- Left: trip summary + methodology (sticky) -->
           <div class="col-left">
-            <div class="summary-card card">
+            <div class="summary-card">
               <p class="summary-heading">Your trip</p>
               <div class="summary-row">
                 <span class="summary-label">Going to</span>
@@ -418,65 +330,7 @@ function handleSelectAlt(params) {
                 <span class="summary-label">Leaving at</span>
                 <span class="summary-value">{{ departureLabel }}</span>
               </div>
-              <button class="reset-btn" @click="handleReset">← Plan a different trip</button>
-
-              <div class="trip-nav-links">
-                <RouterLink to="/heatmap" class="trip-nav-btn trip-nav-btn--green">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="2" y1="12" x2="22" y2="12" />
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                    />
-                  </svg>
-                  Heat map
-                </RouterLink>
-                <button class="trip-nav-btn trip-nav-btn--teal" @click="goToOutfitAdvisor">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"
-                    />
-                  </svg>
-                  Outfit advisor
-                </button>
-              </div>
-            </div>
-
-            <!-- Results guide -->
-            <div class="guide-card card">
-              <p class="guide-title">Reading your results</p>
-              <ul class="guide-list">
-                <li>
-                  The <strong>risk score</strong> shows how much heat stress this trip may cause
-                </li>
-                <li>
-                  <strong>Time outdoors</strong> is the part that matters most — that's when your
-                  body heats up
-                </li>
-                <li>
-                  Check the <strong>safer options</strong> below if your score is High or Very High
-                </li>
-              </ul>
+              <button class="reset-btn" @click="handleReset">← Start a new trip</button>
             </div>
 
             <TripMethodology />
@@ -498,7 +352,7 @@ function handleSelectAlt(params) {
               :riskColor="overallBand.color"
               :riskBg="overallBand.bg"
             />
-            <TripLegBreakdown :legs="tripLegs" :transportMode="transportMode" />
+            <TripLegBreakdown :legs="tripLegs" />
             <TripAlternatives
               v-if="alternatives.length"
               :alternatives="alternatives"
@@ -517,181 +371,45 @@ function handleSelectAlt(params) {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: linear-gradient(160deg, #eaf4f4 0%, #f0f7ee 50%, #e8f4f0 100%);
+  background-color: #f5f5f5;
 }
 
+/* Same as HeatMapPage: content constrains width, header uses negative margin */
 .content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 1.25rem 1.5rem 2rem;
+  padding: 0 1.5rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
-.card {
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 8px 24px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-/* Header card */
 .page-header {
-  padding: 1.75rem 1.6rem;
-  background: linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88));
-  border: none;
+  background: linear-gradient(135deg, #0d3a8f 0%, #1a56c4 100%);
+  margin: 0 -1.5rem;
+  padding: 2.25rem 1.5rem;
 }
 .page-title {
-  font-size: 1.95rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 0.35rem;
-  letter-spacing: -0.02em;
-}
-.page-title-accent {
-  color: #a3f77d;
+  margin-bottom: 0.4rem;
 }
 .page-desc {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 580px;
-}
-.page-desc strong {
-  color: #ffffff;
-  font-weight: 600;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  max-width: 620px;
 }
 
-/* Guide card */
-.guide-card {
-  padding: 1rem 1.25rem;
-}
-.guide-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #2d7a3a;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 0.6rem;
-}
-.guide-list {
-  list-style: disc;
-  padding-left: 1.1rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.guide-list li {
-  font-size: 0.875rem;
-  color: #5a6e6a;
-  line-height: 1.5;
-}
-.guide-list li strong {
-  color: #1c2e2a;
-  font-weight: 600;
-}
-
-/* Page 1 — two column */
+/* Page 1 — centred form */
 .plan-wrap {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 1.25rem;
-  align-items: stretch;
+  max-width: 600px;
+  margin: 0.5rem auto 0;
+  width: 100%;
 }
 
-.plan-right {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.plan-right .guide-card:last-child {
-  flex: 1;
-}
-
-/* Transport comparison */
-.transport-compare {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.25rem;
-}
-.tc-row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-.tc-mode {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #1c2e2a;
-  width: 58px;
-  flex-shrink: 0;
-}
-.tc-bar-wrap {
-  flex: 1;
-  height: 10px;
-  background: #f0f5f4;
-  border-radius: 5px;
-  overflow: hidden;
-}
-.tc-bar {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 0.4s ease;
-}
-.tc-pct {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #5a6e6a;
-  width: 34px;
-  text-align: right;
-  flex-shrink: 0;
-}
-.tc-note {
-  font-size: 0.76rem;
-  color: #5a6e6a;
-  margin: 0.5rem 0 0;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e8f0ee;
-  font-style: italic;
-}
-.tc-refs {
-  margin-top: 0.75rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid #e8f0ee;
-}
-.tc-refs-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #2d7a3a;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 0.4rem;
-}
-.tc-refs ul {
-  list-style: disc;
-  padding-left: 1rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.tc-refs li {
-  font-size: 0.72rem;
-  color: #5a6e6a;
-  line-height: 1.5;
-}
-.tc-refs em {
-  font-style: italic;
-}
-
-/* Page 2 */
+/* Page 2 — two columns */
 .results-wrap {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -699,48 +417,59 @@ function handleSelectAlt(params) {
   align-items: start;
 }
 
+/* Left: sticky */
 .col-left {
+  position: sticky;
+  top: 88px;
+  max-height: calc(100vh - 108px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding-bottom: 1rem;
-  align-self: start;
 }
 
+/* Trip summary card */
 .summary-card {
+  background: #fff;
+  border-radius: 12px;
   padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
 }
 .summary-heading {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b8f8c;
-  margin: 0 0 0.1rem;
+  letter-spacing: 0.06em;
+  color: #888;
+  margin: 0 0 0.2rem;
 }
 .summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #f0f5f4;
+  font-size: 0.92rem;
+  border-bottom: 1px solid #f0f0f0;
   padding-bottom: 0.5rem;
 }
-.summary-row:last-of-type {
+.summary-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
 .summary-label {
-  color: #7a9490;
+  color: #888;
 }
 .summary-value {
   font-weight: 600;
-  color: #1c2e2a;
+  color: #1a1a1a;
 }
 
+/* Right: results */
 .col-right {
   display: flex;
   flex-direction: column;
@@ -749,80 +478,32 @@ function handleSelectAlt(params) {
 
 .reset-btn {
   background: none;
-  border: 1.5px solid #c8ddd9;
-  color: #5a6e6a;
+  border: 2px solid #bbb;
+  color: #555;
   border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-size: 0.88rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
   transition:
     border-color 0.2s,
     color 0.2s;
   width: 100%;
-  margin-top: 0.25rem;
-}
-.reset-btn:hover {
-  border-color: #2d7a3a;
-  color: #2d7a3a;
-}
-
-.trip-nav-links {
-  display: flex;
-  gap: 8px;
   margin-top: 0.5rem;
 }
-
-.trip-nav-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0.55rem 0.5rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    filter 0.15s,
-    transform 0.1s;
-  letter-spacing: 0.01em;
-}
-
-.trip-nav-btn:active {
-  transform: scale(0.98);
-}
-
-.trip-nav-btn--green {
-  background: #2d7a3a;
-  color: #ffffff;
-}
-
-.trip-nav-btn--green:hover {
-  filter: brightness(1.12);
-}
-
-.trip-nav-btn--teal {
-  background: #0f6e56;
-  color: #ffffff;
-}
-
-.trip-nav-btn--teal:hover {
-  filter: brightness(1.15);
+.reset-btn:hover {
+  border-color: var(--color-primary, #1a6eb5);
+  color: var(--color-primary, #1a6eb5);
 }
 
 .status-msg {
   text-align: center;
   padding: 3rem 0;
-  color: #7a9490;
+  color: var(--color-text-muted);
   font-size: 1rem;
 }
 .status-msg.error {
-  color: #c0392b;
+  color: #991b1b;
 }
 
 @media (max-width: 860px) {
@@ -833,12 +514,6 @@ function handleSelectAlt(params) {
     position: static;
     max-height: none;
     overflow-y: visible;
-  }
-  .plan-wrap {
-    grid-template-columns: 1fr;
-  }
-  .plan-right {
-    position: static;
   }
 }
 </style>

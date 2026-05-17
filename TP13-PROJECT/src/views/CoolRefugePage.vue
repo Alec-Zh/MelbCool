@@ -12,14 +12,14 @@ const photoObj = {
   museum: '/museumCover.jpg',
   park: '/parkCover.jpg',
   community: '/communityCover.jpg',
-  shopping: '/shoppingCover.jpg',
+  shopping: '/shoppingCover.jpg'
 }
 const mapPhotoObj = {
   library: '/library.png',
   museum: '/museum.png',
   park: '/park.png',
   community: '/community.jpg',
-  shopping: '/shopping.png',
+  shopping: '/shopping.png'
 }
 
 const facilitiesObj = {
@@ -27,14 +27,14 @@ const facilitiesObj = {
   museum: '🚻  🛜  ☕️',
   park: '🚻  🅿️ 💧',
   community: '🛜  ☕️  🅿️',
-  shopping: '❄️  🛜  🚻',
+  shopping: '❄️  🛜  🚻'
 }
 const openingHoursObj = {
   library: '9:00-17:00',
   museum: '11:00-17:00',
   park: 'Open 24 hours',
   community: 'Open 24 hours',
-  shopping: '10:00-20:00',
+  shopping: '10:00-20:00'
 }
 
 // API 基础地址
@@ -47,7 +47,6 @@ const loading = ref(false)
 const error = ref(null)
 const searchQuery = ref('')
 const selectedType = ref('all')
-const openStatusFilter = ref('all')
 const userLocation = ref(null)
 const locationPermissionDenied = ref(false)
 const currentView = ref('list') // 'list' 或 'map'
@@ -66,14 +65,11 @@ const currentTemp = ref(0)
 const showDirections = ref(false)
 const directionsRefuge = ref(null)
 const showTempAlertInDirections = ref(false)
-const showLocationModal = ref(false)
 
 // Mapbox access token（从 Lambda 获取）
 const initMapboxToken = async () => {
   try {
-    const response = await fetch(
-      'https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com/mapbox-token',
-    )
+    const response = await fetch('https://qcbqul6ys2.execute-api.ap-southeast-2.amazonaws.com/mapbox-token')
     const data = await response.json()
     mapboxgl.accessToken = data.token
   } catch (err) {
@@ -84,9 +80,7 @@ const initMapboxToken = async () => {
 // 获取指定位置的温度
 const fetchTemperature = async (latitude, longitude) => {
   try {
-    const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`,
-    )
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`)
     const data = await response.json()
     if (data.current && data.current.temperature_2m !== undefined) {
       return data.current.temperature_2m
@@ -114,15 +108,11 @@ const typeConfig = {
   museum: { label: 'Museum', icon: '🏛️' },
   park: { label: 'Park', icon: '🌳' },
   community: { label: 'Community', icon: '🏘️' },
-  shopping: { label: 'Shopping', icon: '🛍️' },
+  shopping: { label: 'Shopping', icon: '🛍️' }
 }
 
 // 打开路线弹窗（从列表点击，显示温度预警）
 const openDirections = (refuge) => {
-  if (!userLocation.value) {
-    showLocationModal.value = true
-    return
-  }
   directionsRefuge.value = refuge
   showTempAlertInDirections.value = true
   showDirections.value = true
@@ -130,10 +120,6 @@ const openDirections = (refuge) => {
 
 // 打开路线弹窗（从地图点击，不显示温度预警）
 const openDirectionsFromMap = (refuge) => {
-  if (!userLocation.value) {
-    showLocationModal.value = true
-    return
-  }
   directionsRefuge.value = refuge
   showTempAlertInDirections.value = false
   showDirections.value = true
@@ -148,7 +134,7 @@ const getDirections = (refuge) => {
   } else {
     // origin = '-37.8136,144.9631' // 墨尔本市中心默认位置
   }
-
+  
   const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${refuge.latitude},${refuge.longitude}`
   window.open(url, '_blank')
 }
@@ -161,39 +147,39 @@ const getFacilities = (type) => {
     '☕️': { icon: '☕', name: 'CAFE' },
     '🚻': { icon: '🚻', name: 'TOILET' },
     '🅿️': { icon: '🅿️', name: 'PARKING' },
-    '💧': { icon: '💧', name: 'WATER' },
+    '💧': { icon: '💧', name: 'WATER' }
   }
-
+  
   const facilityStr = facilitiesObj[type] || ''
-  const facilityEmojis = facilityStr.split(/\s+/).filter((e) => e)
-
-  return facilityEmojis.map((emoji) => facilitiesMap[emoji])
+  const facilityEmojis = facilityStr.split(/\s+/).filter(e => e)
+  
+  return facilityEmojis.map(emoji => facilitiesMap[emoji])
 }
 
 // 判断是否营业中
 const isOpenNow = (type) => {
   const hours = openingHoursObj[type]
-
+  
   // 24小时开放
   if (hours === 'Open 24 hours') {
     return true
   }
-
+  
   // 解析营业时间，如 "9:00-17:00"
   const match = hours.match(/(\d+):(\d+)-(\d+):(\d+)/)
   if (!match) return false
-
+  
   const [, openHour, openMin, closeHour, closeMin] = match.map(Number)
-
+  
   const now = new Date()
   const currentHour = now.getHours()
   const currentMin = now.getMinutes()
-
+  
   // 转换为分钟数便于比较
   const currentTime = currentHour * 60 + currentMin
   const openTime = openHour * 60 + openMin
   const closeTime = closeHour * 60 + closeMin
-
+  
   return currentTime >= openTime && currentTime < closeTime
 }
 
@@ -204,35 +190,20 @@ const getTypeClass = (type) => {
     museum: 'museum',
     park: 'park',
     community: 'community',
-    shopping: 'shopping',
+    shopping: 'shopping'
   }
   return typeClasses[type] || ''
 }
 
-// 获取类型对应颜色
-const getTypeColor = (type) => {
-  const colors = {
-    all: '#0d3a8f',
-    library: '#3b82f6',
-    museum: '#8b5cf6',
-    park: '#22c55e',
-    community: '#f59e0b',
-    shopping: '#ec4899',
-  }
-  return colors[type] || '#0d3a8f'
-}
 
 // 计算两点之间的距离（使用 Haversine 公式）
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371 // 地球半径（公里）
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2)
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
 }
@@ -248,7 +219,7 @@ const getUserLocation = () => {
     (position) => {
       userLocation.value = {
         latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
+        longitude: position.coords.longitude
       }
       // userLocation.value = {
       //   latitude: -37.8136,
@@ -269,8 +240,8 @@ const getUserLocation = () => {
     {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 60000,
-    },
+      maximumAge: 60000
+    }
   )
 }
 
@@ -279,14 +250,14 @@ const getDistanceText = (refuge) => {
   if (!userLocation.value || !refuge.latitude || !refuge.longitude) {
     return ''
   }
-
+  
   const distance = calculateDistance(
     userLocation.value.latitude,
     userLocation.value.longitude,
     refuge.latitude,
-    refuge.longitude,
+    refuge.longitude
   )
-
+  
   if (distance < 1) {
     return `${Math.round(distance * 1000)} m`
   } else {
@@ -294,50 +265,37 @@ const getDistanceText = (refuge) => {
   }
 }
 
-// 计算距离数值（用于排序）
-const getDistanceValue = (refuge) => {
-  if (!userLocation.value || !refuge.latitude || !refuge.longitude) {
-    return Infinity
-  }
-
-  return calculateDistance(
-    userLocation.value.latitude,
-    userLocation.value.longitude,
-    refuge.latitude,
-    refuge.longitude,
-  )
-}
 
 // 获取数据
 const fetchRefuges = async () => {
   loading.value = true
   error.value = null
-
+  
   // 数据更新时关闭弹框
   selectedRefuge.value = null
   showTempAlert.value = false
-
+  
   try {
     let url = `${API_BASE_URL}/cool-refuges`
     const params = new URLSearchParams()
-
+    
     // 添加搜索参数
     if (searchQuery.value.trim()) {
       params.append('name', searchQuery.value.trim())
     }
-
+    
     // 添加类型参数
     if (selectedType.value !== 'all') {
       params.append('type', selectedType.value)
     }
-
+    
     if (params.toString()) {
       url += `?${params.toString()}`
     }
-
+    
     const response = await fetch(url)
     const result = await response.json()
-
+    
     if (result.success) {
       refuges.value = result.data
     } else {
@@ -355,7 +313,7 @@ const fetchRefuges = async () => {
 const handleSearch = async () => {
   currentPage.value = 1
   await fetchRefuges()
-
+  
   // 如果在地图视图，刷新标记
   if (currentView.value === 'map' && map) {
     nextTick(() => {
@@ -371,7 +329,7 @@ const selectType = async (type) => {
   currentPage.value = 1
   await fetchRefuges()
   console.log('Fetched refuges:', refuges.value.length)
-
+  
   // 如果在地图视图，刷新标记
   if (currentView.value === 'map') {
     console.log('In map view, refreshing markers...')
@@ -388,41 +346,19 @@ const selectType = async (type) => {
 
 // 分页相关
 const currentPage = ref(1)
-const pageSize = 6
-
-// 按营业状态筛选后的数据
-const filteredRefuges = computed(() => {
-  if (openStatusFilter.value === 'all') {
-    return refuges.value
-  }
-
-  return refuges.value.filter((refuge) => {
-    const open = isOpenNow(refuge.type)
-    return openStatusFilter.value === 'open' ? open : !open
-  })
-})
+const pageSize = 5
 
 // 计算属性：统计数量
-const refugeCount = computed(() => filteredRefuges.value.length)
+const refugeCount = computed(() => refuges.value.length)
 
-// 分页后的数据（按距离从小到大排序）
+// 分页后的数据
 const paginatedRefuges = computed(() => {
-  // 先排序
-  const sorted = [...filteredRefuges.value].sort((a, b) => {
-    const distA = getDistanceValue(a)
-    const distB = getDistanceValue(b)
-    if (distA === Infinity && distB === Infinity) return 0
-    if (distA === Infinity) return 1
-    if (distB === Infinity) return -1
-    return distA - distB
-  })
-
   const start = (currentPage.value - 1) * pageSize
-  return sorted.slice(start, start + pageSize)
+  return refuges.value.slice(start, start + pageSize)
 })
 
 // 总页数
-const totalPages = computed(() => Math.ceil(filteredRefuges.value.length / pageSize))
+const totalPages = computed(() => Math.ceil(refuges.value.length / pageSize))
 
 // 显示的页码（最多显示5个）
 const visiblePages = computed(() => {
@@ -445,26 +381,26 @@ const goToPage = (page) => {
 // 初始化地图
 const initMap = () => {
   if (!mapContainer.value) return
-
+  
   // 默认中心点（墨尔本）
   const center = [144.9631, -37.8136]
-
+  
   map = new mapboxgl.Map({
     container: mapContainer.value,
     style: 'mapbox://styles/mapbox/streets-v12',
     center: center,
-    zoom: 12,
+    zoom: 12
   })
-
+  
   // 添加导航控件
   map.addControl(new mapboxgl.NavigationControl())
-
+  
   // 地图加载完成后添加标记
   map.on('load', () => {
     console.log('Map loaded event fired')
     addMarkers()
   })
-
+  
   // 添加错误处理
   map.on('error', (e) => {
     console.error('Map error:', e)
@@ -473,57 +409,57 @@ const initMap = () => {
 
 // 添加标记到地图
 const addMarkers = () => {
-  console.log('Adding markers, refuges count:', filteredRefuges.value.length)
+  console.log('Adding markers, refuges count:', refuges.value.length)
   console.log('Map exists:', !!map)
-
+  
   // 清除现有标记
-  markers.forEach((marker) => marker.remove())
+  markers.forEach(marker => marker.remove())
   markers = []
-
+  
   if (!map) {
     console.log('No map to display')
     return
   }
-
-  if (!filteredRefuges.value.length) {
+  
+  if (!refuges.value.length) {
     console.log('No refuges to display')
     return
   }
-
+  
   console.log('Adding markers to map...')
-
+  
   // 10km 距离限制
   const MAX_DISTANCE_KM = 15
-
+  
   // 过滤出 10km 以内的避暑场所
-  const nearbyRefuges = filteredRefuges.value.filter((refuge) => {
+  const nearbyRefuges = refuges.value.filter(refuge => {
     // if (!refuge.longitude || !refuge.latitude) {
     //   return false
     // }
-
+    
     // 如果没有用户位置，显示所有标记
     // if (!userLocation.value) {
     //   return true
     // }
-
+    
     // 计算距离
     const distance = calculateDistance(
       userLocation.value.latitude,
       userLocation.value.longitude,
       refuge.latitude,
-      refuge.longitude,
+      refuge.longitude
     )
-
+    
     return distance <= MAX_DISTANCE_KM
   })
-
+  
   console.log(`Showing ${nearbyRefuges.length} refuges within ${MAX_DISTANCE_KM}km`)
-
-  nearbyRefuges.forEach((refuge) => {
+  
+  nearbyRefuges.forEach(refuge => {
     if (!refuge.longitude || !refuge.latitude) {
       return
     }
-
+    
     // 创建标记元素
     const el = document.createElement('div')
     el.className = 'map-marker'
@@ -536,7 +472,7 @@ const addMarkers = () => {
     el.style.backgroundImage = `url(${mapPhotoObj[refuge.type]})`
     el.style.backgroundSize = 'cover'
     el.style.backgroundPosition = 'center'
-
+    
     // 点击标记显示详情卡片和温度弹窗
     el.addEventListener('click', (e) => {
       e.stopPropagation()
@@ -544,27 +480,29 @@ const addMarkers = () => {
       // 显示温度弹窗
       showTemperatureAlert(refuge)
     })
-
+    
     // 添加标记
-    const marker = new mapboxgl.Marker(el).setLngLat([refuge.longitude, refuge.latitude]).addTo(map)
-
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([refuge.longitude, refuge.latitude])
+      .addTo(map)
+    
     markers.push(marker)
   })
-
+  
   console.log('Added', markers.length, 'markers')
-
+  
   // 如果有标记，调整地图视野以包含所有标记
   if (markers.length > 0) {
     const bounds = new mapboxgl.LngLatBounds()
-    nearbyRefuges.forEach((refuge) => {
+    nearbyRefuges.forEach(refuge => {
       if (refuge.longitude && refuge.latitude) {
         bounds.extend([refuge.longitude, refuge.latitude])
       }
     })
-    map.fitBounds(bounds, {
+    map.fitBounds(bounds, { 
       padding: 50,
       maxZoom: 14,
-      duration: 0,
+      duration: 0
     })
   }
 }
@@ -576,7 +514,7 @@ const getMarkerColor = (type) => {
     museum: '#8b5cf6',
     park: '#22c55e',
     community: '#f59e0b',
-    shopping: '#ec4899',
+    shopping: '#ec4899'
   }
   return colors[type] || '#6b7280'
 }
@@ -607,22 +545,14 @@ watch(refuges, () => {
   }
 })
 
-// 监听营业状态筛选变化，重置分页并刷新地图
-watch(openStatusFilter, () => {
-  currentPage.value = 1
-  if (currentView.value === 'map' && map) {
-    addMarkers()
-  }
-})
-
 // 页面加载时获取用户位置和数据
 onMounted(async () => {
   // 先获取 Mapbox token
   await initMapboxToken()
-
+  
   // 自动请求位置权限（会触发浏览器弹框）
   getUserLocation()
-
+  
   // 获取数据
   fetchRefuges()
 })
@@ -632,16 +562,13 @@ onMounted(async () => {
   <div class="page">
     <WelcomeModal />
     <NavBar :show-alert-button="false" />
-
+    
     <div class="refuges-header">
       <div class="refuges-header-content">
         <div class="header-top">
           <div class="header-text">
             <h1 class="refuges-title">Stay Safe and Cool Today</h1>
-            <p class="refuges-description">
-              Find public spaces with air conditioning nearby to escape the summer heat safely.
-            </p>
-            <!-- <router-link to="/safety-plan" class="safety-plan-btn">Safety Plan</router-link> -->
+            <p class="refuges-description">Find public spaces with air conditioning nearby to escape the summer heat safely.</p>
           </div>
           <div class="current-location" v-if="userLocation">
             <span class="location-icon">📍</span>
@@ -649,11 +576,11 @@ onMounted(async () => {
             <span class="location-result">{{ refugeCount }} Refuges found</span>
           </div>
         </div>
-
+        
         <div class="search-container">
-          <input
-            type="text"
-            class="search-input"
+          <input 
+            type="text" 
+            class="search-input" 
             placeholder="Search by suburb or landmark..."
             v-model="searchQuery"
             @keyup.enter="handleSearch"
@@ -662,44 +589,26 @@ onMounted(async () => {
             {{ loading ? 'Loading...' : 'FIND' }}
           </button>
         </div>
-
+        
         <div class="controls-container">
           <div class="view-toggle">
-            <button
-              class="view-button"
+            <button 
+              class="view-button" 
               :class="{ active: currentView === 'list' }"
               @click="switchView('list')"
-            >
-              📋 List
-            </button>
-            <button
-              class="view-button"
+            >📋 List</button>
+            <button 
+              class="view-button" 
               :class="{ active: currentView === 'map' }"
               @click="switchView('map')"
-            >
-              🗺️ Map
-            </button>
+            >🗺️ Map</button>
           </div>
           <div class="category-filters">
-            <select class="status-filter-select" v-model="openStatusFilter">
-              <option value="all">All Status</option>
-              <option value="open">🟢 Open Now</option>
-              <option value="closed">🔴 Closed</option>
-            </select>
-            <button
-              v-for="(config, type) in typeConfig"
+            <button 
+              v-for="(config, type) in typeConfig" 
               :key="type"
               class="filter-button"
               :class="{ active: selectedType === type }"
-              :style="
-                selectedType === type
-                  ? {
-                      backgroundColor: getTypeColor(type),
-                      borderColor: getTypeColor(type),
-                      color: '#ffffff',
-                    }
-                  : {}
-              "
               @click="selectType(type)"
             >
               <span v-if="config.icon">{{ config.icon }}</span>
@@ -707,59 +616,25 @@ onMounted(async () => {
             </button>
           </div>
         </div>
-
+        
         <!-- 位置权限被拒绝提示 -->
         <div v-if="locationPermissionDenied" class="location-denied-prompt">
           <div class="location-denied-content">
             <span class="location-icon-large">📍</span>
             <h3>Location Access Required</h3>
-            <p>
-              You have denied location access. To see distances to cool refuges, please enable
-              location permission in your browser settings:
-            </p>
+            <p>You have denied location access. To see distances to cool refuges, please enable location permission in your browser settings:</p>
             <div class="browser-instructions">
               <div class="instruction-item">
-                <strong>Chrome / Edge:</strong> Click the 🔒 lock icon in the address bar → Site
-                settings → Location → Allow
+                <strong>Chrome / Edge:</strong> Click the 🔒 lock icon in the address bar → Site settings → Location → Allow
               </div>
               <div class="instruction-item">
-                <strong>Firefox:</strong> Click the 🔒 lock icon in the address bar → Permissions →
-                Location → Allow
+                <strong>Firefox:</strong> Click the 🔒 lock icon in the address bar → Permissions → Location → Allow
               </div>
               <div class="instruction-item">
-                <strong>Safari:</strong> Safari menu → Settings → Websites → Location → Allow for
-                this website
+                <strong>Safari:</strong> Safari menu → Settings → Websites → Location → Allow for this website
               </div>
             </div>
             <button @click="locationPermissionDenied = false" class="btn-dismiss">Got it</button>
-          </div>
-        </div>
-
-        <!-- 无位置权限弹窗 -->
-        <div
-          v-if="showLocationModal"
-          class="location-modal-overlay"
-          @click.self="showLocationModal = false"
-        >
-          <div class="location-modal">
-            <span class="location-icon-large">📍</span>
-            <h3>Location Required</h3>
-            <p>Please enable location permission to get directions.</p>
-            <div class="browser-instructions">
-              <div class="instruction-item">
-                <strong>Chrome / Edge:</strong> Click the 🔒 lock icon in the address bar → Site
-                settings → Location → Allow
-              </div>
-              <div class="instruction-item">
-                <strong>Firefox:</strong> Click the 🔒 lock icon in the address bar → Permissions →
-                Location → Allow
-              </div>
-              <div class="instruction-item">
-                <strong>Safari:</strong> Safari menu → Settings → Websites → Location → Allow for
-                this website
-              </div>
-            </div>
-            <button @click="showLocationModal = false" class="btn-dismiss">Got it</button>
           </div>
         </div>
 
@@ -768,53 +643,51 @@ onMounted(async () => {
           {{ error }}
           <button @click="fetchRefuges" class="retry-button">Retry</button>
         </div>
-
+        
         <!-- 加载状态 -->
         <div v-if="loading && currentView === 'list'" class="loading-message">
           Loading refuges...
         </div>
-
+        
         <div class="content-container" v-if="!error">
           <!-- 列表视图 -->
           <div v-if="currentView === 'list'" class="refuges-list">
             <!-- 加载状态 -->
-            <div v-if="loading" class="loading-message">Loading refuges...</div>
+            <div v-if="loading" class="loading-message">
+              Loading refuges...
+            </div>
             <!-- 没有数据时显示 -->
-            <div v-if="!loading && filteredRefuges.length === 0" class="no-data">
+            <div v-if="!loading && refuges.length === 0" class="no-data">
               No refuges found. Try adjusting your search or filters.
             </div>
-
+            
             <!-- 数据列表 -->
-            <div
-              v-for="refuge in paginatedRefuges"
+            <div 
+              v-for="refuge in paginatedRefuges" 
               :key="refuge.id"
               v-show="!loading"
               class="refuge-card"
               :class="getTypeClass(refuge.type)"
             >
-              <div class="refuge-image-wrapper">
-                <span class="image-type-label" :class="getTypeClass(refuge.type)">
-                  {{ typeConfig[refuge.type]?.label }}
-                </span>
-                <div class="refuge-image">
-                  <img :src="photoObj[refuge.type]" :alt="refuge.name" />
-                </div>
-                <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
-                  {{ getDistanceText(refuge) }}
-                </span>
+              <div class="refuge-image">
+                <img 
+                  :src="photoObj[refuge.type]" 
+                  :alt="refuge.name"
+                />
               </div>
               <div class="refuge-info">
                 <div class="refuge-header">
                   <h3 class="refuge-name">{{ refuge.name }}</h3>
+                  <span class="refuge-distance-badge" v-if="getDistanceText(refuge)">
+                    {{ getDistanceText(refuge) }}
+                  </span>
                 </div>
                 <div class="refuge-address">
                   <span>📍 {{ refuge.street }}, {{ refuge.city }}</span>
                 </div>
                 <div class="refuge-tags">
                   <!-- <span class="tag">{{ getTagText(refuge.type) }}</span> -->
-                  <span class="tag" v-if="refuge.openingHours">{{
-                    openingHoursObj[refuge.type]
-                  }}</span>
+                  <span class="tag" v-if="refuge.openingHours">{{ openingHoursObj[refuge.type] }}</span>
                 </div>
                 <div class="refuge-facilities">
                   <span class="facility-label">AVAILABLE FACILITIES</span>
@@ -830,44 +703,34 @@ onMounted(async () => {
             </div>
 
             <!-- 分页组件 -->
-            <div v-if="!loading && filteredRefuges.length > 0" class="pagination">
-              <button
-                class="page-btn prev-next"
-                :disabled="currentPage === 1"
-                @click="goToPage(currentPage - 1)"
-              >
-                ‹ Previous
-              </button>
+            <div v-if="!loading && refuges.length > 0" class="pagination-wrapper">
+              <div class="pagination">
+                <button 
+                  class="page-btn prev-next" 
+                  :disabled="currentPage === 1"
+                  @click="goToPage(currentPage - 1)"
+                >‹ Previous</button>
 
-              <button
-                v-for="page in visiblePages"
-                :key="page"
-                class="page-btn"
-                :class="{ active: page === currentPage }"
-                @click="goToPage(page)"
-              >
-                {{ page }}
-              </button>
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  class="page-btn"
+                  :class="{ active: page === currentPage }"
+                  @click="goToPage(page)"
+                >{{ page }}</button>
 
-              <button
-                class="page-btn prev-next"
-                :disabled="currentPage === totalPages"
-                @click="goToPage(currentPage + 1)"
-              >
-                Next ›
-              </button>
+                <button 
+                  class="page-btn prev-next"
+                  :disabled="currentPage === totalPages"
+                  @click="goToPage(currentPage + 1)"
+                >Next ›</button>
+              </div>
+              <p class="pagination-info">
+                Showing <strong>{{ (currentPage - 1) * 5 + 1 }}-{{ Math.min(currentPage * 5, refuges.length) }}</strong> of <strong>{{ refuges.length }}</strong> entries
+              </p>
             </div>
-            <p class="pagination-info" v-if="!loading && filteredRefuges.length > 0">
-              Showing
-              <strong
-                >{{ (currentPage - 1) * pageSize + 1 }}-{{
-                  Math.min(currentPage * pageSize, filteredRefuges.length)
-                }}</strong
-              >
-              of <strong>{{ filteredRefuges.length }}</strong> entries
-            </p>
           </div>
-
+          
           <!-- 地图视图 -->
           <div v-show="currentView === 'map'" class="map-view">
             <div ref="mapContainer" class="map-container">
@@ -893,33 +756,25 @@ onMounted(async () => {
               <div class="detail-content">
                 <h3 class="detail-name">{{ selectedRefuge.name }}</h3>
                 <p class="detail-address">
-                  <span v-if="getDistanceText(selectedRefuge)"
-                    >{{ getDistanceText(selectedRefuge) }} •
-                  </span>
+                  <span v-if="getDistanceText(selectedRefuge)">{{ getDistanceText(selectedRefuge) }} • </span>
                   {{ selectedRefuge.street }}, {{ selectedRefuge.city }}
                 </p>
-
+                
                 <div class="detail-hours">
                   <div class="hours-icon">🕐</div>
                   <div class="hours-text">
                     <span class="hours-label">FULL HOURS</span>
-                    <span class="hours-value"
-                      >Open today: {{ openingHoursObj[selectedRefuge.type] }}</span
-                    >
+                    <span class="hours-value">Open today: {{ openingHoursObj[selectedRefuge.type] }}</span>
                   </div>
                 </div>
-
+                
                 <div class="detail-facilities">
-                  <div
-                    v-for="(facility, index) in getFacilities(selectedRefuge.type)"
-                    :key="index"
-                    class="facility-item"
-                  >
+                  <div v-for="(facility, index) in getFacilities(selectedRefuge.type)" :key="index" class="facility-item">
                     <span class="facility-icon">{{ facility.icon }}</span>
                     <span class="facility-name">{{ facility.name }}</span>
                   </div>
                 </div>
-
+                
                 <button class="btn-directions" @click="openDirectionsFromMap(selectedRefuge)">
                   <span class="direction-icon">🚶</span>
                   GET DIRECTIONS
@@ -927,11 +782,33 @@ onMounted(async () => {
               </div>
             </div>
           </div>
+          
+          <!-- 仅在列表视图显示侧边栏 -->
+          <div v-if="currentView === 'list'" class="sidebar">
+            <!-- Health Contacts Card -->
+            <div class="sidebar-card health-card">
+              <h3 class="card-title">* HEALTH CONTACTS</h3>
+              <div class="contact-item">
+                <span class="contact-label">HEALTH DIRECT ENQ/TS</span>
+                <span class="contact-number">1800 022 222</span>
+                <span class="contact-note">Professional medical advice for non-emergencies</span>
+              </div>
+              <div class="contact-item emergency">
+                <span class="contact-label">EMERGENCY ONLY</span>
+                <span class="contact-number emergency">000</span>
+                <span class="contact-note">Call immediately for heatstroke signs</span>
+              </div>
+            </div>
+            
+        
+          </div>
         </div>
+        
+      
       </div>
     </div>
     <Footer />
-
+    
     <!-- 路线弹窗 -->
     <Directions
       v-if="showDirections && directionsRefuge"
@@ -964,19 +841,7 @@ onMounted(async () => {
 
 .header-top {
   display: flex;
-  border-radius: 14px;
-  background:
-    linear-gradient(135deg, rgba(13, 58, 143, 0.95), rgba(11, 127, 121, 0.88)),
-    linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.12) 25%,
-      transparent 25% 50%,
-      rgba(255, 255, 255, 0.12) 50% 75%,
-      transparent 75%
-    );
-  color: #fff;
   justify-content: space-between;
-  padding: 1.25rem;
   align-items: flex-start;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
@@ -991,35 +856,14 @@ onMounted(async () => {
 .refuges-title {
   font-size: 2rem;
   font-weight: 700;
-  /* color: #1a3a8f; */
+  color: #1a3a8f;
   margin-bottom: 0.5rem;
 }
 
 .refuges-description {
   font-size: 1rem;
-  /* color: #666; */
+  color: #666;
   margin-bottom: 1.5rem;
-}
-
-.safety-plan-btn {
-  display: inline-flex;
-  align-items: center;
-  background-color: #0d3a8f;
-  color: #ffffff;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.safety-plan-btn:hover {
-  background-color: #1a4bb8;
-  transform: translateY(-2px);
-  color: #ffffff;
 }
 
 .current-location {
@@ -1138,24 +982,6 @@ onMounted(async () => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  align-items: center;
-}
-
-.status-filter-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  color: #1a1a1a;
-  appearance: auto;
-}
-
-.status-filter-select:focus {
-  border-color: #0d3a8f;
 }
 
 .filter-button {
@@ -1191,11 +1017,9 @@ onMounted(async () => {
 
 .refuges-list {
   flex: 1;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-content: start;
+  min-width: 300px;
+  max-height: 500vh;
+  overflow-y: scroll;
 }
 
 .map-view {
@@ -1420,6 +1244,8 @@ onMounted(async () => {
 .map-detail-card .direction-icon {
   font-size: 16px;
 }
+ 
+
 
 .sidebar {
   width: 300px;
@@ -1432,9 +1258,10 @@ onMounted(async () => {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -1445,66 +1272,28 @@ onMounted(async () => {
 }
 
 .refuge-card.library {
-  border-top: 4px solid #3b82f6;
+  border-left: 4px solid #3b82f6;
 }
 
 .refuge-card.museum {
-  border-top: 4px solid #8b5cf6;
+  border-left: 4px solid #8b5cf6;
 }
 
 .refuge-card.park {
-  border-top: 4px solid #22c55e;
+  border-left: 4px solid #22c55e;
 }
 
 .refuge-card.community {
-  border-top: 4px solid #f59e0b;
+  border-left: 4px solid #f59e0b;
 }
 
 .refuge-card.shopping {
-  border-top: 4px solid #ec4899;
-}
-
-.refuge-image-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.image-type-label {
-  padding: 2px 12px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.image-type-label.library {
-  background-color: #3b82f6;
-}
-
-.image-type-label.museum {
-  background-color: #8b5cf6;
-}
-
-.image-type-label.park {
-  background-color: #22c55e;
-}
-
-.image-type-label.community {
-  background-color: #f59e0b;
-}
-
-.image-type-label.shopping {
-  background-color: #ec4899;
+  border-left: 4px solid #ec4899;
 }
 
 .refuge-image {
-  width: 90px;
-  height: 90px;
+  width: 120px;
+  height: 120px;
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
@@ -1786,7 +1575,7 @@ onMounted(async () => {
 }
 
 .map-info::before {
-  content: '📍';
+  content: "📍";
   font-size: 0.875rem;
 }
 
@@ -1827,44 +1616,20 @@ onMounted(async () => {
   text-align: center;
 }
 
-.location-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  padding: 20px;
-}
-
-.location-modal {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  max-width: 480px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
 .location-icon-large {
   font-size: 2.5rem;
   display: block;
   margin-bottom: 0.75rem;
 }
 
-.location-modal h3 {
+.location-denied-prompt h3 {
   font-size: 1.125rem;
   font-weight: 600;
   color: #92400e;
   margin-bottom: 0.5rem;
 }
 
-.location-modal p {
+.location-denied-prompt p {
   font-size: 0.875rem;
   color: #a16207;
   margin-bottom: 1rem;
@@ -1915,14 +1680,18 @@ onMounted(async () => {
   background-color: #d97706;
 }
 
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0 0.5rem;
+}
+
 .pagination {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.4rem;
-  padding: 1.5rem 0 0.5rem;
-  width: 100%;
 }
 
 .page-btn {
@@ -1966,8 +1735,6 @@ onMounted(async () => {
 }
 
 .pagination-info {
-  grid-column: 1 / -1;
-  text-align: center;
   font-size: 0.875rem;
   color: #6b7280;
 }
@@ -1996,28 +1763,24 @@ onMounted(async () => {
   .content-container {
     flex-direction: column;
   }
-
-  .refuges-list {
-    grid-template-columns: 1fr;
+  
+  .sidebar {
+    width: 100%;
   }
-
+  
   .refuge-card {
     flex-direction: column;
   }
-
-  .refuge-image-wrapper {
-    width: 100%;
-  }
-
+  
   .refuge-image {
     width: 100%;
     height: 200px;
   }
-
+  
   .tips-container {
     flex-direction: column;
   }
-
+  
   .tip-item {
     width: 100%;
   }

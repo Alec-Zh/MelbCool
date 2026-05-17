@@ -1,55 +1,80 @@
 <script setup>
 const riskLevels = [
-  { color: '#c0392b', label: 'High Risk',     desc: 'High heat and very little tree shade in this area.' },
-  { color: '#e8903a', label: 'Moderate Risk', desc: 'Moderate heat or limited tree shade in this area.' },
-  { color: '#4d9e5a', label: 'Low Risk',      desc: 'Cooler conditions and good tree shade in this area.' },
+  {
+    color: '#DC2626',
+    label: 'High Risk',
+    desc: 'High heat and very little tree shade in this area.',
+  },
+  {
+    color: '#D97706',
+    label: 'Moderate Risk',
+    desc: 'Moderate heat or limited tree shade in this area.',
+  },
+  {
+    color: '#16A34A',
+    label: 'Low Risk',
+    desc: 'Cooler conditions and good tree shade in this area.',
+  },
 ]
 </script>
 
 <template>
   <div class="guide">
-    <p class="guide-title">Map Legend</p>
+    <h3 class="guide-title">Map Legend</h3>
 
-    <!-- How to use -->
-    <div class="section">
-      <div class="section-header">How to use this map</div>
+    <!-- How to use first -->
+    <div class="how-to-section">
+      <div class="section-header">🗺️ How to use this map</div>
       <ul class="how-to-list">
-        <li>Your location appears as a <strong>green dot</strong> on the map</li>
-        <li><strong>Tap any suburb</strong> to see its heat details</li>
-        <li><strong>Tap again</strong> to return to the full map</li>
-        <li>Use the <strong>search bar</strong> to find a suburb</li>
-        <li>Press <strong>✕</strong> on the detail panel to go back</li>
+        <li>
+          <span class="how-to-icon">📍</span>
+          <span>Your location appears as a <strong>blue dot</strong> on the map</span>
+        </li>
+        <li>
+          <span class="how-to-icon">👆</span>
+          <span><strong>Tap any suburb</strong> on the map to see its heat details</span>
+        </li>
+        <li>
+          <span class="how-to-icon">🔄</span>
+          <span><strong>Tap the same suburb again</strong> to return to the full map</span>
+        </li>
+        <li>
+          <span class="how-to-icon">🔍</span>
+          <span>Use the <strong>search bar</strong> above to find a specific suburb</span>
+        </li>
+        <li>
+          <span class="how-to-icon">✕</span>
+          <span>Press <strong>✕</strong> on the detail panel to return to this guide</span>
+        </li>
       </ul>
     </div>
 
     <!-- Risk Level -->
     <div class="section">
-      <div class="section-header">Risk Level</div>
+      <div class="section-header">⚠️ Risk Level</div>
       <ul class="item-list">
-        <li v-for="item in riskLevels" :key="item.label" class="item">
-          <span class="dot" :style="{ backgroundColor: item.color }"></span>
-          <div class="item-text">
+        <li v-for="item in riskLevels" :key="item.label" class="item item-block">
+          <div class="item-row">
+            <span class="dot" :style="{ backgroundColor: item.color }"></span>
             <span class="item-label">{{ item.label }}</span>
-            <span class="item-desc">{{ item.desc }}</span>
           </div>
+          <span class="item-desc">{{ item.desc }}</span>
         </li>
       </ul>
-    </div>
-
-    <!-- How scores work -->
-    <div class="section">
-      <div class="section-header">How scores work</div>
-      <div class="score-list">
-        <div class="score-item">
-          <span class="score-label">Heat Score</span>
-          <span class="score-desc">How hot it feels today, including UV exposure</span>
-        </div>
-        <div class="score-item">
-          <span class="score-label">Shade Score</span>
-          <span class="score-desc">How much tree shade is available in the area</span>
-        </div>
-        <div class="score-formula">
-          Overall risk = Heat Score × 70% + Shade Score × 30%
+      <div class="score-legend-section">
+        <div class="section-header">📊 How scores work</div>
+        <div class="score-legend">
+          <div class="score-legend-item">
+            <span>🌡 Heat Score</span>
+            <span class="score-legend-desc">How hot it feels today, including UV exposure</span>
+          </div>
+          <div class="score-legend-item">
+            <span>🌳 Shade Score</span>
+            <span class="score-legend-desc">How much tree shade is available in the area</span>
+          </div>
+          <div class="score-legend-formula">
+            Overall risk = Heat Score × 70% + Shade Score × 30%
+          </div>
         </div>
       </div>
     </div>
@@ -59,22 +84,20 @@ const riskLevels = [
 <style scoped>
 .guide {
   padding: 1.25rem;
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #d8eae6;
+  background-color: var(--color-white);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
   height: 100%;
   box-sizing: border-box;
 }
 
 .guide-title {
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #2d7a3a;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -85,36 +108,13 @@ const riskLevels = [
 }
 
 .section-header {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1c2e2a;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid #e8f0ee;
-}
-
-/* How to list — plain bullets */
-.how-to-list {
-  list-style: disc;
-  padding-left: 1.1rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.how-to-list li {
-  font-size: 0.88rem;
-  color: #5a6e6a;
-  line-height: 1.5;
-  padding-left: 0.2rem;
-}
-
-.how-to-list li strong {
-  color: #1c2e2a;
+  font-size: 0.875rem;
   font-weight: 600;
+  color: var(--color-text-muted);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* Risk items */
 .item-list {
   list-style: none;
   padding: 0;
@@ -126,71 +126,121 @@ const riskLevels = [
 
 .item {
   display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-bg-light, #f8fafc);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.item-block {
+  flex-direction: column;
   align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.55rem 0.75rem;
-  background: #f8faf9;
-  border-radius: 8px;
-  border: 1px solid #e8f0ee;
+  gap: 0.3rem;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.item-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
 }
 
 .item-label {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #1c2e2a;
+  color: var(--color-text);
+  flex: 1;
+}
+
+.item-range {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .item-desc {
   font-size: 0.82rem;
-  color: #7a9490;
-  line-height: 1.4;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  padding-left: 1.4rem;
 }
 
-/* Scores */
-.score-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.score-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
-.score-label {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #1c2e2a;
-}
-
-.score-desc {
-  font-size: 0.82rem;
-  color: #7a9490;
-  line-height: 1.4;
-}
-
-.score-formula {
-  margin-top: 0.2rem;
-  padding-top: 0.45rem;
-  border-top: 1px solid #e8f0ee;
+.section-note {
   font-size: 0.8rem;
-  color: #2d7a3a;
-  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.score-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.score-legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.score-legend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.score-legend-desc {
+  padding-left: 1.4rem;
+  color: var(--color-text-muted);
+}
+
+.score-legend-formula {
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.how-to-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.how-to-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.how-to-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.how-to-icon {
+  flex-shrink: 0;
+  width: 1.2rem;
+  text-align: center;
 }
 </style>

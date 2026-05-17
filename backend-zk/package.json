@@ -1,0 +1,25 @@
+{
+  "name": "koa-prisma-sqlite-demo",
+  "version": "1.0.0",
+  "description": "Koa + Prisma + SQLite CRUD demo",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@koa/cors": "^4.0.0",
+    "@prisma/client": "^5.18.0",
+    "koa": "^2.15.3",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^12.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prisma": "^5.18.0"
+  }
+}
+    

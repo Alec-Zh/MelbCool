@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from '../components/NavBar.vue'
 import Footer from '../components/Footer.vue'
@@ -33,6 +33,8 @@ onMounted(async () => {
     } else if (allSuburbs.value.length) {
       selectedSuburbId.value = String(allSuburbs.value[0].suburb_id)
     }
+    await nextTick()
+    autoSelectBestOutfit()
   } catch (e) {
     error.value = 'Could not load suburb data. Please try again.'
     console.error(e)
@@ -41,9 +43,40 @@ onMounted(async () => {
   }
 })
 
-// AC 4.1.3 — reset selected outfit when suburb changes
-watch(selectedSuburbId, () => {
-  selectedItems.value = new Set()
+// Auto-select the best outfit: per slot pick lowest heatAdj good item, slot-less good items all selected
+function autoSelectBestOutfit() {
+  const mode = climateMode.value
+  const uv = uvHigh.value
+  const goodItems = ALL_ITEMS.filter((item) => {
+    if (item.modes[mode] !== 'good') return false
+    if (item.uvOnly && !uv) return false
+    return true
+  })
+  // For each slot, find the item with the lowest heatAdj (most cooling)
+  const slotWinner = {}
+  goodItems.forEach((item) => {
+    if (item.slot) {
+      if (!slotWinner[item.slot] || item.heatAdj < slotWinner[item.slot].heatAdj) {
+        slotWinner[item.slot] = item
+      }
+    }
+  })
+  const next = new Set()
+  goodItems.forEach((item) => {
+    if (item.slot) {
+      if (slotWinner[item.slot]?.id === item.id) next.add(item.id)
+    } else {
+      next.add(item.id)
+    }
+  })
+  selectedItems.value = next
+}
+
+// AC 4.1.3 — reset expansion and auto-select best outfit when suburb changes
+watch(selectedSuburbId, async () => {
+  expandedGroups.value = new Set()
+  await nextTick()
+  autoSelectBestOutfit()
 })
 
 // ── Climate mode (temperature-based) ─────────────────────────────────────────
@@ -507,6 +540,23 @@ const groupedItems = computed(() => {
       .filter(Boolean),
   })).filter((g) => g.items.length > 0)
 })
+
+// ── Group expand state (show more options per group) ─────────────────────────
+const expandedGroups = ref(new Set())
+
+function toggleGroupExpand(groupKey) {
+  const next = new Set(expandedGroups.value)
+  if (next.has(groupKey)) {
+    next.delete(groupKey)
+  } else {
+    next.add(groupKey)
+  }
+  expandedGroups.value = next
+}
+
+function isGroupExpanded(groupKey) {
+  return expandedGroups.value.has(groupKey)
+}
 
 // ── Selection state (AC 4.2.3) ───────────────────────────────────────────────
 const selectedItems = ref(new Set())
@@ -1018,11 +1068,11 @@ const adviceItems = computed(() => {
               </svg>
 
               <!-- Heat exposure score display -->
-              <div class="score-area" v-if="exposureTemp !== null">
+              <div class="score-area">
                 <div class="score-row">
                   <span class="score-lbl">Heat exposure</span>
                   <span class="score-val" :style="{ color: exposureConfig.color }">
-                    {{ exposureTemp.toFixed(1) }}°C
+                    {{ exposureTemp !== null ? exposureTemp.toFixed(1) : '—' }}°C
                   </span>
                 </div>
                 <div class="score-bar-bg">
@@ -1041,7 +1091,16 @@ const adviceItems = computed(() => {
               </div>
             </div>
 
-            <!-- Guide card -->
+            <!-- Personalised heat advice — sticky with mannequin -->
+            <div class="advice-card card">
+              <p class="advice-title">Personalised advice</p>
+              <ul class="advice-list">
+                <li v-for="(msg, i) in adviceItems" :key="i" class="advice-item">
+                  <span class="advice-dot" :style="{ backgroundColor: msg.color }"></span>
+                  <span class="advice-text">{{ msg.text }}</span>
+                </li>
+              </ul>
+            </div>
           </div>
           <!-- end left-col -->
 
@@ -1059,28 +1118,44 @@ const adviceItems = computed(() => {
 
             <div v-for="group in groupedItems" :key="group.key" class="item-group">
               <p class="section-label section-label--group">{{ group.label }}</p>
+              <!-- Recommended items for today (good + not notForToday only) -->
               <div class="items-list">
                 <OutfitItemCard
-                  v-for="item in group.items"
+                  v-for="item in group.items.filter(i => !i.notForToday && i.category === 'good')"
                   :key="item.id"
                   :item="item"
                   :selected="isSelected(item.id)"
                   @toggle="toggleItem"
                 />
               </div>
+              <!-- Show more options: bad (avoid) + notForToday items, collapsed by default -->
+              <template v-if="group.items.some(i => i.notForToday || i.category === 'bad')">
+                <button
+                  class="show-more-btn"
+                  @click="toggleGroupExpand(group.key)"
+                  :aria-expanded="isGroupExpanded(group.key)"
+                >
+                  <span v-if="!isGroupExpanded(group.key)">
+                    Show more options ({{ group.items.filter(i => i.notForToday || i.category === 'bad').length }})
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                  </span>
+                  <span v-else>
+                    Hide other options
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
+                  </span>
+                </button>
+                <div v-if="isGroupExpanded(group.key)" class="items-list items-list--more">
+                  <OutfitItemCard
+                    v-for="item in group.items.filter(i => i.notForToday || i.category === 'bad')"
+                    :key="item.id"
+                    :item="item"
+                    :selected="isSelected(item.id)"
+                    @toggle="toggleItem"
+                  />
+                </div>
+              </template>
             </div>
           </div>
-        </div>
-
-        <!-- Advice card -->
-        <div class="advice-card card">
-          <p class="advice-title">Personalised heat advice</p>
-          <ul class="advice-list">
-            <li v-for="(msg, i) in adviceItems" :key="i" class="advice-item">
-              <span class="advice-dot" :style="{ backgroundColor: msg.color }"></span>
-              <span class="advice-text">{{ msg.text }}</span>
-            </li>
-          </ul>
         </div>
 
         <!-- Full-width navigation row -->
@@ -1363,40 +1438,47 @@ const adviceItems = computed(() => {
 /* Score display */
 .score-area {
   width: 100%;
-  margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px solid #d8eae6;
+  margin-top: 8px;
+  padding: 14px 16px 12px;
+  border-radius: 12px;
+  background: #f4faf8;
+  border: 1px solid #d8eae6;
 }
 
 .score-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .score-lbl {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: #9e9890;
 }
 
 .score-val {
-  font-size: 1rem;
+  font-size: 2rem;
   font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
   transition: color 0.4s;
 }
 
 .score-bar-bg {
-  height: 7px;
-  background: #e8f0ee;
-  border-radius: 4px;
+  height: 10px;
+  background: #dceee9;
+  border-radius: 6px;
   overflow: hidden;
-  margin: 4px 0;
+  margin: 6px 0 10px;
 }
 
 .score-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 6px;
   transition:
     width 0.5s ease,
     background-color 0.4s;
@@ -1417,8 +1499,8 @@ const adviceItems = computed(() => {
 }
 
 .score-status {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   line-height: 1.4;
   margin: 0;
   transition: color 0.4s;
@@ -1530,11 +1612,45 @@ const adviceItems = computed(() => {
   gap: 5px;
 }
 
+.items-list--more {
+  margin-top: 3px;
+}
+
+.show-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 5px 12px 5px 10px;
+  background: #f4faf8;
+  border: 1px solid #d8eae6;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d7a3a;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.show-more-btn:hover {
+  background: #e6f4e8;
+  border-color: #4d9e5a;
+}
+
+.show-more-btn span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .items-list {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
+
+
 
 /* Advice card */
 .advice-card {
